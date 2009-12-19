@@ -31,7 +31,6 @@ boc2:	$(BOC_OBJ)
 
 clean:
 	-rm -f *.o
-	rm -f boc2
 	rm -f $(TARBALL)
 
 clobber: clean
