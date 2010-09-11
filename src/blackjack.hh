@@ -59,6 +59,10 @@ struct variation {
 	bool			split;
 	/// allow resplitting, split-after-split (common)
 	bool			resplit;
+
+	/// most casinos allow only 1 card on each split ace (common)
+	bool			one_card_on_split_aces;
+
 	/// player's blackjack payoff
 	double			bj_payoff;
 	/// player's insurance payoff
@@ -87,6 +91,7 @@ struct variation {
 		double_after_split(true),
 		split(true),
 		resplit(false),
+		one_card_on_split_aces(true),
 		bj_payoff(1.5), 
 		insurance(2.0),
 		surrender_penalty(-0.5),
@@ -242,6 +247,10 @@ private:
 	typedef	array<probability_type, cols+1>	player_stand_edges_vector;
 	typedef	array<player_stand_edges_vector, vals>
 						player_stand_edges_matrix;
+	/**
+		index i: dealer's reveal card
+		index j: player's final value (including bust)
+	 */
 	player_stand_edges_matrix		player_stand_edges;
 
 	/**

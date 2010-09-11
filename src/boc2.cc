@@ -18,19 +18,20 @@ test(const bool H17) {
 	variation v;
 	v.H17 = H17;
 //	v.surrender_late = true;
+//	v.one_card_on_split_aces = false;
 	v.dump(cout);
 	strategy S(v);
 	S.evaluate();
-//	S.dump(cout);
-	cout << "Player\'s overall edge = " << S.overall_edge() << endl;
+	S.dump(cout);
+//	cout << "Player\'s overall edge = " << S.overall_edge() << endl;
 	cout << endl;
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 int
 main(int, char*[]) {
-//	test(true);
-	test(false);
+	test(true);
+//	test(false);
 	return 0;
 }
 

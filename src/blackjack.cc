@@ -17,7 +17,7 @@
 /**
 	Debug switch: print tables as they are computed.
  */
-#define		DUMP_DURING_EVALUATE		1
+#define		DUMP_DURING_EVALUATE		0
 
 namespace blackjack {
 
@@ -35,6 +35,8 @@ using std::cerr;
 using std::endl;
 using std::multimap;
 using std::make_pair;
+using std::setw;
+using std::setprecision;
 
 //=============================================================================
 // Blackjack specific routines
@@ -45,7 +47,8 @@ const size_t
 strategy::vals;
 
 const size_t
-strategy::initial_card_states[strategy::vals] = { 23, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+strategy::initial_card_states[strategy::vals] =
+	{ 23, 2, 3, 4, 5, 6, 7, 8, 9, 10};
 
 const size_t
 strategy::cols;
@@ -117,6 +120,8 @@ variation::dump(ostream& o) const {
 	o << "player double after split: " << yn(double_after_split) << endl;
 	o << "player may split: " << yn(split) << endl;
 	o << "player may re-split: " << yn(resplit) << endl;
+	o << "player receives only one card on each split ace: "
+		<< yn(one_card_on_split_aces) << endl;
 	o << "blackjack pays: " << bj_payoff << endl;
 	o << "insurance pays: " << insurance << endl;
 	o << "surrender penalty: " << surrender_penalty << endl;
@@ -472,7 +477,7 @@ strategy::dump_dealer_final_table(ostream& o) const {
 	dealer_final_matrix::const_iterator i(b);
 	ostream_iterator<probability_type> osi(o, "\t");
 	o << "show\\do\t17\t18\t19\t20\t21\tbust\n";
-	o << std::setprecision(4);
+	o << setprecision(4);
 	for ( ; i!=e; ++i) {
 		o << dealer[initial_card_states[i-b]].name << '\t';
 		copy(i->begin(), i->end(), osi);
@@ -571,7 +576,7 @@ strategy::dump_player_stand_odds(ostream& o) const {
 		o << '\t' << player_final_states[j];
 	}
 	o << endl;
-	o << std::setprecision(3);
+	o << setprecision(3);
 	for ( ; i!=e; ++i) {
 		o << dealer[initial_card_states[i-b]].name << endl;
 		dump_outcome_vector(*i, o);
@@ -591,6 +596,7 @@ strategy::dump_player_stand_odds(ostream& o) const {
 	o << endl;
 	for ( ; i!=e; ++i) {
 		o << dealer[initial_card_states[i-b]].name << '\t';
+//		o << setprecision(3);
 		copy(i->begin(), i->end(),
 			ostream_iterator<probability_type>(o, "\t"));
 		o << endl;
@@ -787,16 +793,16 @@ strategy::compute_player_split_edges(const bool d, const bool s) {
 	// convolution: spread over the player's next card
 	size_t k;
 	for (k=0; k<vals; ++k) {	// player's second card
-		const probability_type o(card_odds[k]);
+		const probability_type& o(card_odds[k]);
 		// initial edges may not have double-downs, splits, nor surrenders
 		// since player is forced to take the next card in each hand
-		edge_type edge = player_initial_edges
-				[player_hit[initial_card_states[i]][k]][j];
+		const size_t state = player_hit[initial_card_states[i]][k];
+		edge_type edge = player_initial_edges[state][j];
 		// similar to expectation::best(d, i==k, r)
 #if 1
 		if (resplit && (i == k)) {	// if resplit?
 			// then can consider split entry
-			const edge_type split_edge = player_split_edges[i][j];
+			const edge_type& split_edge(player_split_edges[i][j]);
 #if 0
 			if (split_edge > edge) {
 				// weight by probability of pair
@@ -807,6 +813,11 @@ strategy::compute_player_split_edges(const bool d, const bool s) {
 #endif
 		}
 #endif
+		if ((i == ACE) && one_card_on_split_aces) {
+			// each aces takes exactly one more card only
+			edge = player_stand_edges[j][player_final_state_map(state)];
+//			cout << "1-card-ACE[D" << j << ",F" << state << "]: " << edge << endl;
+		}
 		expected_edge += o * edge;
 	}	// inner product
 		expectations& sum(player_actions[p][j]);
@@ -817,8 +828,8 @@ strategy::compute_player_split_edges(const bool d, const bool s) {
 		player_split_edges[i][j] =
 			sum.value(sum.best(true, true, false));
 #endif
-	}
-	}
+	}	// end for each dealer reveal card
+	}	// end for each player paired card
 
 	// update the split entries for the initial-edges
 	for (i=0; i<vals; ++i) {
@@ -1212,7 +1223,8 @@ strategy::dump_expectations(const expectations_vector& v, ostream& o) {
 	expectations z(0,0,0,0);
 	z = accumulate(b, e, z);
 #if 1
-#define	EFORMAT(x)	std::setw(5) << int(x*1000)
+#define	EFORMAT(x)	setw(5) << int(x*1000)
+// setprecision?
 #else
 #define	EFORMAT(x)	x
 #endif
@@ -1372,7 +1384,7 @@ strategy::dump_action_expectations(ostream& o) const {
 		o << '\t' << card_name[j];
 	}
 	o << '\n' << endl;
-	o << std::setprecision(3);
+	o << setprecision(3);
 	for ( ; i!=e; ++i) {
 		o << player_hit[i-b].name;
 //		o << endl;
