@@ -1133,6 +1133,7 @@ for (r=0; r<vals; ++r) {
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ostream&
 strategy::dump_reveal_edges(ostream& o) const {
+// reorder printing? nah...
 	o << "Player edges given dealer's revealed card:\n";
 	copy(card_name, card_name+TEN+1, ostream_iterator<char>(o, "\t"));
 	o << endl;
@@ -1169,12 +1170,12 @@ strategy::compute_overall_edge(void) {
 	const probability_type& a(card_odds[ACE]);
 	const probability_type& t(card_odds[TEN]);
 	const probability_type bj_odds = 2 *a *t;
-	cout << "blackjack odds = " << bj_odds << endl;
+//	cout << "blackjack odds = " << bj_odds << endl;
 	// skip ACE and TEN because case is computed separately
 	const edge_type n =
 		inner_product(card_odds.begin()+1, card_odds.end()-1, 
 			player_edges_given_reveal.begin() +1, 0.0);
-	cout << "normal play edge (no ACE, no TEN) = " << n << endl;
+//	cout << "normal play edge (no ACE, no TEN) = " << n << endl;
 #if 1
 	_overall_edge =
 		a*(		// A: dealer-has-ace
