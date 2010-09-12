@@ -50,6 +50,13 @@ const size_t
 strategy::initial_card_states[strategy::vals] =
 	{ 23, 2, 3, 4, 5, 6, 7, 8, 9, 10};
 
+/**
+	Permute the ordering of columns for the dealer's reveal card.
+ */
+const size_t
+strategy::print_ordering[strategy::vals] =
+	{ 1, 2, 3, 4, 5, 6, 7, 8, strategy::TEN, strategy::ACE};
+
 const size_t
 strategy::cols;
 
@@ -206,6 +213,9 @@ for (i=0; i<vals; ++i) {
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
+	Player's initial state spread.
+ */
 ostream&
 strategy::dump_player_initial_state_odds(ostream& o) const {
 	o << "Player initial state odds:\n";
@@ -1209,15 +1219,19 @@ strategy::compute_overall_edge(void) {
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
+	Prints using the designated print_ordering for columns.
+ */
 ostream&
 strategy::dump_expectations(const expectations_vector& v, ostream& o) {
 	const expectations_vector::const_iterator b(v.begin()), e(v.end());
-	expectations_vector::const_iterator i(b);
-
-	for (; i!=e; ++i) {
-		o << '\t' << action_key[i->actions[0]]
-			<< action_key[i->actions[1]]
-			<< action_key[i->actions[2]];
+//	expectations_vector::const_iterator i(b);
+	size_t j;
+	for (j=0; j<vals; ++j) {
+		const expectations& ex(v[print_ordering[j]]);
+		o << '\t' << action_key[ex.actions[0]]
+			<< action_key[ex.actions[1]]
+			<< action_key[ex.actions[2]];
 	}
 	o << endl;
 	expectations z(0,0,0,0);
@@ -1229,47 +1243,52 @@ strategy::dump_expectations(const expectations_vector& v, ostream& o) {
 #define	EFORMAT(x)	x
 #endif
 	o << "stand";
-	for (i=b; i!=e; ++i) {
-		o << '\t' << EFORMAT(i->stand);
+	for (j=0; j<vals; ++j) {
+		const expectations& ex(v[print_ordering[j]]);
+		o << '\t' << EFORMAT(ex.stand);
 	}
 	o << endl;
 if (z.hit > -1.0 * vals) {
 	o << "hit";
-	for (i=b; i!=e; ++i) {
-		o << '\t' << EFORMAT(i->hit);
+	for (j=0; j<vals; ++j) {
+		const expectations& ex(v[print_ordering[j]]);
+		o << '\t' << EFORMAT(ex.hit);
 	}
 	o << endl;
 }
 if (z.double_down > -2.0 *vals) {
 	// TODO: pass double_multiplier?
 	o << "double";
-	for (i=b; i!=e; ++i) {
-		o << '\t' << EFORMAT(i->double_down);
+	for (j=0; j<vals; ++j) {
+		const expectations& ex(v[print_ordering[j]]);
+		o << '\t' << EFORMAT(ex.double_down);
 	}
 	o << endl;
 }
 // for brevity, could omit non-splittable states...
 if (z.split > -2.0 *vals) {
 	o << "split";
-	for (i=b; i!=e; ++i) {
-		o << '\t' << EFORMAT(i->split);
+	for (j=0; j<vals; ++j) {
+		const expectations& ex(v[print_ordering[j]]);
+		o << '\t' << EFORMAT(ex.split);
 	}
 	o << endl;
 }
 #if 1
 	o << "surr.";
-	for (i=b; i!=e; ++i) {
+	for (j=0; j<vals; ++j) {
 		o << '\t' << EFORMAT(expectations::surrender);
 	}
 	o << endl;
 #endif
 #if 1
 	o << "delta";
-	for (i=b; i!=e; ++i) {
+	for (j=0; j<vals; ++j) {
+		const expectations& ex(v[print_ordering[j]]);
 		o << '\t';
 		const pair<player_choice, player_choice>
-			opt(i->best_two(true, true, true));
-		o << EFORMAT(i->margin(opt.first, opt.second));
+			opt(ex.best_two(true, true, true));
+		o << EFORMAT(ex.margin(opt.first, opt.second));
 	}
 	o << endl;
 #endif
@@ -1381,7 +1400,7 @@ strategy::dump_action_expectations(ostream& o) const {
 	o << "P\\D";
 	size_t j;
 	for (j=0; j<vals; ++j) {
-		o << '\t' << card_name[j];
+		o << '\t' << card_name[print_ordering[j]];
 	}
 	o << '\n' << endl;
 	o << setprecision(3);
@@ -1398,10 +1417,11 @@ strategy::dump_action_expectations(ostream& o) const {
 ostream&
 strategy::dump(ostream& o) const {
 	variation::dump(o) << endl;
-	dump_dealer_policy(o);
-	dump_player_hit_state(o);
-	dump_dealer_final_table(o) << endl;
-	dump_player_stand_odds(o) << endl;
+	dump_dealer_policy(o);				// verified
+	dump_player_hit_state(o);			// verified
+	dump_dealer_final_table(o) << endl;		// verified
+	dump_player_stand_odds(o) << endl;		// verified
+
 	dump_action_expectations(o);
 	dump_reveal_edges(o) << endl;
 	o << "Player\'s overall edge = " << overall_edge() << endl;

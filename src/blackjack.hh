@@ -137,6 +137,7 @@ private:
 		TEN = 9			// index of 10 (T) (card_odds)
 	};
 	static const char		card_name[];
+	static const size_t		print_ordering[];
 	static const char		player_final_states[][cols +1];
 
 	/// maps player state index to player_final_outcome state
