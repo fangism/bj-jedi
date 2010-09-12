@@ -8,6 +8,7 @@
 #include <iostream>
 #include <sstream>
 #include <iterator>
+#include "util/array.hh"
 
 #define	DEBUG_SOLVE		0
 

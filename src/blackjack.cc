@@ -1,7 +1,5 @@
 // "card_state.cc"
 
-#include "blackjack.hh"
-#include "util/array.tcc"
 #include <cassert>
 #include <algorithm>
 #include <functional>
@@ -13,6 +11,9 @@
 #include <iomanip>
 #include <map>
 #include <cmath>		// for fabs
+#include "blackjack.hh"
+#include "util/array.tcc"
+#include "util/probability.tcc"
 
 /**
 	Debug switch: print tables as they are computed.
@@ -37,6 +38,7 @@ using std::multimap;
 using std::make_pair;
 using std::setw;
 using std::setprecision;
+using util::normalize;
 
 //=============================================================================
 // Blackjack specific routines
@@ -143,20 +145,6 @@ void
 strategy::set_card_distribution(const deck& o) {
 	card_odds = o;
 	update_player_initial_state_odds();
-}
-
-//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/**
-	Make the sums add up to 1.0.
- */
-template <class A>
-static
-void
-normalize(A& a) {
-	typedef	typename A::value_type	value_type;
-	const value_type sum = accumulate(a.begin(), a.end(), 0.0);
-	transform(a.begin(), a.end(), a.begin(), 
-		std::bind2nd(std::divides<value_type>(), sum));
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -725,7 +713,7 @@ strategy::compute_action_expectations(void) {
 if (split) {
 	const bool DAS = double_after_split && some_double();
 if (resplit) {
-	cout << "Resplitting allowed." <<  endl;
+//	cout << "Resplitting allowed." <<  endl;
 	// need to work backwards from post-split edges
 	compute_player_initial_edges(DAS, resplit, false);
 	compute_player_split_edges(DAS, resplit);	// iterate
@@ -733,7 +721,7 @@ if (resplit) {
 	compute_player_split_edges(DAS, resplit);	// iterate
 	compute_player_initial_edges(some_double(), true, surrender_late);
 } else {
-	cout << "Single split allowed." <<  endl;
+//	cout << "Single split allowed." <<  endl;
 	compute_player_initial_edges(DAS, false, false);
 	compute_player_split_edges(DAS, false);	// iterate
 	compute_player_initial_edges(some_double(), true, surrender_late);
@@ -742,7 +730,7 @@ if (resplit) {
 	dump_player_split_edges(cout) << endl;
 #endif
 } else {
-	cout << "No split allowed." <<  endl;
+//	cout << "No split allowed." <<  endl;
 	// no splitting allowed!
 	compute_player_initial_edges(some_double(), false, surrender_late);
 }
@@ -1179,7 +1167,7 @@ strategy::dump_reveal_edges(ostream& o) const {
 void
 strategy::compute_overall_edge(void) {
 	const probability_type& a(card_odds[ACE]);
-	const probability_type& t(card_odds[ACE]);
+	const probability_type& t(card_odds[TEN]);
 	const probability_type bj_odds = 2 *a *t;
 	cout << "blackjack odds = " << bj_odds << endl;
 	// skip ACE and TEN because case is computed separately
@@ -1246,6 +1234,7 @@ strategy::dump_expectations(const expectations_vector& v, ostream& o) {
 	for (j=0; j<vals; ++j) {
 		const expectations& ex(v[print_ordering[j]]);
 		o << '\t' << EFORMAT(ex.stand);
+		if (ex.best() == STAND) o << '*';
 	}
 	o << endl;
 if (z.hit > -1.0 * vals) {
@@ -1253,6 +1242,7 @@ if (z.hit > -1.0 * vals) {
 	for (j=0; j<vals; ++j) {
 		const expectations& ex(v[print_ordering[j]]);
 		o << '\t' << EFORMAT(ex.hit);
+		if (ex.best() == HIT) o << '*';
 	}
 	o << endl;
 }
@@ -1262,6 +1252,7 @@ if (z.double_down > -2.0 *vals) {
 	for (j=0; j<vals; ++j) {
 		const expectations& ex(v[print_ordering[j]]);
 		o << '\t' << EFORMAT(ex.double_down);
+		if (ex.best() == DOUBLE) o << '*';
 	}
 	o << endl;
 }
@@ -1271,13 +1262,16 @@ if (z.split > -2.0 *vals) {
 	for (j=0; j<vals; ++j) {
 		const expectations& ex(v[print_ordering[j]]);
 		o << '\t' << EFORMAT(ex.split);
+		if (ex.best() == SPLIT) o << '*';
 	}
 	o << endl;
 }
 #if 1
 	o << "surr.";
 	for (j=0; j<vals; ++j) {
+		const expectations& ex(v[print_ordering[j]]);
 		o << '\t' << EFORMAT(expectations::surrender);
+		if (ex.best() == SURRENDER) o << '*';
 	}
 	o << endl;
 #endif
