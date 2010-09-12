@@ -118,6 +118,10 @@ public:
 	static const size_t goal = 21;
 	static const size_t stop = 17;		// dealer stands hard or soft 17
 	static const char		card_name[];
+	enum {
+		ACE = 0,		// index of Ace (card_odds)
+		TEN = 9			// index of 10 (T) (card_odds)
+	};
 private:
 	static const size_t bust = goal +1;     // table offset
 	static const size_t soft = bust +1;     // table offset
@@ -133,10 +137,6 @@ private:
 
 	// mapping of initial card to initial state
 	static const size_t		initial_card_states[vals];
-	enum {
-		ACE = 0,		// index of Ace (card_odds)
-		TEN = 9			// index of 10 (T) (card_odds)
-	};
 	static const size_t		print_ordering[];
 	static const char		player_final_states[][cols +1];
 
