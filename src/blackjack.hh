@@ -21,6 +21,7 @@ using util::array;
  */
 typedef	probability_type		edge_type;
 
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
 	Options for game variations.
 	popularity comments on boolean variations:
@@ -108,6 +109,7 @@ struct variation {
 
 };	// end struct variation
 
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
 	Blackjack player strategy calculator class.
  */
@@ -494,6 +496,23 @@ public:
 ostream&
 operator << (ostream&, const strategy::outcome_odds&);
 
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
+	Classic game.  
+ */
+class simulator {
+};
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
+	The user enters both the dealer and player's actions and outcomes.  
+	The purposes is to characterize the odds of the game, grade the player's
+	actions, and rate luck and skill.
+ */
+class grader {
+};
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 }	// end namespace blackjack
 
 #endif	// __BOC2_BLACKJACK_HH__
