@@ -192,9 +192,11 @@ for (i=0; i<vals; ++i) {
 		}
 	}
 }
+#if 1
 	// remove the case for when player has blackjack, handled separately
 	player_initial_state_odds[goal] = 0.0;
 	normalize(player_initial_state_odds);
+#endif
 #if DUMP_DURING_EVALUATE
 	dump_player_initial_state_odds(cout) << endl;
 #endif
@@ -1182,10 +1184,12 @@ strategy::compute_overall_edge(void) {
 			t*(bj_odds-1)	// dealer-has-blackjack, player does not
 			// dealer-no-blackjack
 			+(1-t)*player_edges_given_reveal[ACE])
+				// does this account for player's blackjack?
 		+t*(		// B: dealer-has-ten
 			a*(bj_odds-1)	// dealer-has-blackjack, player does not
 			// dealer-no-blackjack
 			+(1-a)*player_edges_given_reveal[TEN])
+				// does this account for player's blackjack?
 		+(1-a-t)*(	// C: dealer-no-ace
 			(bj_odds * bj_payoff)	// player-has-blackjack
 			+(1-bj_odds) *n);
@@ -1421,6 +1425,30 @@ strategy::dump(ostream& o) const {
 	dump_reveal_edges(o) << endl;
 	o << "Player\'s overall edge = " << overall_edge() << endl;
 	return o;
+}
+
+//=============================================================================
+// class counter method definitions
+
+/**
+	Initializes to standard deck distributions.  
+	\param d the number of decks.
+ */
+counter::counter(const size_t d) : cards(bins) {
+	// ACE is at index 0
+	const size_t f = d*4;
+	std::fill(cards.begin(), --cards.end(), f);
+	cards[strategy::TEN] = 4*f;	// T, J, Q, K
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
+	\param d the card index of the counter to decrement.
+ */
+void
+counter::count(const size_t c) {
+	assert(cards[c]);
+	--cards[c];
 }
 
 //=============================================================================

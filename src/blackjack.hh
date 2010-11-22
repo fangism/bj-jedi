@@ -14,6 +14,7 @@
 namespace blackjack {
 using std::map;
 using std::pair;
+using std::istream;
 using util::array;
 
 /**
@@ -501,16 +502,40 @@ operator << (ostream&, const strategy::outcome_odds&);
 	Classic game.  
  */
 class simulator {
-};
+};	// end class simulator
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
+	Tracks cards remaining in deck(s).
+ */
+struct counter {
+	enum { bins = strategy::vals };
+#if 0
+	typedef	array<size_t, bins>		deck_type;
+#else
+	typedef	probability_vector		deck_type;
+#endif
+	deck_type				cards;
+
+	counter(const size_t);
+
+	void
+	count(const size_t);
+};	// end class counter
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
 	The user enters both the dealer and player's actions and outcomes.  
 	The purposes is to characterize the odds of the game, grade the player's
 	actions, and rate luck and skill.
+	Input stream: history of cards seen and transactions.  
  */
 class grader {
-};
+	strategy				S;
+	counter					C;
+
+
+};	// end class grader
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 }	// end namespace blackjack

@@ -1,7 +1,7 @@
 // "card_state.hh"
 
-#ifndef	__BOC2_CARD_STATE_H__
-#define	__BOC2_CARD_STATE_H__
+#ifndef	__BOC2_CARD_STATE_HH__
+#define	__BOC2_CARD_STATE_HH__
 
 #include <string>
 #include <vector>
@@ -111,5 +111,5 @@ public:
 	dump(ostream&) const;
 };	// end struct state_machine
 
-#endif	// __BOC2_CARD_STATE_H__
+#endif	// __BOC2_CARD_STATE_HH__
 

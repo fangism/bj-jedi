@@ -10,12 +10,14 @@ ARCH_FLAGS =
 # for amusement
 # ARCH_FLAGS += -arch ppc
 CXX = g++
+# CXX = llvm-g++
 CXXCPPFLAGS = -I.
 CXXFLAGS = -O3 -Wall -W -Werror -ansi -pedantic-errors $(ARCH_FLAGS)
-LD = $(CXX)
+LINK = ld -r
+CXXLD = $(CXX)
 # LD = ld
 LDFLAGS = $(ARCH_FLAGS)
-TARGETS = boc2
+TARGETS = boc2 bjgrader
 TARBALL = boc2.tar.gz
 
 .SUFFIXES: .cc .o
@@ -25,12 +27,27 @@ TARBALL = boc2.tar.gz
 
 all: $(TARGETS)
 
-BOC_OBJ = boc2.o card_state.o blackjack.o
-boc2:	$(BOC_OBJ)
-	$(LD) $(LDFLAGS) $(BOC_OBJ) -o $@
+libutil_OBJ = util/tokenize.o util/string.o
+util/libutil.a: $(libutil_OBJ)
+	$(LINK) $(LDFLAGS) $(libutil_OBJ) -o $@
+
+libbj_OBJ = card_state.o blackjack.o
+libbj.a: $(libbj_OBJ)
+	$(LINK) $(LDFLAGS) $(libbj_OBJ) -o $@
+
+BOC_OBJ = boc2.o
+BOC_LIBS = libbj.a util/libutil.a
+boc2:	$(BOC_OBJ) $(BOC_LIBS)
+	$(CXXLD) $(LDFLAGS) $(BOC_OBJ) $(BOC_LIBS) -o $@
+
+BJG_OBJ = bjgrader.o
+BJG_LIBS = libbj.a util/libutil.a
+bjgrader: $(BJG_OBJ) $(BJG_LIBS)
+	$(CXXLD) $(LDFLAGS) $(BJG_OBJ) $(BJG_LIBS) -o $@
 
 clean:
-	-rm -f *.o
+	-rm -f *.a *.o
+	-rm -f */*.a */*.o
 	rm -f $(TARBALL)
 
 clobber: clean

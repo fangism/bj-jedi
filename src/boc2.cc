@@ -54,15 +54,15 @@ main(int, char*[]) {
 	cout << "Sensitivitiy analysis: relative probability increase per card = " << pdel << endl;
 	size_t i;		// which card to vary probability
 	for (i=0; i<10; ++i) {
-		deck d(standard_deck);
+		deck pd(standard_deck);
 		deck nd(standard_deck);
-		d[i] *= 1 +pdel;
+		pd[i] *= 1 +pdel;
 		nd[i] /= 1 +pdel;
-		normalize(d);
+		normalize(pd);
 		normalize(nd);
 		strategy del(v);
 		strategy ndel(v);
-		del.set_card_distribution(d);
+		del.set_card_distribution(pd);
 		ndel.set_card_distribution(nd);
 		del.evaluate();
 		ndel.evaluate();
@@ -71,7 +71,7 @@ main(int, char*[]) {
 	cout << "------------------ " << strategy::card_name[i]
 		<< " ------------------" << endl;
 	cout << "card odds: (A,2,...T)" << endl;
-	copy(d.begin(), d.end(),
+	copy(pd.begin(), pd.end(),
 		ostream_iterator<probability_type>(cout, "\t"));
 	cout << "(+)" << endl;
 	copy(nd.begin(), nd.end(),
@@ -93,24 +93,24 @@ main(int, char*[]) {
 	// for ACEs and TENs (common hi-lo)
 	const probability_type hdel = pdel/2;
 	cout << "------------------ AT ------------------" << endl;
-		deck d(standard_deck);
+		deck pd(standard_deck);
 		deck nd(standard_deck);
-		d[strategy::ACE] *= 1 +hdel;
-		d[strategy::TEN] *= 1 +hdel;
+		pd[strategy::ACE] *= 1 +hdel;
+		pd[strategy::TEN] *= 1 +hdel;
 		nd[strategy::ACE] /= 1 +hdel;
 		nd[strategy::TEN] /= 1 +hdel;
-		normalize(d);
+		normalize(pd);
 		normalize(nd);
 		strategy del(v);
 		strategy ndel(v);
-		del.set_card_distribution(d);
+		del.set_card_distribution(pd);
 		ndel.set_card_distribution(nd);
 		del.evaluate();
 		ndel.evaluate();
 		const edge_type diff_edge = del.overall_edge();
 		const edge_type ndiff_edge = ndel.overall_edge();
 	cout << "card odds: (A,2,...T)" << endl;
-	copy(d.begin(), d.end(),
+	copy(pd.begin(), pd.end(),
 		ostream_iterator<probability_type>(cout, "\t"));
 	cout << "(+)" << endl;
 	copy(nd.begin(), nd.end(),
