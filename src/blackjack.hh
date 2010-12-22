@@ -11,6 +11,13 @@
 // is better for matrices and higher dimension structures
 // and util::array or std::array
 
+/**
+	Define to 1 to implement Blackjack Switch's push-on-22 rule.
+	Goal: 1
+	Status: drafted, basically tested
+ */
+#define	PUSH22				1
+
 namespace blackjack {
 using std::map;
 using std::pair;
@@ -64,7 +71,10 @@ struct variation {
 
 	/// most casinos allow only 1 card on each split ace (common)
 	bool			one_card_on_split_aces;
-
+#if PUSH22
+	/// dealer pushes on 22 against any non-blackjack hand (switch)
+	bool			push22;
+#endif
 	/// player's blackjack payoff
 	double			bj_payoff;
 	/// player's insurance payoff
@@ -94,6 +104,9 @@ struct variation {
 		split(true),
 		resplit(false),
 		one_card_on_split_aces(true),
+#if PUSH22
+		push22(false),
+#endif
 		bj_payoff(1.5), 
 		insurance(2.0),
 		surrender_penalty(-0.5),
@@ -126,19 +139,27 @@ public:
 		TEN = 9			// index of 10 (T) (card_odds)
 	};
 private:
-	static const size_t bust = goal +1;     // table offset
-	static const size_t soft = bust +1;     // table offset
-	static const size_t soft_min = 1;       // 1-11
-	static const size_t cols = goal -stop +2;
-#if 0
-	// states for the first card
-	static const size_t initials = goal +vals +2;	// after split
-	static const size_t seconds = intitials +vals;	// can double here
+	// table offsets
+	static const size_t bust = goal +1;
+#if PUSH22
+	// added one for "push22"
+	static const size_t push = bust +1;
+	static const size_t soft = push +1;
+#else
+	static const size_t soft = bust +1;
 #endif
+	static const size_t soft_min = 1;       // 1-11
+#if PUSH22
+	static const size_t cols = goal -stop +3;
+	static const size_t phit_states = goal +vals +3;	// for push22
+#else
+	static const size_t cols = goal -stop +2;
 	static const size_t phit_states = goal +vals +2;
+#endif
 	static const size_t phit_pair_states = phit_states +vals;
 
 	// mapping of initial card to initial state
+	// for both dealer AND player
 	static const size_t		initial_card_states[vals];
 	static const size_t		print_ordering[];
 	static const char		player_final_states[][cols +1];
@@ -268,7 +289,9 @@ private:
 		edge_type			hit;
 		edge_type			double_down;
 		edge_type			split;
+#if 0
 		static const edge_type		surrender;
+#endif
 		action_preference		actions;
 
 		expectations() : stand(0.0), hit(-1.0),
@@ -283,7 +306,7 @@ private:
 		}
 
 		const edge_type&
-		value(const player_choice c) const;
+		value(const player_choice c, const edge_type& s) const;
 
 		pair<player_choice, player_choice>
 		best_two(const bool d = true,
@@ -305,12 +328,13 @@ private:
 		}
 
 		void
-		optimize(void);
+		optimize(const edge_type& r);
 
 		// compare two choices
 		edge_type
-		margin(const player_choice f, const player_choice s) const {
-			return value(f) -value(s);
+		margin(const player_choice& f, const player_choice& s, 
+				const edge_type& r) const {
+			return value(f, r) -value(s, r);
 		}
 
 		ostream&
@@ -411,9 +435,8 @@ private:
 	ostream&
 	dump_outcome_vector(const outcome_vector&, ostream&);
 
-	static
 	ostream&
-	dump_expectations(const expectations_vector&, ostream&);
+	dump_expectations(const expectations_vector&, ostream&) const;
 
 	void
 	reset_split_edges(void);

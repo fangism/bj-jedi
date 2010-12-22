@@ -1,4 +1,6 @@
-// "boc2.cc"
+// "bjswoc.cc"
+// Blackjack Switch variation odds calculator
+// copy-modified from "boc2.cc"
 
 #include <iostream>
 #include <iterator>
@@ -16,12 +18,16 @@ using util::normalize;
 /**
 	Define to 1 to perform distribution sensitivity analysis.
  */
-#define	SENSITIVITY_ANALYSIS			1
+#define	SENSITIVITY_ANALYSIS			0
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 int
 main(int, char*[]) {
 	variation v;
+	v.push22 = true;		// dealer pushes on 22
+	v.bj_payoff = 1.0;		// payoff 1:1
+	v.surrender_penalty = -1.0;	// no surrender
+// everything else same
 	v.H17 = true;
 //	v.H17 = false;
 //	v.surrender_late = true;

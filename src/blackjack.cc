@@ -50,7 +50,11 @@ strategy::vals;
 
 const size_t
 strategy::initial_card_states[strategy::vals] =
-	{ 23, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+#if PUSH22
+	{ push+1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+#else
+	{ bust+1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+#endif
 
 /**
 	Permute the ordering of columns for the dealer's reveal card.
@@ -74,11 +78,17 @@ strategy::action_key[] = "-SHDPR";
 // P = split pair
 // R = surrender (run!)
 
+#if 0
+// default value
 const double
 strategy::expectations::surrender = -0.5;
+#endif
 
 const char strategy::card_name[] = "A23456789T";
 
+/**
+	Applicable to daeler and player.
+ */
 const char strategy::player_final_states[][cols +1] = {
 	"<=16",
 	"17",
@@ -86,7 +96,10 @@ const char strategy::player_final_states[][cols +1] = {
 	"19",
 	"20",
 	"21",
-	"bust"
+	"bust",
+#if PUSH22
+	"push"	// dealer only
+#endif
 };
 
 static const probability_type __standard_deck[strategy::vals] = {
@@ -131,6 +144,9 @@ variation::dump(ostream& o) const {
 	o << "player may re-split: " << yn(resplit) << endl;
 	o << "player receives only one card on each split ace: "
 		<< yn(one_card_on_split_aces) << endl;
+#if PUSH22
+	o << "dealer 22 pushes against player: " << yn(push22) << endl;
+#endif
 	o << "blackjack pays: " << bj_payoff << endl;
 	o << "insurance pays: " << insurance << endl;
 	o << "surrender penalty: " << surrender_penalty << endl;
@@ -200,7 +216,7 @@ for (i=0; i<vals; ++i) {
 #if DUMP_DURING_EVALUATE
 	dump_player_initial_state_odds(cout) << endl;
 #endif
-}
+}	// end update_player_initial_state_odds
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
@@ -241,9 +257,18 @@ strategy::player_final_state_map(const size_t i) {
 	} else if (i <= goal) {
 		return i -stop +1;	// represents 17..21
 	} else if (i == bust) {
+		// represents bust state
+#if PUSH22
+		return cols-1;
+#else
 		return cols;
+#endif
 	} else {		// is Ace state, take the higher value
+#if PUSH22
+		return player_final_state_map(i -push +vals);
+#else
 		return player_final_state_map(i -bust +vals);
+#endif
 	}
 	// does not count split states
 }
@@ -282,15 +307,21 @@ strategy::strategy(const variation& v) :
 /**
 	Build the dealer's state machine, independent of probability.
 	\param H17 If H17, then dealer must hit on a soft 17, else must stand.  
+	\param push22, 22 is dealer push
  */
 void
 strategy::set_dealer_policy(void) {
 	// enumerating edges:
 	const size_t soft_max = H17 ? 7 : 6;	// 6-16, 7-17
 	// 0-21 are hard values (no ace)
-	// 22-28 are soft 11 through soft 17
-	// 29 is bust
+	// 22 is bust
+	// 23 is push
+	// 24-30 are soft 11 through soft 17
+#if PUSH22
+	dealer.resize(push +soft_max +1);
+#else
 	dealer.resize(bust +soft_max +1);
+#endif
 	// first handle hard values (no ACE)
 	size_t i, c;
 	for (i=0; i<stop; ++i) {	// hit through hard 16
@@ -300,7 +331,15 @@ strategy::set_dealer_policy(void) {
 	for (c=1; c<vals; ++c) {
 		const size_t t = i +c +1;	// sum value
 		if (t > goal) {			// bust
-			dealer.add_edge(i, bust, c, vals);
+#if PUSH22
+			if ((t == goal+1) && push22) {
+				dealer.add_edge(i, push, c, vals);
+			} else {
+#endif
+				dealer.add_edge(i, bust, c, vals);
+#if PUSH22
+			}
+#endif
 		} else {
 			dealer.add_edge(i, t, c, vals);
 		}
@@ -324,24 +363,32 @@ strategy::set_dealer_policy(void) {
 		dealer.name_state(i, oss.str());
 	}
 	// soft-values
+#if PUSH22
+	const size_t offset = push;
+#else
+	const size_t offset = bust;
+#endif
 	for (i=soft_min; i<=soft_max; ++i) {
 		ostringstream oss;
 		oss << "A";
 		if (i>soft_min) { oss << "," << i-1; }
-		dealer.name_state(i+bust, oss.str());
+		dealer.name_state(i+offset, oss.str());
 	for (c=0; c<vals; ++c) {		// A = 1 only
 		const size_t t = i+c;
 		const size_t tA = t +vals +1;
 		if (tA > goal) {
-			dealer.add_edge(i+bust, t +1, c, vals);
+			dealer.add_edge(i+offset, t +1, c, vals);
 		} else if (tA > soft_max +vals) {
-			dealer.add_edge(i+bust, tA, c, vals);
+			dealer.add_edge(i+offset, tA, c, vals);
 		} else {
-			dealer.add_edge(i+bust, t +soft, c, vals);
+			dealer.add_edge(i+offset, t +soft, c, vals);
 		}
 	}
 	}
 	dealer.name_state(bust, "bust");
+#if PUSH22
+	dealer.name_state(push, "push");
+#endif
 	// the bust-state is terminal
 	dealer.check();
 }
@@ -398,28 +445,38 @@ strategy::compute_player_hit_state(void) {
 		oss << i;
 		player_hit.name_state(i, oss.str());
 	}
+	// player doesn't have a push state like the dealer
+	// but we add it to use the same initial_card_states table prefix
+#if PUSH22
+	const size_t offset = push;
+#else
+	const size_t offset = bust;
+#endif
 	// soft-values
 	for (i=soft_min; i<=soft_max; ++i) {
 		ostringstream oss;
 		oss << "A";
 		if (i>soft_min) { oss << "," << i-1; }
-		player_hit.name_state(i+bust, oss.str());
+		player_hit.name_state(i+offset, oss.str());
 	for (c=0; c<vals; ++c) {		// A = 1 only
 		const size_t t = i+c;
 		const size_t tA = t +vals +1;
 		if (tA > goal) {
-			player_hit.add_edge(i+bust, t +1, c, vals);
+			player_hit.add_edge(i+offset, t +1, c, vals);
 		} else if (tA > soft_max +vals) {
-			player_hit.add_edge(i+bust, tA, c, vals);
+			player_hit.add_edge(i+offset, tA, c, vals);
 		} else {
-			player_hit.add_edge(i+bust, t +soft, c, vals);
+			player_hit.add_edge(i+offset, t +soft, c, vals);
 		}
 	}
 	}
 	player_hit.name_state(bust, "bust");
+#if PUSH22
+	player_hit.name_state(push, "push-X");
+#endif
 	// the bust-state is terminal
 	player_hit.check();
-}
+}	// end compute_player_hit_state()
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ostream&
@@ -476,7 +533,11 @@ strategy::dump_dealer_final_table(ostream& o) const {
 		e(dealer_final_given_revealed.end());
 	dealer_final_matrix::const_iterator i(b);
 	ostream_iterator<probability_type> osi(o, "\t");
+#if PUSH22
+	o << "show\\do\t17\t18\t19\t20\t21\tbust\tpush\n";
+#else
 	o << "show\\do\t17\t18\t19\t20\t21\tbust\n";
+#endif
 	o << setprecision(4);
 	for ( ; i!=e; ++i) {
 		o << dealer[initial_card_states[i-b]].name << '\t';
@@ -497,10 +558,20 @@ strategy::compute_player_stand_odds(void) {
 	size_t j;
 	for (j=0; j<vals; ++j) {	// dealer's revealed card, initial state
 	size_t k;
-	for (k=0; k<cols; ++k) {	// player's final state
+#if PUSH22
+	for (k=0; k<cols-1; ++k)
+#else
+	for (k=0; k<cols; ++k)
+#endif
+	{	// player's final state
 		outcome_odds& o(player_stand[j][k]);
 	size_t d;
-	for (d=0; d<cols-1; ++d) {	// dealer's final state
+#if PUSH22
+	for (d=0; d<cols-2; ++d)
+#else
+	for (d=0; d<cols-1; ++d)
+#endif
+	{	// dealer's final state
 		const probability_type& p(dealer_final_given_revealed[j][d]);
 		int diff = k -d;
 		if (diff > 1) {
@@ -512,8 +583,14 @@ strategy::compute_player_stand_odds(void) {
 		}
 	}
 		o.win += dealer_final_given_revealed[j][d];	// dealer busts
+#if PUSH22
+		o.push += dealer_final_given_revealed[j][d+1];	// dealer pushes
+#endif
 	}
-	player_stand[j][k].lose += 1.0;	// player busts
+	player_stand[j][k].lose += 1.0;		// player busts
+#if PUSH22
+	player_stand[j][k+1].lose += 1.0;	// player push N/A
+#endif
 	}
 	// now compute player edges
 	for (j=0; j<vals; ++j) {
@@ -696,7 +773,7 @@ strategy::compute_action_expectations(void) {
 		}
 //		cout << endl;
 	}
-		// p.optimize();
+		// p.optimize(surrender_penalty);
 	}
 	}
 // find optimal non-split decisions first, then back-patch
@@ -822,11 +899,11 @@ strategy::compute_player_split_edges(const bool d, const bool s) {
 	}	// inner product
 		expectations& sum(player_actions[p][j]);
 		sum.split = 2.0 *expected_edge;	// b/c two hands are played
-		sum.optimize();
+		sum.optimize(surrender_penalty);
 #if 0
 		// TODO: update this in second pass?
 		player_split_edges[i][j] =
-			sum.value(sum.best(true, true, false));
+			sum.value(sum.best(true, true, false), surrender_penalty);
 #endif
 	}	// end for each dealer reveal card
 	}	// end for each player paired card
@@ -840,7 +917,7 @@ strategy::compute_player_split_edges(const bool d, const bool s) {
 		const expectations& sum(player_actions[p][j]);
 		// player may decide whether or not to split
 		player_split_edges[i][j] =
-			sum.value(sum.best(d, s, false));
+			sum.value(sum.best(d, s, false), surrender_penalty);
 	}
 	}
 #if DUMP_DURING_EVALUATE
@@ -984,7 +1061,8 @@ strategy::compute_player_hit_edges(void) {
 			player_final_state_probability[i][j].begin(), 0.0);
 		player_hit_edges[j][i] = e;
 		const expectations& x(player_actions[j][i]);
-		const edge_type sh = x.value(x.best(false, false, false));
+		const edge_type sh =
+			x.value(x.best(false, false, false), surrender_penalty);
 		const edge_type d = fabs(sh-e);
 		// identity: sanity check
 		if (d > eps) {
@@ -1040,12 +1118,12 @@ strategy::compute_player_initial_edges(
 	for (j=0; j<vals; ++j) {
 		expectations c(player_actions[i][j]);	// yes, copy
 		c.hit = player_hit_edges[i][j];
-		c.optimize();
+		c.optimize(surrender_penalty);
 		// since splits are folded into non-pair states
 		const pair<player_choice, player_choice>
 //			splits are computed in a separate section of the table
 			p(c.best_two(D, S, R));
-		const edge_type e = c.value(p.first);
+		const edge_type e = c.value(p.first, surrender_penalty);
 		player_initial_edges[i][j] = e;
 	}
 	}
@@ -1105,7 +1183,7 @@ strategy::optimize_actions(void) {
 	for (i=0; i<phit_states; ++i) {
 	size_t j;
 	for (j=0; j<vals; ++j) {
-		player_actions[i][j].optimize();
+		player_actions[i][j].optimize(surrender_penalty);
 	}
 	}
 }
@@ -1214,9 +1292,10 @@ strategy::compute_overall_edge(void) {
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
 	Prints using the designated print_ordering for columns.
+	Is a member function to access surrender_penalty.
  */
 ostream&
-strategy::dump_expectations(const expectations_vector& v, ostream& o) {
+strategy::dump_expectations(const expectations_vector& v, ostream& o) const {
 	const expectations_vector::const_iterator b(v.begin()), e(v.end());
 //	expectations_vector::const_iterator i(b);
 	size_t j;
@@ -1275,7 +1354,8 @@ if (z.split > -2.0 *vals) {
 	o << "surr.";
 	for (j=0; j<vals; ++j) {
 		const expectations& ex(v[print_ordering[j]]);
-		o << '\t' << EFORMAT(expectations::surrender);
+//		o << '\t' << EFORMAT(expectations::surrender);
+		o << '\t' << EFORMAT(surrender_penalty);
 		if (ex.best() == SURRENDER) o << '*';
 	}
 	o << endl;
@@ -1287,7 +1367,7 @@ if (z.split > -2.0 *vals) {
 		o << '\t';
 		const pair<player_choice, player_choice>
 			opt(ex.best_two(true, true, true));
-		o << EFORMAT(ex.margin(opt.first, opt.second));
+		o << EFORMAT(ex.margin(opt.first, opt.second, surrender_penalty));
 	}
 	o << endl;
 #endif
@@ -1298,7 +1378,8 @@ if (z.split > -2.0 *vals) {
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const edge_type&
-strategy::expectations::value(const player_choice c) const {
+strategy::expectations::value(const player_choice c, 
+		const edge_type& surrender) const {
 	switch (c) {
 	case STAND:	return stand;
 	case HIT:	return hit;
@@ -1316,7 +1397,7 @@ strategy::expectations::value(const player_choice c) const {
 	It is up to the best() method to filter out invalid choices.  
  */
 void
-strategy::expectations::optimize(void) {
+strategy::expectations::optimize(const edge_type& surrender) {
 	typedef	std::multimap<edge_type, player_choice>	sort_type;
 	sort_type s;
 	s.insert(make_pair(stand, STAND));

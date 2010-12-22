@@ -17,7 +17,7 @@ LINK = ld -r
 CXXLD = $(CXX)
 # LD = ld
 LDFLAGS = $(ARCH_FLAGS)
-TARGETS = boc2 bjgrader
+TARGETS = boc2 bjswoc bjgrader
 TARBALL = boc2.tar.gz
 
 .SUFFIXES: .cc .o
@@ -39,6 +39,11 @@ BOC_OBJ = boc2.o
 BOC_LIBS = libbj.a util/libutil.a
 boc2:	$(BOC_OBJ) $(BOC_LIBS)
 	$(CXXLD) $(LDFLAGS) $(BOC_OBJ) $(BOC_LIBS) -o $@
+
+BJSWOC_OBJ = bjswoc.o
+BJSWOC_LIBS = $(BOC_LIBS)
+bjswoc:	$(BJSWOC_OBJ) $(BOC_LIBS)
+	$(CXXLD) $(LDFLAGS) $(BJSWOC_OBJ) $(BJSWOC_LIBS) -o $@
 
 BJG_OBJ = bjgrader.o
 BJG_LIBS = libbj.a util/libutil.a
