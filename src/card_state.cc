@@ -86,8 +86,23 @@ state_machine::add_edge(const size_t i, const size_t j,
 		const size_t d, const size_t n) {
 	node& nd(states[i]);
 	nd.out_edges.resize(n, 0);	// default
-	assert(d < n);
+	assert(d < n);		// allow offset state indices
 	nd.out_edges[d] = j;
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
+	Copy an entire edge set from state i to state j.
+ */
+void
+state_machine::copy_edge_set(const size_t i, const size_t j) {
+	states[j].out_edges = states[i].out_edges;
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+void
+state_machine::copy_edge_set(const state_machine& s, const size_t i, const size_t j) {
+	states[j].out_edges = s.states[i].out_edges;
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

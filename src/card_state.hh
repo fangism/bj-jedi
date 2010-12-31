@@ -95,6 +95,12 @@ public:
 	void
 	add_edge(const size_t, const size_t, const size_t, const size_t);
 
+	void
+	copy_edge_set(const size_t, const size_t);
+
+	void
+	copy_edge_set(const state_machine&, const size_t, const size_t);
+
 	/// compute terminal probabilities (solve)
 	void
 	solve(const deck&,

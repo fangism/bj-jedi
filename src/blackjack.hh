@@ -15,8 +15,8 @@
 	Define to 1 to implement Blackjack Switch's push-on-22 rule.
 	Goal: 1
 	Status: drafted, basically tested
- */
 #define	PUSH22				1
+ */
 
 namespace blackjack {
 using std::map;
@@ -71,10 +71,8 @@ struct variation {
 
 	/// most casinos allow only 1 card on each split ace (common)
 	bool			one_card_on_split_aces;
-#if PUSH22
 	/// dealer pushes on 22 against any non-blackjack hand (switch)
 	bool			push22;
-#endif
 	/// player's blackjack payoff
 	double			bj_payoff;
 	/// player's insurance payoff
@@ -104,9 +102,7 @@ struct variation {
 		split(true),
 		resplit(false),
 		one_card_on_split_aces(true),
-#if PUSH22
 		push22(false),
-#endif
 		bj_payoff(1.5), 
 		insurance(2.0),
 		surrender_penalty(-0.5),
@@ -141,35 +137,36 @@ public:
 private:
 	// table offsets
 	static const size_t bust = goal +1;
-#if PUSH22
-	// added one for "push22"
-	static const size_t push = bust +1;
-	static const size_t soft = push +1;
-#else
-	static const size_t soft = bust +1;
-#endif
+	static const size_t player_bust = bust;
+	static const size_t dealer_bust = bust;
+	// added one for "push22" for switch variation
+	static const size_t dealer_push = dealer_bust +1;
+	static const size_t dealer_soft = dealer_push +1;	// for push22
+	static const size_t player_soft = player_bust +1;
 	static const size_t soft_min = 1;       // 1-11
-#if PUSH22
-	static const size_t cols = goal -stop +3;
-	static const size_t phit_states = goal +vals +3;	// for push22
-#else
-	static const size_t cols = goal -stop +2;
-	static const size_t phit_states = goal +vals +2;
-#endif
-	static const size_t phit_pair_states = phit_states +vals;
+	static const size_t pair_offset = player_soft +vals +1;
+//	static const size_t cols = goal -stop +3;
+	static const size_t p_action_states = pair_offset +vals;
+	static const size_t d_action_states = dealer_soft +vals +1;
+	static const size_t player_states = goal -stop +3;
+	static const size_t dealer_states = goal -stop +3;
+	// player action table offset
+//	static const size_t p_pair_states = p_action_states +vals;
 
 	// mapping of initial card to initial state
 	// for both dealer AND player
-	static const size_t		initial_card_states[vals];
-	static const size_t		print_ordering[];
-	static const char		player_final_states[][cols +1];
+	static const size_t		p_initial_card_map[vals];
+	static const size_t		d_initial_card_map[vals];
+	static const size_t		reveal_print_ordering[];
+	static const char		player_final_states[][player_states];
+	static const char		dealer_final_states[][dealer_states];
 
 	/// maps player state index to player_final_outcome state
 	static
 	size_t
 	player_final_state_map(const size_t);
 
-	typedef	array<probability_type, cols+1>
+	typedef	array<probability_type, player_states>
 					player_final_state_probability_vector;
 
 	static
@@ -183,9 +180,13 @@ private:
 	 */
 	deck				card_odds;
 	/// the dealer's fixed state machine, also action table
-	state_machine			dealer;
+	state_machine			dealer_hit;
 	/// the player's state machine for hits (for calculation, not optimized)
 	state_machine			player_hit;
+	/// transition table for splits, with possible re-split
+	state_machine			player_resplit;
+	/// transition table for splits, with no re-split
+	state_machine			last_split;
 	/**
 		"Hit until it's not good to hit..."
 		One player decision state machine for each dealer reveal card
@@ -210,7 +211,7 @@ private:
 		cell values are probabilities.
 		Sum of each row should be 1.0.
 	 */
-	typedef	array<probability_type, cols>	dealer_final_vector_type;
+	typedef	array<probability_type, dealer_states>	dealer_final_vector_type;
 	typedef	array<dealer_final_vector_type, vals>	dealer_final_matrix;
 	dealer_final_matrix		dealer_final_given_revealed;
 	/**
@@ -221,7 +222,7 @@ private:
 		assuming that the player hits until it is not advisable 
 			(using player_opt)
 	 */
-	array<array<player_final_state_probability_vector, phit_states>, vals>
+	array<array<player_final_state_probability_vector, p_action_states>, vals>
 					player_final_state_probability;
 
 public:
@@ -257,19 +258,19 @@ public:
 	typedef	player_choice			action_preference[4];
 
 private:
-	typedef	array<outcome_odds, cols+1>		outcome_vector;
+	typedef	array<outcome_odds, player_states>	outcome_vector;
 	typedef	array<outcome_vector, vals>		outcome_matrix;
 
 	/**
 		Matrix is indexed: [reveal][player-state]
 		cell values are probabilities that player will win/draw/lose.
-		TODO: the size of this should be static, avoid alloc.
 	 */
 	outcome_matrix				player_stand;
 	/**
 		For each entry in 'player_stand': win - lose = edge.
 	 */
-	typedef	array<probability_type, cols+1>	player_stand_edges_vector;
+	typedef	array<probability_type, player_states>
+						player_stand_edges_vector;
 	typedef	array<player_stand_edges_vector, vals>
 						player_stand_edges_matrix;
 	/**
@@ -342,7 +343,7 @@ private:
 	};
 
 	typedef	array<expectations, vals>	expectations_vector;
-	typedef	array<expectations_vector, phit_states>	expectations_matrix;
+	typedef	array<expectations_vector, p_action_states>	expectations_matrix;
 
 	/**
 		Matrix is indexed: [player-state][reveal]
@@ -359,7 +360,7 @@ private:
 		(when standing or in terminal state).
 		This table is not applicable to doubling, splitting, surrender.
 	 */
-	array<array<edge_type, vals>, phit_states>	player_hit_edges;
+	array<array<edge_type, vals>, p_action_states>	player_hit_edges;
 	/**
 		Spread of player edges, given initial state and reveal card.
 		Each cell is taken as the max between stand, hit-mode, 
@@ -381,13 +382,14 @@ private:
 		Index: player's pair, dealer's reveal card
 
 	edge_type (*player_split_edges)[vals] =
-		&player_initial_edges[phit_states];
+		&player_initial_edges[p_action_states];
 	 */
 	typedef	array<edge_type, vals>		player_initial_edges_vector;
-	array<player_initial_edges_vector, phit_pair_states>
+	array<player_initial_edges_vector, p_action_states>
 						player_initial_edges;
 
-	array<edge_type, phit_pair_states>	player_initial_state_odds;
+	array<probability_type, p_action_states>
+						player_initial_state_odds;
 
 	/**
 		Given only the dealer's card, what is the player's
@@ -423,6 +425,9 @@ private:
 	compute_player_hit_state(void);
 
 	void
+	compute_player_split_state(void);
+
+	void
 	check_odds(void) const;
 
 	void
@@ -437,6 +442,9 @@ private:
 
 	ostream&
 	dump_expectations(const expectations_vector&, ostream&) const;
+
+	ostream&
+	dump_optimal_edges(const expectations_vector&, ostream&) const;
 
 	void
 	reset_split_edges(void);
@@ -484,6 +492,9 @@ public:
 
 	ostream&
 	dump_player_hit_state(ostream&) const;
+
+	ostream&
+	dump_player_split_state(ostream&) const;
 
 	ostream&
 	dump_player_hit_tables(ostream&) const;
