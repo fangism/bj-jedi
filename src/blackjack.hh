@@ -136,20 +136,22 @@ public:
 	};
 private:
 	// table offsets
-	static const size_t bust = goal +1;
-	static const size_t player_bust = bust;
-	static const size_t dealer_bust = bust;
-	// added one for "push22" for switch variation
+	static const size_t player_blackjack = goal +1;
+	static const size_t dealer_blackjack = goal +1;
+//	static const size_t bust = goal +1;
+	static const size_t player_bust = player_blackjack +1;
+	static const size_t dealer_bust = dealer_blackjack +1;
+	// added one for dealer's "push22" for switch variation
 	static const size_t dealer_push = dealer_bust +1;
 	static const size_t dealer_soft = dealer_push +1;	// for push22
 	static const size_t player_soft = player_bust +1;
 	static const size_t soft_min = 1;       // 1-11
+// only player may split
 	static const size_t pair_offset = player_soft +vals +1;
-//	static const size_t cols = goal -stop +3;
 	static const size_t p_action_states = pair_offset +vals;
 	static const size_t d_action_states = dealer_soft +vals +1;
-	static const size_t player_states = goal -stop +3;
-	static const size_t dealer_states = goal -stop +3;
+	static const size_t player_states = goal -stop +4;
+	static const size_t dealer_states = goal -stop +4;
 	// player action table offset
 //	static const size_t p_pair_states = p_action_states +vals;
 
@@ -236,6 +238,13 @@ public:
 
 		probability_type
 		edge(void) const { return win -lose; }
+
+		// asymmetric edge when payoff is != investment
+		probability_type
+		weighted_edge(const probability_type& w,
+				const probability_type& l) const {
+			return w*win -l*lose;
+		}
 
 		// since win + lose <= 1, we may discard the tie (push) factor
 		probability_type
@@ -449,9 +458,11 @@ private:
 	void
 	reset_split_edges(void);
 
+#if 0
 	// account for player's blackjack
 	void
 	finalize_player_initial_edges(void);
+#endif
 
 	// TODO: privatize most compute methods
 	void

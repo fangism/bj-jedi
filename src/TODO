@@ -1,8 +1,5 @@
 TODO list:
 standard analysis:
-	fill Aces section of state tables through A9
-	separate out pairs in state tables (player only)
-	include blackjack state in state tables
 	add variance analysis
 
 analyze Blackjack Switch

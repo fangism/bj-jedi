@@ -71,11 +71,6 @@ const size_t
 strategy::reveal_print_ordering[strategy::vals] =
 	{ 1, 2, 3, 4, 5, 6, 7, 8, TEN, ACE};
 
-#if 0
-const size_t
-strategy::cols;
-#endif
-
 const size_t
 strategy::p_action_states;
 
@@ -108,10 +103,12 @@ const char strategy::player_final_states[][player_states] = {
 	"19",
 	"20",
 	"21",
+	"BJ",
 	"bust"
 };
 
 /**
+	TODO: this isn't even used...
 	Final states applicable to dealer.
 	TODO: this table should be redundant from dealer
 	state machine, which already contains strings.
@@ -122,6 +119,7 @@ const char strategy::dealer_final_states[][dealer_states] = {
 	"19",
 	"20",
 	"21",
+	"BJ",
 	"bust",
 	"push"	// switch variation only
 };
@@ -197,14 +195,6 @@ strategy::set_card_distribution(const deck& o) {
  */
 void
 strategy::update_player_initial_state_odds(void) {
-#if 0
-	deck cards_no_ten(card_odds);
-	deck cards_no_ace(card_odds);
-	cards_no_ten[TEN] = 0.0;
-	cards_no_ace[ACE] = 0.0;
-	normalize(cards_no_ten);
-	normalize(cards_no_ace);
-#endif
 	fill(player_initial_state_odds.begin(),
 		player_initial_state_odds.end(), 0.0);
 	// Q: is this the correct way to normalize?
@@ -212,17 +202,6 @@ strategy::update_player_initial_state_odds(void) {
 for (i=0; i<vals; ++i) {
 	const probability_type& f(card_odds[i]); // / not_bj_odds;
 	// scale up, to normalize for lack of blackjack
-#if 0
-	const deck* C;
-	if (i == TEN) {
-		C = &cards_no_ace;
-	} else if (i == ACE) {
-		C = &cards_no_ten;
-	} else {
-		C = &card_odds;
-	}
-	C = &card_odds;
-#endif
 	size_t j;
 	for (j=0; j<vals; ++j) {
 		const probability_type fs = f * card_odds[j];
@@ -234,11 +213,11 @@ for (i=0; i<vals; ++i) {
 		}
 	}
 }
-#if 1
-	// remove the case for when player has blackjack, handled separately
+	// initial 21 is blackjack
+	player_initial_state_odds[player_blackjack] =
+		player_initial_state_odds[goal];
 	player_initial_state_odds[goal] = 0.0;
-	normalize(player_initial_state_odds);
-#endif
+//	normalize(player_initial_state_odds);	// normalizing not needed
 #if DUMP_DURING_EVALUATE
 	dump_player_initial_state_odds(cout) << endl;
 #endif
@@ -284,6 +263,9 @@ strategy::player_final_state_map(const size_t i) {
 		return 0;	// represents <= 16
 	} else if (i <= goal) {
 		return i -stop +1;	// represents 17..21
+	} else if (i == player_blackjack) {
+		// represents blackjack state
+		return player_states -2;
 	} else if (i == player_bust) {
 		// represents bust state
 		return player_states -1;
@@ -338,9 +320,10 @@ strategy::set_dealer_policy(void) {
 	// enumerating edges:
 	const size_t soft_max = H17 ? 7 : 6;	// 6-16, 7-17
 	// 0-21 are hard values (no ace)
-	// 22 is bust
-	// 23 is push
-	// 24-30 are soft 11 through soft 17
+	// 22 is blackjack
+	// 23 is bust
+	// 24 is push
+	// 25-31 are soft 11 through soft 17
 	dealer_hit.resize(d_action_states);
 	// first handle hard values (no ACE)
 	size_t i, c;
@@ -403,6 +386,7 @@ strategy::set_dealer_policy(void) {
 		oss << "A," << i-1;
 		dealer_hit.name_state(i+offset, oss.str());
 	}
+	dealer_hit.name_state(dealer_blackjack, "BJ");
 	dealer_hit.name_state(dealer_bust, "bust");
 	dealer_hit.name_state(dealer_push, "push");
 	// the bust-state is terminal
@@ -484,10 +468,8 @@ strategy::compute_player_hit_state(void) {
 		}
 	}
 	}
+	player_hit.name_state(player_blackjack, "BJ");
 	player_hit.name_state(player_bust, "bust");
-#if 0
-	player_hit.name_state(push, "push-X");
-#endif
 	// HERE: splits
 	for (i=0; i<vals; ++i) {
 		ostringstream oss;
@@ -549,15 +531,20 @@ strategy::dump_player_split_state(ostream& o) const {
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
+	Given dealer's reveal card, calculate spread of dealer's final state.
+	Include odds of dealer blackjack.
+ */
 void
 strategy::compute_dealer_final_table(void) {
-	// 17, 18, 19, 20, 21, bust
+	// 17, 18, 19, 20, 21, BJ, bust, push
 	deck cards_no_ten(card_odds);
 	deck cards_no_ace(card_odds);
 	cards_no_ten[TEN] = 0.0;
 	cards_no_ace[ACE] = 0.0;
-	normalize(cards_no_ten);
-	normalize(cards_no_ace);
+// no need to normalize if accounting for dealer blackjack here
+//	normalize(cards_no_ten);
+//	normalize(cards_no_ace);
 	// use cards_no_ten for the case where dealer does NOT have blackjack
 	// use cards_no_ace when dealer draws 10, and is not blackjack
 	//	this is called 'peek'
@@ -581,6 +568,12 @@ strategy::compute_dealer_final_table(void) {
 		dealer_final_vector_type& row(dealer_final_given_revealed[j]);
 		dealer_final_vector_type::const_iterator i(&final[stop]);
 		copy(i, i+dealer_states, row.begin());
+		// odds of dealer blackjack
+		if (j == ACE) {
+			 row[dealer_states-3] = card_odds[TEN];
+		} else if (j == TEN) {
+			 row[dealer_states-3] = card_odds[ACE];
+		}
 	}
 #if DUMP_DURING_EVALUATE
 	dump_dealer_final_table(cout) << endl;
@@ -596,7 +589,7 @@ strategy::dump_dealer_final_table(ostream& o) const {
 		e(dealer_final_given_revealed.end());
 	dealer_final_matrix::const_iterator i(b);
 	ostream_iterator<probability_type> osi(o, "\t");
-	o << "show\\do\t17\t18\t19\t20\t21\tbust\tpush\n";
+	o << "show\\do\t17\t18\t19\t20\t21\tBJ\tbust\tpush\n";
 	o << setprecision(4);
 	for ( ; i!=e; ++i) {
 		o << dealer_hit[d_initial_card_map[i-b]].name << '\t';
@@ -613,16 +606,18 @@ strategy::dump_dealer_final_table(ostream& o) const {
  */
 void
 strategy::compute_player_stand_odds(void) {
-	// represents: <=16, 17, 18, 19, 20, 21, bust
+	// represents: <=16, 17, 18, 19, 20, 21, BJ, bust
+	const size_t d_bj_ind = dealer_states -3;
+	const size_t p_bj_ind = player_states -2;
 	size_t j;
 	for (j=0; j < vals; ++j) {	// dealer's revealed card, initial state
 	size_t k;
-	for (k=0; k < player_states -1; ++k)	// player bust is separate
-	{	// player's final state
+	// player blackjack and bust is separate
+	for (k=0; k < player_states -2; ++k) {	// player's final state
 		outcome_odds& o(player_stand[j][k]);
 	size_t d;
-	for (d=0; d < dealer_states -2; ++d)	// -1: push and bust states separate
-	{	// dealer's final state
+	// -1: blackjack, push, and bust states separate
+	for (d=0; d < dealer_states -3; ++d) {	// dealer's final state
 		const probability_type& p(dealer_final_given_revealed[j][d]);
 		int diff = k -d;
 		if (diff > 1) {
@@ -633,20 +628,25 @@ strategy::compute_player_stand_odds(void) {
 			o.lose += p;
 		}
 	}
-		o.win += dealer_final_given_revealed[j][d];	// dealer busts
-		o.push += dealer_final_given_revealed[j][d+1];	// dealer pushes
+		o.lose += dealer_final_given_revealed[j][d];	// dealer blackjack
+		o.win += dealer_final_given_revealed[j][d+1];	// dealer busts
+		o.push += dealer_final_given_revealed[j][d+2];	// dealer pushes
 	}
-	player_stand[j][k].lose += 1.0;		// player busts
-#if 0
-	player_stand[j][k+1].lose += 1.0;	// player push N/A
-#endif
+	const probability_type&
+		d_bj(dealer_final_given_revealed[j][d_bj_ind]);
+	player_stand[j][k].win += 1.0 -d_bj;	// player blackjack, dealer none
+	player_stand[j][k].push += d_bj;	// both blackjack
+	player_stand[j][k+1].lose += 1.0;	// player busts
 	}
 	// now compute player edges
-	for (j=0; j<vals; ++j) {
+	for (j=0; j<vals; ++j) {	// dealer's reveal card
 		transform(player_stand[j].begin(), player_stand[j].end(), 
 			player_stand_edges[j].begin(), 
 			mem_fun_ref(&outcome_odds::edge));
 		// TODO: or mem_fun_ref(&outcome_odds::ratioed_edge)?
+		// compensate for player blackjack, pays 3:2
+		player_stand_edges[j][p_bj_ind] =
+			player_stand[j][p_bj_ind].weighted_edge(bj_payoff, 1.0);
 	}
 #if DUMP_DURING_EVALUATE
 	dump_player_stand_odds(cout) << endl;
@@ -872,9 +872,8 @@ if (resplit) {
 	compute_player_initial_edges(some_double(), false, surrender_late);
 }
 	// to account for player's blackjack
-	finalize_player_initial_edges();
 #if 0
-	dump_player_initial_edges(cout) << endl;
+	finalize_player_initial_edges();
 #endif
 // next: compute conditional edges given dealer reveal card
 #if DUMP_DURING_EVALUATE
@@ -892,17 +891,7 @@ strategy::reset_split_edges(void) {
 		&player_initial_edges[pair_offset];
 	size_t i;
 	for (i=0; i<vals; ++i) {
-#if 0
-	// the single-card state after split
-	size_t j;
-	for (j=0; j<vals; ++j) {	// for each dealer reveal card
-		// player_split_edges[i][j] = -2.0;
-		// initially no worse than hitting/standing
-		player_split_edges[i][j] = player_hit_edges[p_initial_card_map[i]][j];
-	}
-#else
 		player_split_edges[i] = player_hit_edges[p_initial_card_map[i]];
-#endif
 	}
 }
 
@@ -923,11 +912,7 @@ strategy::compute_player_split_edges(const bool d, const bool s) {
 	for (i=0; i<vals; ++i) {
 	// the single-card state after split
 	size_t j;
-#if 0
-	const size_t p = player_hit[p_initial_card_map[i]][i];
-#else
 	const size_t p = pair_offset +i;
-#endif
 	for (j=0; j<vals; ++j) {	// for each dealer reveal card
 		// need to take weighted sum over initial states
 		// depending on initial card and spread of next states.
@@ -938,29 +923,10 @@ strategy::compute_player_split_edges(const bool d, const bool s) {
 		const probability_type& o(card_odds[k]);
 		// initial edges may not have double-downs, splits, nor surrenders
 		// since player is forced to take the next card in each hand
-#if 0
-		const size_t state = player_hit[p_initial_card_map[i]][k];
-#else
 		const size_t state = split_table[i][k];
-#endif
 		edge_type edge = player_initial_edges[state][j];
 		// similar to expectation::best(d, i==k, r)
-#if 0
-		if (resplit && (i == k)) {	// if resplit?
-			// then can consider split entry
-			const edge_type& split_edge(player_split_edges[i][j]);
-#if 0
-			if (split_edge > edge) {
-				// weight by probability of pair
-				edge = (o * split_edge) +(1.0 -o) *edge;
-			}
-#else
-			edge = split_edge;
-#endif
-		}
-#else
-		// else already accounted for by player_resplit vs. final_split
-#endif
+		// already accounted for player_resplit vs. final_split
 		if ((i == ACE) && one_card_on_split_aces) {
 			// each aces takes exactly one more card only
 			edge = player_stand_edges[j][player_final_state_map(state)];
@@ -978,11 +944,7 @@ strategy::compute_player_split_edges(const bool d, const bool s) {
 	for (i=0; i<vals; ++i) {
 	// the single-card state after split
 	size_t j;
-#if 0
-	const size_t p = player_hit[p_initial_card_map[i]][i];
-#else
 	const size_t p = pair_offset +i;
-#endif
 	for (j=0; j<vals; ++j) {	// for each dealer reveal card
 		const expectations& sum(player_actions[p][j]);
 		// player may decide whether or not to split
@@ -1205,6 +1167,7 @@ strategy::compute_player_initial_edges(
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+#if 0
 /**
 	After dealer has checked for blackjack, and doesn't have it, 
 	if the player has blackjack, she automatically wins +payoff.  
@@ -1219,6 +1182,7 @@ strategy::finalize_player_initial_edges(void) {
 	dump_player_initial_edges(cout) << endl;
 #endif
 }
+#endif
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ostream&
@@ -1330,6 +1294,7 @@ strategy::dump_reveal_edges(ostream& o) const {
  */
 void
 strategy::compute_overall_edge(void) {
+#if 0
 	const probability_type& a(card_odds[ACE]);
 	const probability_type& t(card_odds[TEN]);
 	const probability_type bj_odds = 2 *a *t;
@@ -1369,6 +1334,11 @@ strategy::compute_overall_edge(void) {
 	// normal play:
 	cout << "normal play edge, weight = " << n << ", " << nbj * nbj << endl;
 	_overall_edge += nbj * nbj * n;	// no dealer bj
+#endif
+#else
+	_overall_edge =
+		inner_product(card_odds.begin(), card_odds.end(), 
+			player_edges_given_reveal.begin(), 0.0);
 #endif
 }
 
