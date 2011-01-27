@@ -215,7 +215,16 @@ private:
 	 */
 	typedef	array<probability_type, dealer_states>	dealer_final_vector_type;
 	typedef	array<dealer_final_vector_type, vals>	dealer_final_matrix;
+	/**
+		Prior to peek, these are the odds of the dealer's final state
+		given the reveal card.
+	 */
 	dealer_final_matrix		dealer_final_given_revealed;
+	/**
+		Post peek, these are the odds of the dealer's final state
+		given the reveal card.
+	 */
+	dealer_final_matrix		dealer_final_given_revealed_post_peek;
 	/**
 		Given:
 		i - dealer's reveal card
@@ -275,6 +284,7 @@ private:
 		cell values are probabilities that player will win/draw/lose.
 	 */
 	outcome_matrix				player_stand;
+	outcome_matrix				player_stand_post_peek;
 	/**
 		For each entry in 'player_stand': win - lose = edge.
 	 */
@@ -287,6 +297,7 @@ private:
 		index j: player's final value (including bust)
 	 */
 	player_stand_edges_matrix		player_stand_edges;
+	player_stand_edges_matrix		player_stand_edges_post_peek;
 
 	/**
 		Each field's value is the expected outcome of the decision, 
@@ -468,6 +479,11 @@ private:
 	void
 	compute_dealer_final_table(void);
 
+	static
+	void
+	compute_showdown_odds(const dealer_final_matrix&, const edge_type&,
+		outcome_matrix&, player_stand_edges_matrix&);
+
 	void
 	compute_player_stand_odds(void);
 
@@ -515,6 +531,18 @@ public:
 
 	ostream&
 	dump_dealer_final_table(ostream&) const;
+
+	static
+	ostream&
+	__dump_player_stand_odds(ostream&,
+		const outcome_matrix&, 
+		const state_machine&);
+
+	static
+	ostream&
+	__dump_player_stand_edges(ostream&,
+		const player_stand_edges_matrix&, 
+		const state_machine&);
 
 	ostream&
 	dump_player_stand_odds(ostream&) const;

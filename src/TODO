@@ -1,4 +1,7 @@
 TODO list:
+bugs(?):
+	overall edge calculation
+
 standard analysis:
 	add variance analysis
 
