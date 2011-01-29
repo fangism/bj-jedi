@@ -192,12 +192,12 @@ strategy::set_card_distribution(const deck& o) {
 	Exclude the player's initial "blackjack" state because
 	the playoff is accounted for in player_initial_edges.
 	TODO: redo pairs
+	\pre player_hit state transition table computed.
  */
 void
 strategy::update_player_initial_state_odds(void) {
 	fill(player_initial_state_odds.begin(),
 		player_initial_state_odds.end(), 0.0);
-	// Q: is this the correct way to normalize?
 	size_t i;
 for (i=0; i<vals; ++i) {
 	const probability_type& f(card_odds[i]); // / not_bj_odds;
@@ -408,10 +408,12 @@ strategy::dump_dealer_policy(ostream& o) const {
 	Compute player hit states.  
 	This is just an assessment of state transitions on hitting, 
 	not any indication of whether hitting is a advisiable.  :)
+	\pre depends on nothing
+	\post computes player_hit state transition table.
  */
 void
 strategy::compute_player_hit_state(void) {
-	const size_t soft_max = 10;
+	static const size_t soft_max = 10;
 	// 0-21 are hard values (no ace)
 	// 22-30 are soft 12 through soft 20
 	// 31 is bust
@@ -499,6 +501,7 @@ strategy::dump_player_hit_state(ostream& o) const {
 /**
 	Computes split transition tables (final and resplit).
 	\pre player_hit already computed by compute_player_hit_state
+	\post split-transition table based on hitting on the split card.
  */
 void
 strategy::compute_player_split_state(void) {
@@ -534,6 +537,8 @@ strategy::dump_player_split_state(ostream& o) const {
 /**
 	Given dealer's reveal card, calculate spread of dealer's final state.
 	Include odds of dealer blackjack.
+	\post computes dealer_final_given_revealed, and _post_peek.
+	\pre dealer_hit state-machine already computed.
  */
 void
 strategy::compute_dealer_final_table(void) {
@@ -642,9 +647,10 @@ strategy::dump_dealer_final_table(ostream& o) const {
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
-	\pre already called compute_dealer_final_state().
+	\pre already called compute_dealer_final_table() to
+		compute dealer_final_given_revealed, pre/post-peek.
 	\post populates values of ::player_stand and ::player_stand_edges
-	\param bjp blackjack-payoff
+	\param bjp blackjack-payoff used to weigh player's blackjack edge
  */
 void
 strategy::compute_showdown_odds(const dealer_final_matrix& dfm,
@@ -693,18 +699,21 @@ strategy::compute_showdown_odds(const dealer_final_matrix& dfm,
 		// compensate for player blackjack, pays 3:2
 		ev[p_bj_ind] = ps[p_bj_ind].weighted_edge(bjp, 1.0);
 	}
-}
+}	// end compute_showdown_odds
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 /**
-	TODO: evaluate peek for 10 and peek for Ace separately
+	\pre dealer_final_given_revealed computed (pre/post-peek)
+	\post computes player_stand (odds-given-reveal) and
+		player_stand_edges (weighted expected outcome).
+	TODO: evaluate peek for 10 and peek for Ace separately, independently
  */
 void
 strategy::compute_player_stand_odds(void) {
 	// pre-peek edges
 	compute_showdown_odds(dealer_final_given_revealed, bj_payoff,
 		player_stand, player_stand_edges);
-	// TODO: also need player_stand_edges post-peek!
+	// post-peek edges
 	compute_showdown_odds(dealer_final_given_revealed_post_peek, bj_payoff,
 		player_stand_post_peek, player_stand_edges_post_peek);
 #if DUMP_DURING_EVALUATE
@@ -816,7 +825,9 @@ strategy::dump_player_stand_odds(ostream& o) const {
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
 	This is the main strategy solver.  
-	TODO, FIXME: player_stand_edges needs to be post-peek.
+	No action is needed if outcome is a blackjack for either the
+	dealer or player, thus decisions are based on post-peek edges,
+	(i.e. after dealer has checked for blackjack).
  */
 void
 strategy::compute_action_expectations(void) {
@@ -969,11 +980,12 @@ if (resplit) {
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
 	Consider splitting not an option.  
+	NOTE: this uses post-peek player_hit_edges
  */
 void
 strategy::reset_split_edges(void) {
 	player_initial_edges_vector *player_split_edges =
-		&player_initial_edges[pair_offset];
+		&player_initial_edges_post_peek[pair_offset];
 	size_t i;
 	for (i=0; i<vals; ++i) {
 		player_split_edges[i] = player_hit_edges[p_initial_card_map[i]];
@@ -984,7 +996,11 @@ strategy::reset_split_edges(void) {
 /**
 	Evaluates when player should split pairs.  
 	NOTE: this updates the split-expectations of the player_actions table!
-	This does not modify the (non-split) player_initial_edges tables.
+	This does not modify the (non-split) player_initial_edges_post_peek tables.
+	This should only depend on post-peek conditions, 
+		when the action decision is relevant.  
+	\pre player_stand_edges_post_peek already computed, 
+		player_actions already partially computed.
 	\param d double-after-split allowed
 	\param s resplit allowed
  */
@@ -993,7 +1009,7 @@ strategy::compute_player_split_edges(const bool d, const bool s) {
 	const player_stand_edges_matrix&
 		pse(player_stand_edges_post_peek);
 	player_initial_edges_vector *player_split_edges =
-		&player_initial_edges[pair_offset];
+		&player_initial_edges_post_peek[pair_offset];
 	const state_machine& split_table(s ? player_resplit : last_split);
 	size_t i;
 	for (i=0; i<vals; ++i) {
@@ -1011,7 +1027,7 @@ strategy::compute_player_split_edges(const bool d, const bool s) {
 		// initial edges may not have double-downs, splits, nor surrenders
 		// since player is forced to take the next card in each hand
 		const size_t state = split_table[i][k];
-		edge_type edge = player_initial_edges[state][j];
+		edge_type edge = player_initial_edges_post_peek[state][j];
 		// similar to expectation::best(d, i==k, r)
 		// already accounted for player_resplit vs. final_split
 		if ((i == ACE) && one_card_on_split_aces) {
@@ -1049,7 +1065,7 @@ ostream&
 strategy::dump_player_split_edges(ostream& o) const {
 	// dump the player's initial state edges 
 	const player_initial_edges_vector *player_split_edges =
-		&player_initial_edges[pair_offset];
+		&player_initial_edges_post_peek[pair_offset];
 	o << "Player's split-permitted edges:" << endl;
 	o << "P\\D";
 	size_t j;
@@ -1166,14 +1182,22 @@ strategy::dump_player_final_state_probabilities(ostream& o) const {
 	a dealer's reveal card, and the player's current state.  
 	Computed by taking inner-product of player's final state spreads
 	and the corresponding player-stand-edges.  
+	TODO: need pre-peek and post-peek edges
  */
 void
-strategy::compute_player_hit_edges(void) {
+strategy::__compute_player_hit_edges(
+	const player_stand_edges_matrix& pse, 
+	const player_final_states_probability_matrix& fsp,
+	const expectations_matrix& actions,
+	const edge_type& surr, 
+	player_hit_edges_matrix& phe) {
 	static const edge_type eps = 
 		sqrt(std::numeric_limits<edge_type>::epsilon());
+#if 0
 	// using post-peek conditions
 	const player_stand_edges_matrix&
 		pse(player_stand_edges_post_peek);
+#endif
 	size_t i;
 	for (i=0; i<vals; ++i) {
 		const player_stand_edges_vector& edges(pse[i]);
@@ -1181,11 +1205,11 @@ strategy::compute_player_hit_edges(void) {
 	for (j=0; j<p_action_states; ++j) {
 		// probability-weighted sum of edge values for each state
 		const edge_type e = inner_product(edges.begin(), edges.end(), 
-			player_final_state_probability[i][j].begin(), 0.0);
-		player_hit_edges[j][i] = e;
-		const expectations& x(player_actions[j][i]);
+			fsp[i][j].begin(), 0.0);
+		phe[j][i] = e;
+		const expectations& x(actions[j][i]);
 		const edge_type sh =
-			x.value(x.best(false, false, false), surrender_penalty);
+			x.value(x.best(false, false, false), surr);
 		const edge_type d = fabs(sh-e);
 		// identity: sanity check
 		if (d > eps) {
@@ -1196,6 +1220,28 @@ strategy::compute_player_hit_edges(void) {
 		}
 	}
 	}
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
+	Hit edges should only be post-peek, when the player action
+	(decision to hit) is relevant.
+ */
+void
+strategy::compute_player_hit_edges(void) {
+#if 1
+	// hit-edges are post-peek, b/c/ using post-peek stand edges
+	__compute_player_hit_edges(player_stand_edges_post_peek, 
+		player_final_state_probability, player_actions, 
+		surrender_penalty, player_hit_edges);
+#else
+	__compute_player_hit_edges(player_stand_edges, 
+		player_final_state_probability, player_actions, 
+		surrender_penalty, player_hit_edges);
+	__compute_player_hit_edges(player_stand_edges_post_peek, 
+		player_final_state_probability, player_actions, 
+		surrender_penalty, player_hit_edges_post_peek);
+#endif
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -1229,16 +1275,21 @@ strategy::dump_player_hit_edges(ostream& o) const {
 	\param S whether splits should be considered
 	\param R whether surrender should be considered
 	This does not modify the player_actions table.  
+	FIXME: distinguish between pre/post peek.
+	\pre player actions have already been optimized (always post-peek).  
+	\post computes player's initial edges, given dealer's reveal card.
+	These initial edges are needed to evaluate post-peek splits, 
+		and also overall pre-peek edges.  
  */
 void
 strategy::compute_player_initial_edges(
 		const bool D, const bool S, const bool R) {
 //	const player_initial_edges_vector *player_split_edges =
-//		&player_initial_edges[p_action_states];
+//		&player_initial_edges_post_peek[p_action_states];
 	size_t i;
 	for (i=0; i<pair_offset; ++i) {		// exclude splits first
 	size_t j;
-	for (j=0; j<vals; ++j) {
+	for (j=0; j<vals; ++j) {		// for dealer-reveal card
 		expectations c(player_actions[i][j]);	// yes, copy
 		c.hit = player_hit_edges[i][j];
 		c.optimize(surrender_penalty);
@@ -1247,7 +1298,7 @@ strategy::compute_player_initial_edges(
 //			splits are computed in a separate section of the table
 			p(c.best_two(D, S, R));
 		const edge_type e = c.value(p.first, surrender_penalty);
-		player_initial_edges[i][j] = e;
+		player_initial_edges_post_peek[i][j] = e;
 	}
 	}
 #if DUMP_DURING_EVALUATE
@@ -1274,10 +1325,13 @@ strategy::finalize_player_initial_edges(void) {
 #endif
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
+	TODO: pre-peek
+ */
 ostream&
 strategy::dump_player_initial_edges(ostream& o) const {
 	// dump the player's initial state edges 
-	o << "Player's initial edges:" << endl;
+	o << "Player's initial edges (post-peek):" << endl;
 	o << "P\\D";
 	size_t j;
 	for (j=0; j<vals; ++j) {
@@ -1288,7 +1342,7 @@ strategy::dump_player_initial_edges(ostream& o) const {
 		o << player_hit[j].name;
 		size_t i;
 		for (i=0; i<vals; ++i) {
-			o << '\t' << player_initial_edges[j][i];
+			o << '\t' << player_initial_edges_post_peek[j][i];
 		}
 		o << endl;
 	}
@@ -1317,19 +1371,23 @@ strategy::optimize_actions(void) {
 /**
 	After having computed initial edges, evaluate the 
 	player's expectation, given only the dealer's reveal card.  
+	\pre player actions have been optimized, 
+		player_initial_edges_post_peek computed, 
+		player_initial_edges_pre_peek computed.
+	TODO: distinguish between pre-peek and post-peek edges.
  */
 void
 strategy::compute_reveal_edges(void) {
 size_t r;	// index of dealer's reveal card
 for (r=0; r<vals; ++r) {
-	edge_type& x(player_edges_given_reveal[r]);
+	edge_type& x(player_edges_given_reveal_post_peek[r]);
 	x = 0.0;
 	size_t i;	// index of player's initial state
 	// inner product
 	for (i=0; i<p_action_states; ++i) {
 		const probability_type& p(player_initial_state_odds[i]);
 	if (p > 0.0) {
-		const edge_type& e(player_initial_edges[i][r]);
+		const edge_type& e(player_initial_edges_post_peek[i][r]);
 #if 0
 		cout << "reveal edge (" << i << "," << r << "): " <<
 			e << " @ " << p << endl;
@@ -1341,6 +1399,9 @@ for (r=0; r<vals; ++r) {
 	cout << "reveal edge (*," << r << "): " << x << endl;
 #endif
 }
+	// FIXME: compute pre-peek for real
+	player_edges_given_reveal_pre_peek =
+		player_edges_given_reveal_post_peek;
 #if DUMP_DURING_EVALUATE
 	dump_reveal_edges(cout) << endl;
 #endif
@@ -1350,11 +1411,11 @@ for (r=0; r<vals; ++r) {
 ostream&
 strategy::dump_reveal_edges(ostream& o) const {
 // reorder printing? nah...
-	o << "Player edges given dealer's revealed card:\n";
+	o << "Player edges given dealer's revealed card (post-peek):\n";
 	copy(card_name, card_name+TEN+1, ostream_iterator<char>(o, "\t"));
 	o << endl;
-	copy(player_edges_given_reveal.begin(),
-		player_edges_given_reveal.end(), 
+	copy(player_edges_given_reveal_post_peek.begin(),
+		player_edges_given_reveal_post_peek.end(), 
 		ostream_iterator<edge_type>(o, "\t"));
 	return o << endl;
 }
@@ -1383,52 +1444,9 @@ strategy::dump_reveal_edges(ostream& o) const {
  */
 void
 strategy::compute_overall_edge(void) {
-#if 0
-	const probability_type& a(card_odds[ACE]);
-	const probability_type& t(card_odds[TEN]);
-	const probability_type bj_odds = 2 *a *t;
-//	cout << "blackjack odds = " << bj_odds << endl;
-	// skip ACE and TEN because case is computed separately
-	const edge_type n =
-		inner_product(card_odds.begin()+1, card_odds.end()-1, 
-			player_edges_given_reveal.begin() +1, 0.0);
-//	cout << "normal play edge (no ACE, no TEN) = " << n << endl;
-#if 1
-	_overall_edge =
-		a*(		// A: dealer-has-ace
-			t*(bj_odds-1)	// dealer-has-blackjack, player does not
-			// dealer-no-blackjack
-			+(1-t)*player_edges_given_reveal[ACE])
-				// does this account for player's blackjack?
-		+t*(		// B: dealer-has-ten
-			a*(bj_odds-1)	// dealer-has-blackjack, player does not
-			// dealer-no-blackjack
-			+(1-a)*player_edges_given_reveal[TEN])
-				// does this account for player's blackjack?
-		+(1-a-t)*(	// C: dealer-no-ace
-			(bj_odds * bj_payoff)	// player-has-blackjack
-			+(1-bj_odds) *n);
-#else
-// does dealer have blackjack? 10-A or A-10
-	const probability_type nbj = 1.0 - bj_odds;
-	_overall_edge = 0.0;
-	// dealer has blackjack and player doesn't:
-	// does NOT depend on peek variation
-	const probability_type q = bj_odds * nbj;
-	_overall_edge += q * (bj_payoff -1.0);		// player loses bet
-	cout << "blackjack edge = " << _overall_edge << endl;
-	// player blackjack is NOT accounted in player_initial_edges[goal][].
-	// if both have blackjack, it's a push.
-	// don't bother with insurance, is only count-dependent
-	// normal play:
-	cout << "normal play edge, weight = " << n << ", " << nbj * nbj << endl;
-	_overall_edge += nbj * nbj * n;	// no dealer bj
-#endif
-#else
 	_overall_edge =
 		inner_product(card_odds.begin(), card_odds.end(), 
-			player_edges_given_reveal.begin(), 0.0);
-#endif
+			player_edges_given_reveal_pre_peek.begin(), 0.0);
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -1629,7 +1647,7 @@ strategy::expectations::best_two(
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ostream&
 strategy::dump_action_expectations(ostream& o) const {
-	o << "Player's action expectations:\n";
+	o << "Player's action expectations (edges x1000):\n";
 	const expectations_matrix::const_iterator
 		b(player_actions.begin()), e(player_actions.end());
 	expectations_matrix::const_iterator i(b);

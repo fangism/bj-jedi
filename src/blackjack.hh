@@ -49,21 +49,30 @@ struct variation {
 	bool			peek_on_10;
 	/// whether or not dealer checks for 10 hole card (standard)
 	bool			peek_on_Ace;
+#if 1
+	// TODO: analyze this (mutually exclusive options)
 	/// dealer wins ties (disasterous for player!) (rare)
 	bool			ties_lose;
 	/// player wins ties (rare)
 	bool			ties_win;
+#endif
 	/// whether or not player may double on hard 9 (usual)
 	bool			double_H9;
 	/// whether or not player may double on hard 10 (standard)
 	bool			double_H10;
 	/// whether or not player may double on hard 11 (standard)
 	bool			double_H11;
+#if 0
+	// TODO:
+	/// whether or not player may double down on Ace,X (usual)
+	bool			double_AceX;
+#endif
 	/// whether or not player may double on other values (usual)
 	bool			double_other;
 	/// double-after-split? (common)
 	bool			double_after_split;
 	/// surrender-after-split? (never heard of it)
+// TODO: options or resplitting: 2, 4, 8, INF
 	/// allow splitting (standard)
 	bool			split;
 	/// allow resplitting, split-after-split (common)
@@ -73,11 +82,12 @@ struct variation {
 	bool			one_card_on_split_aces;
 	/// dealer pushes on 22 against any non-blackjack hand (switch)
 	bool			push22;
-	/// player's blackjack payoff
+	/// player's blackjack payoff (usually 1.5)
 	double			bj_payoff;
-	/// player's insurance payoff
+// TODO: don't actually compute this, though it is trivial
+	/// player's insurance payoff (usually 2.0)
 	double			insurance;
-	/// surrender loss, less than 0
+	/// surrender loss, less than 0 (usualy -0.5)
 	double			surrender_penalty;
 	/// doubled-down multipler (other than 2.0 is rare)
 	double			double_multiplier;
@@ -233,7 +243,10 @@ private:
 		assuming that the player hits until it is not advisable 
 			(using player_opt)
 	 */
-	array<array<player_final_state_probability_vector, p_action_states>, vals>
+	typedef	array<array<player_final_state_probability_vector,
+			p_action_states>, vals>
+					player_final_states_probability_matrix;
+	player_final_states_probability_matrix
 					player_final_state_probability;
 
 public:
@@ -380,7 +393,10 @@ private:
 		(when standing or in terminal state).
 		This table is not applicable to doubling, splitting, surrender.
 	 */
-	array<array<edge_type, vals>, p_action_states>	player_hit_edges;
+	typedef	array<array<edge_type, vals>, p_action_states>
+						player_hit_edges_matrix;
+	player_hit_edges_matrix			player_hit_edges;
+//	player_hit_edges_matrix			player_hit_edges_post_peek;
 	/**
 		Spread of player edges, given initial state and reveal card.
 		Each cell is taken as the max between stand, hit-mode, 
@@ -405,8 +421,13 @@ private:
 		&player_initial_edges[p_action_states];
 	 */
 	typedef	array<edge_type, vals>		player_initial_edges_vector;
-	array<player_initial_edges_vector, p_action_states>
-						player_initial_edges;
+	typedef	array<player_initial_edges_vector, p_action_states>
+						player_initial_edges_matrix;
+	/**
+		player's edges, given reveal card, post-peek.
+	 */
+//	player_initial_edges_matrix		player_initial_edges_pre_peek;
+	player_initial_edges_matrix		player_initial_edges_post_peek;
 
 	array<probability_type, p_action_states>
 						player_initial_state_odds;
@@ -417,7 +438,8 @@ private:
 		Computed using probability weighted sum over
 		spread of initial states.  
 	 */
-	array<edge_type, vals>			player_edges_given_reveal;
+	player_initial_edges_vector		player_edges_given_reveal_pre_peek;
+	player_initial_edges_vector		player_edges_given_reveal_post_peek;
 
 	/**
 		The overall player's edge, before any cards are dealt.  
@@ -489,6 +511,13 @@ private:
 
 	void
 	compute_action_expectations(void);
+
+	static
+	void
+	__compute_player_hit_edges(const player_stand_edges_matrix&, 
+		const player_final_states_probability_matrix&,
+		const expectations_matrix&,
+		const edge_type&, player_hit_edges_matrix&);
 
 	void
 	compute_player_hit_edges(void);
