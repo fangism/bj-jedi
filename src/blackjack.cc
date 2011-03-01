@@ -1399,9 +1399,26 @@ for (r=0; r<vals; ++r) {
 	cout << "reveal edge (*," << r << "): " << x << endl;
 #endif
 }
-	// FIXME: compute pre-peek for real
+	// copy first, then correct for ACE, TEN revealed
 	player_edges_given_reveal_pre_peek =
 		player_edges_given_reveal_post_peek;
+#if 1
+	// weigh by odds of blackjack
+	const probability_type& pt = card_odds[TEN];
+	const probability_type& pa = card_odds[ACE];
+	const probability_type bjo = pt*pa;
+	const probability_type bjc = 1.0 -bjo;
+	player_edges_given_reveal_pre_peek[ACE] =
+		// dealer has blackjack, account for player blackjack
+		-pt * bjc
+		// dealer doesn't have blackjack, post-peek component
+		+(1.0 -pt)*player_edges_given_reveal_post_peek[ACE];
+	player_edges_given_reveal_pre_peek[TEN] =
+		// dealer has blackjack, account for player blackjack
+		-pa * bjc
+		// dealer doesn't have blackjack, post-peek component
+		+(1.0 -pa)*player_edges_given_reveal_post_peek[TEN];
+#endif
 #if DUMP_DURING_EVALUATE
 	dump_reveal_edges(cout) << endl;
 #endif
@@ -1411,13 +1428,23 @@ for (r=0; r<vals; ++r) {
 ostream&
 strategy::dump_reveal_edges(ostream& o) const {
 // reorder printing? nah...
+	ostream_iterator<edge_type> osi(o, "\t");
+{
+	o << "Player edges given dealer's revealed card (pre-peek):\n";
+	copy(card_name, card_name+TEN+1, ostream_iterator<char>(o, "\t"));
+	o << endl;
+	copy(player_edges_given_reveal_pre_peek.begin(),
+		player_edges_given_reveal_pre_peek.end(), osi);
+	o << endl;
+}{
 	o << "Player edges given dealer's revealed card (post-peek):\n";
 	copy(card_name, card_name+TEN+1, ostream_iterator<char>(o, "\t"));
 	o << endl;
 	copy(player_edges_given_reveal_post_peek.begin(),
-		player_edges_given_reveal_post_peek.end(), 
-		ostream_iterator<edge_type>(o, "\t"));
-	return o << endl;
+		player_edges_given_reveal_post_peek.end(), osi);
+	o << endl;
+}
+	return o;
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -1679,7 +1706,9 @@ strategy::dump(ostream& o) const {
 
 	dump_action_expectations(o);
 	dump_reveal_edges(o) << endl;
-	o << "Player\'s overall edge = " << overall_edge() << endl;
+	const edge_type e(overall_edge());
+	o << "Player\'s overall edge = " << e <<
+		" (" << e*100.0 << "%)" << endl;
 	return o;
 }
 
