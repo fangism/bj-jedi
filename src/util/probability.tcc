@@ -51,16 +51,16 @@ random_draw_from_integer_pdf(const S& p) {
 template <class S>
 size_t
 random_draw_from_integer_cdf(const S& s) {
-	static const long lrand_max = 1L <<32;
-	const long total = long(s.back());
-	const long b_rem = lrand_max % total;
-	const long upper = lrand_max - b_rem;
+	static const int64_t lrand_max = 1LL <<32;
+	const int64_t total = long(s.back());
+	const int64_t b_rem = lrand_max % total;
+	const int64_t upper = lrand_max - b_rem;
 	long rn;
 	do {
 		rn = lrand48();
 	} while (rn >= upper);
 	// re-roll when number is in the upper residue (low prob.)
-	const long roll = rn % total;
+	const int64_t roll = rn % total;
 	typedef	typename S::const_iterator	const_iterator;
 	const const_iterator f(std::upper_bound(s.begin(), s.end(), roll));
 	// uses binary_search
