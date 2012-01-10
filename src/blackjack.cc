@@ -299,6 +299,17 @@ strategy::player_final_state_probabilities(const probability_vector& s,
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+strategy::strategy() : 
+	variation(), card_odds(standard_deck), dealer_hit() {
+	// only depends on H17:
+	// don't *have* to do this right away...
+	set_dealer_policy();
+	compute_player_hit_state();
+	compute_player_split_state();
+	update_player_initial_state_odds();
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 strategy::strategy(const variation& v) : 
 	variation(v), card_odds(standard_deck), dealer_hit() {
 	// only depends on H17:
@@ -1713,27 +1724,154 @@ strategy::dump(ostream& o) const {
 }
 
 //=============================================================================
-// class counter method definitions
+// class deck_state method definitions
 
 /**
-	Initializes to standard deck distributions.  
-	\param d the number of decks.
+	Initializes to default.
  */
-counter::counter(const size_t d) : cards(bins) {
-	// ACE is at index 0
-	const size_t f = d*4;
-	std::fill(cards.begin(), --cards.end(), f);
-	cards[strategy::TEN] = 4*f;	// T, J, Q, K
+deck_state::deck_state() : num_decks(6), need_update(true) {
+	reshuffle();		// does most of the initializing
+	// default penetration before reshuffling: 75%
+	maximum_penetration = cards_remaining /4;
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
+	Initializes to standard deck distributions.  
+	\param d the number of decks.
+ */
+deck_state::deck_state(const size_t d) : num_decks(d), need_update(true) {
+	reshuffle();		// does most of the initializing
+	// default penetration before reshuffling: 75%
+	maximum_penetration = cards_remaining /4;
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+void
+deck_state::reshuffle(void) {
+	// ACE is at index 0
+	cards_remaining = num_decks*52;
+	const size_t f = num_decks*4;
+	std::fill(cards.begin(), cards.end() -1, f);
+	cards[strategy::TEN] = f*4;	// T, J, Q, K
+	need_update = true;
+	update_probabilities();
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
+	\return true if deck/shoe was shuffled.
+ */
+bool
+deck_state::reshuffle_auto(void) {
+	if (cards_remaining < maximum_penetration) {
+		reshuffle();
+		return true;
+	}
+	return false;
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+void
+deck_state::update_probabilities(void) {
+	if (need_update) {
+		normalize(card_probabilities, cards);
+		need_update = false;
+	}
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+#if 0
+/**
 	\param d the card index of the counter to decrement.
  */
 void
-counter::count(const size_t c) {
+deck_state::count(const size_t c) {
 	assert(cards[c]);
 	--cards[c];
+}
+#endif
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
+	Removes one card from remaining deck at random.
+	Does NOT re-compute probabilities.
+ */
+size_t
+deck_state::quick_draw(void) {
+#if 0
+	update_probabilities();
+	const size_t ret = util::random_draw_from_real_pdf(card_probabilities);
+#else
+	const size_t ret = util::random_draw_from_integer_pdf(cards);
+#endif
+	--cards[ret];
+	--cards_remaining;
+	need_update = true;
+	return ret;
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
+	Removes one card from remaining deck at random.
+ */
+size_t
+deck_state::draw(void) {
+	const size_t ret = quick_draw();
+	update_probabilities();
+	return ret;
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+void
+deck_state::draw_hole_card(void) {
+	hole_card = util::random_draw_from_integer_pdf(cards);
+//	--cards_remaining;	// ?
+//	need_update = true;
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
+	This should only be called once per hole card draw.
+ */
+size_t
+deck_state::reveal_hole_card(void) {
+	--cards[hole_card];
+	--cards_remaining;
+	need_update = true;
+//	update_probabilities();
+	return hole_card;
+}
+
+//=============================================================================
+// class grader method definitions
+
+grader::grader() : S(), C() { }
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+grader::~grader() { }
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+void
+grader::new_deal(void) {
+	player_hands.resize(1);
+	string& p_cards(player_hands.front().cards);
+	p_cards.clear();
+	const size_t p1 = C.quick_draw();
+	const size_t p2 = C.quick_draw();
+	const size_t d1 = C.quick_draw();
+	p_cards.push_back(strategy::card_name[p1]);
+	p_cards.push_back(strategy::card_name[p2]);
+	C.draw_hole_card();
+	const size_t s1 = strategy::p_initial_card_map[p1];
+	const size_t ps = S.get_player_state_machine()[s1][p2];
+	player_hands.front().state = ps;
+	const size_t ds = strategy::d_initial_card_map[d1];
+	// print state
+	cout << "dealer: " << S.get_dealer_state_machine()[ds].name <<
+		", player: {" << p_cards << "} " <<
+		S.get_player_state_machine()[ps].name << endl;
+	// after this, peek and prompt for insurance
 }
 
 //=============================================================================

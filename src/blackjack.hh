@@ -5,6 +5,8 @@
 
 #include "card_state.hh"
 #include "util/array.hh"
+#include <vector>
+#include <string>
 #include <map>
 
 // TODO: import packed_array class from my library
@@ -139,7 +141,7 @@ public:
 	static const size_t vals = 10;          // number of values, max value
 	static const size_t goal = 21;
 	static const size_t stop = 17;		// dealer stands hard or soft 17
-	static const char		card_name[];
+	static const char		card_name[];	// use util::array?
 	enum {
 		ACE = 0,		// index of Ace (card_odds)
 		TEN = 9			// index of 10 (T) (card_odds)
@@ -165,10 +167,13 @@ private:
 	// player action table offset
 //	static const size_t p_pair_states = p_action_states +vals;
 
+public:
 	// mapping of initial card to initial state
 	// for both dealer AND player
+	// these could go into a struct for rules
 	static const size_t		p_initial_card_map[vals];
 	static const size_t		d_initial_card_map[vals];
+private:
 	static const size_t		reveal_print_ordering[];
 	static const char		player_final_states[][player_states];
 	static const char		dealer_final_states[][dealer_states];
@@ -191,6 +196,7 @@ private:
 		entries are 0-indexed, with 0 = Ace, 1 = 2, etc.
 	 */
 	deck				card_odds;
+// some of these could be split into a rules struct
 	/// the dealer's fixed state machine, also action table
 	state_machine			dealer_hit;
 	/// the player's state machine for hits (for calculation, not optimized)
@@ -447,6 +453,8 @@ private:
 	 */
 	edge_type				_overall_edge;
 public:
+	strategy();
+
 	explicit
 	strategy(const variation&);
 
@@ -455,6 +463,16 @@ public:
 
 	void
 	evaluate(void);
+
+	const state_machine&
+	get_player_state_machine(void) const {
+		return player_hit;
+	}
+
+	const state_machine&
+	get_dealer_state_machine(void) const {
+		return dealer_hit;
+	}
 
 private:
 	void
@@ -609,21 +627,86 @@ class simulator {
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
 	Tracks cards remaining in deck(s).
+	Also the configuration of the game as far as deck size
+	and reshuffle policy.
+	Retains a hole card.
+	When a hole card is drawn, the count is NOT updated
+	because the value is unknown.
+	When it is the dealer's turn to play, the hole card is
+	then revealed and the count is updated.
  */
-struct counter {
+class deck_state {
 	enum { bins = strategy::vals };
-#if 0
-	typedef	array<size_t, bins>		deck_type;
-#else
-	typedef	probability_vector		deck_type;
-#endif
-	deck_type				cards;
+	typedef	array<size_t, bins>		deck_count_type;
+	size_t					num_decks;
+	/**
+		Sequence of integers representing count of cards 
+		remaining in deck or shoe.
+	 */
+	deck_count_type				cards;
+	/**
+		This is updated everytime cards change, e.g. when
+		a single card is drawn.
+	 */
+	deck					card_probabilities;
+	/**
+		Dealer is dealt one hole card (face-down).
+	 */
+	size_t					hole_card;
+	/**
+		Countdown of cards remaining.
+	 */
+	size_t					cards_remaining;
+	/**
+		When cards_remaining falls below this, reshuffle.
+	 */
+	size_t					maximum_penetration;
+	/**
+		Flag that determines whether or not card_probabilities
+		need to be updated (after cards were drawn).  
+	 */
+	bool					need_update;
+public:
+	deck_state();
 
-	counter(const size_t);
+
+	explicit
+	deck_state(const size_t);
 
 	void
-	count(const size_t);
-};	// end class counter
+	set_decks(const size_t);
+
+//	void
+//	count(const size_t);
+
+	size_t
+	quick_draw(void);
+
+	size_t
+	draw(void);
+
+	void
+	draw_hole_card(void);
+
+	size_t
+	peek_hole_card(void) const {
+		return hole_card;
+	}
+
+	size_t
+	reveal_hole_card(void);
+
+	void
+	reshuffle(void);
+
+	bool
+	reshuffle_auto(void);
+
+private:
+	void
+	update_probabilities(void);
+
+};	// end class deck_state
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
@@ -633,8 +716,46 @@ struct counter {
 	Input stream: history of cards seen and transactions.  
  */
 class grader {
+	/**
+		Stretegy computer.
+		Re-evaluate on every hand, after cards have been drawn.
+	 */
 	strategy				S;
-	counter					C;
+	/**
+		Maintain the state of the deck, and cards used.  
+	 */
+	deck_state				C;
+
+	struct hand {
+		/**
+			A,2-9,T.
+		 */
+		typedef	string				player_cards;
+		player_cards				cards;
+		/**
+			Enumerated state, from the state machine.
+		 */
+		size_t					state;
+	};	// end struct hand
+
+	/**
+		Maintain a vector of hands in case of splits and re-splits.
+	 */
+	vector<hand>				player_hands;
+	/**
+		The dealer's revealed card.
+	 */
+	size_t					dealer_reveal;
+
+	size_t					bankroll;
+
+public:
+	grader();
+
+	~grader();
+
+	void
+	new_deal(void);
 
 
 };	// end class grader

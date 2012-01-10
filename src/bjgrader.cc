@@ -1,14 +1,23 @@
 /**
 	Interactive blackjack grader program.
-	Rates how good you are and how lucky you are.  
-	$Id: bjgrader.cc,v 1.1 2010/11/22 02:42:34 fang Exp $
+	Implements a game/simulator and in-game analyzer.
+	Also rates how good you are vs. how lucky you are.  
+	$Id: bjgrader.cc,v 1.2 2012/01/10 13:08:48 fang Exp $
  */
 
 #include <iostream>
 #include <map>
+#include <numeric>		// for partial_sum
 #include "blackjack.hh"
 
+using std::ostream;
+using std::cout;
+using std::endl;
+
 /**
+	initialization:
+	bankroll -- units of bets
+
 	top-level commands:
 	reset -- reset counts, start over
 	configure -- prompt for number of decks, rule variations
@@ -20,8 +29,10 @@
 	autoplay [N] -- play optimally for some number of hands
 	exit|quit
  */
+static
 void
-help(ostream&) {
+help(ostream& o) {
+	o << "Help is on its way!" << endl;
 }
 
 /**
@@ -44,5 +55,6 @@ help(ostream&) {
  */
 int
 main(int, char*[]) {
+	help(cout);
 	return 0;
 }
