@@ -2,7 +2,7 @@
 	Interactive blackjack grader program.
 	Implements a game/simulator and in-game analyzer.
 	Also rates how good you are vs. how lucky you are.  
-	$Id: bjgrader.cc,v 1.2 2012/01/10 13:08:48 fang Exp $
+	$Id: bjgrader.cc,v 1.3 2012/01/21 20:31:36 fang Exp $
  */
 
 #include <iostream>
@@ -58,3 +58,4 @@ main(int, char*[]) {
 	help(cout);
 	return 0;
 }
+

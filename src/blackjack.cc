@@ -1846,7 +1846,7 @@ deck_state::reveal_hole_card(void) {
 //=============================================================================
 // class grader method definitions
 
-grader::grader() : S(), C() { }
+grader::grader() : basic_strategy(), dynamic_strategy() { }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 grader::~grader() { }
@@ -1864,13 +1864,13 @@ grader::new_deal(void) {
 	p_cards.push_back(strategy::card_name[p2]);
 	C.draw_hole_card();
 	const size_t s1 = strategy::p_initial_card_map[p1];
-	const size_t ps = S.get_player_state_machine()[s1][p2];
+	const size_t ps = basic_strategy.get_player_state_machine()[s1][p2];
 	player_hands.front().state = ps;
 	const size_t ds = strategy::d_initial_card_map[d1];
 	// print state
-	cout << "dealer: " << S.get_dealer_state_machine()[ds].name <<
+	cout << "dealer: " << basic_strategy.get_dealer_state_machine()[ds].name <<
 		", player: {" << p_cards << "} " <<
-		S.get_player_state_machine()[ps].name << endl;
+		basic_strategy.get_player_state_machine()[ps].name << endl;
 	// after this, peek and prompt for insurance
 }
 

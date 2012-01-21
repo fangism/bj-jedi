@@ -717,10 +717,16 @@ private:
  */
 class grader {
 	/**
-		Stretegy computer.
-		Re-evaluate on every hand, after cards have been drawn.
+		Static strategy calculation, based on rule variations
+		only, not current card counts.  
 	 */
-	strategy				S;
+	strategy				basic_strategy;
+	/**
+		Dynamic strategy computer.
+		Re-evaluate on every hand, after cards have been drawn.
+		Changes slightly depending on card distribution.  
+	 */
+	strategy				dynamic_strategy;
 	/**
 		Maintain the state of the deck, and cards used.  
 	 */
@@ -748,6 +754,8 @@ class grader {
 	size_t					dealer_reveal;
 
 	size_t					bankroll;
+
+	// other quantities for grading and statistics
 
 public:
 	grader();
