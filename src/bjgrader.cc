@@ -2,7 +2,7 @@
 	Interactive blackjack grader program.
 	Implements a game/simulator and in-game analyzer.
 	Also rates how good you are vs. how lucky you are.  
-	$Id: bjgrader.cc,v 1.3 2012/01/21 20:31:36 fang Exp $
+	$Id: bjgrader.cc,v 1.4 2012/01/23 08:40:26 fang Exp $
  */
 
 #include <iostream>
@@ -10,9 +10,11 @@
 #include <numeric>		// for partial_sum
 #include "blackjack.hh"
 
+using std::cin;
 using std::ostream;
 using std::cout;
 using std::endl;
+using std::getline;
 
 /**
 	initialization:
@@ -31,8 +33,13 @@ using std::endl;
  */
 static
 void
-help(ostream& o) {
-	o << "Help is on its way!" << endl;
+lobby_help(ostream& o) {
+o <<
+"In the casino lobby, the following commands are available:\n"
+"?,help -- print this help\n"
+"r,rules -- print the rule variation for blackjack\n"
+"p,play -- sit down at a table and start playing\n"
+"q,quit,exit,bye -- leave the casino" << endl;
 }
 
 /**
@@ -55,7 +62,37 @@ help(ostream& o) {
  */
 int
 main(int, char*[]) {
-	help(cout);
+	// command-line prompt
+	// TODO: GNU readline
+	blackjack::variation var;
+// outer loop: setup game variation, initialize bankroll
+	cout << "Welcome to The BlackJack Trainer!" << endl;
+	cout << "Type 'help' for list of commands." << endl;
+do {
+	string line;
+	do {
+		// you are in the lobby of the casino...
+		cout << "lobby> ";
+		cin >> line;
+	} while (line.empty());
+	// TODO: use a map of commands that manipulate the game state
+	if (line == "?" || line == "help") {
+		lobby_help(cout);
+	} else if (line == "r" || line == "rules") {	// variation
+		// dump variation
+		var.dump(cout);
+		// TODO: option to change rules
+	} else if (line == "p" || line == "play") {
+		// simulate, train, analyze
+		// inner loop: play game
+		blackjack::grader G(var);
+		G.play(cin, cout);
+	} else if (line == "q" || line == "exit" ||
+			line == "quit" || line == "bye") {
+		cout << "Thanks for playing!" << endl;
+		break;
+	}
+} while (cin);
 	return 0;
 }
 

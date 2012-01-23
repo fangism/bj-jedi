@@ -94,6 +94,9 @@ struct variation {
 	/// doubled-down multipler (other than 2.0 is rare)
 	double			double_multiplier;
 
+	/// affects play only, strategy uses infinite deck appx.
+	size_t			num_decks;
+
 	// known unsupported options:
 	// 5-card charlie -- would need expanded state table
 
@@ -118,7 +121,8 @@ struct variation {
 		bj_payoff(1.5), 
 		insurance(2.0),
 		surrender_penalty(-0.5),
-		double_multiplier(2.0) { }
+		double_multiplier(2.0),
+		num_decks(6) { }
 
 	/// \return true if some form of doubling-down is allowed
 	bool
@@ -753,18 +757,27 @@ class grader {
 	 */
 	size_t					dealer_reveal;
 
-	size_t					bankroll;
+	/// current amount of money
+	double					bankroll;
+	/// size of current bet (integer)
+	size_t					bet;
 
 	// other quantities for grading and statistics
 
 public:
-	grader();
+	explicit
+	grader(const variation&);
 
 	~grader();
 
 	void
 	new_deal(void);
 
+	ostream&
+	status(ostream&) const;
+
+	void
+	play(istream&, ostream&);
 
 };	// end class grader
 

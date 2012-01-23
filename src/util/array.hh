@@ -1,6 +1,6 @@
 /**
 	\file "util/array.hh"
-	$Id: array.hh,v 1.1 2009/12/19 22:53:12 fang Exp $
+	$Id: array.hh,v 1.2 2012/01/23 08:40:26 fang Exp $
  */
 
 #ifndef	__UTIL_ARRAY_HH__
@@ -47,6 +47,9 @@ public:
 
 	// copy
 	array(const T[S]);
+
+	size_type
+	size(void) const { return S; }
 
 	// is not a valid reference when empty
 	const_reference

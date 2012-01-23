@@ -153,6 +153,7 @@ yn(const bool y) {
 
 ostream&
 variation::dump(ostream& o) const {
+	o << "number of decks: " << num_decks << endl;
 	o << "dealer soft 17: " << (H17 ? "hits" : "stands") << endl;
 	o << "player early surrender: " << yn(surrender_early) << endl;
 	o << "player late surrender: " << yn(surrender_late) << endl;
@@ -1729,7 +1730,10 @@ strategy::dump(ostream& o) const {
 /**
 	Initializes to default.
  */
-deck_state::deck_state() : num_decks(6), need_update(true) {
+deck_state::deck_state() : 
+		num_decks(6), 
+		card_probabilities(10), 
+		need_update(true) {
 	reshuffle();		// does most of the initializing
 	// default penetration before reshuffling: 75%
 	maximum_penetration = cards_remaining /4;
@@ -1740,7 +1744,10 @@ deck_state::deck_state() : num_decks(6), need_update(true) {
 	Initializes to standard deck distributions.  
 	\param d the number of decks.
  */
-deck_state::deck_state(const size_t d) : num_decks(d), need_update(true) {
+deck_state::deck_state(const size_t d) :
+		num_decks(d),
+		card_probabilities(10), 
+		need_update(true) {
 	reshuffle();		// does most of the initializing
 	// default penetration before reshuffling: 75%
 	maximum_penetration = cards_remaining /4;
@@ -1775,6 +1782,7 @@ deck_state::reshuffle_auto(void) {
 void
 deck_state::update_probabilities(void) {
 	if (need_update) {
+		assert(card_probabilities.size() == cards.size());
 		normalize(card_probabilities, cards);
 		need_update = false;
 	}
@@ -1846,7 +1854,13 @@ deck_state::reveal_hole_card(void) {
 //=============================================================================
 // class grader method definitions
 
-grader::grader() : basic_strategy(), dynamic_strategy() { }
+grader::grader(const variation& v) : basic_strategy(v), dynamic_strategy(v), 
+	bankroll(100.0), bet(1) {
+	basic_strategy.set_card_distribution(standard_deck);
+	dynamic_strategy.set_card_distribution(standard_deck);
+	basic_strategy.evaluate();
+	dynamic_strategy.evaluate();
+}
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 grader::~grader() { }
@@ -1872,6 +1886,24 @@ grader::new_deal(void) {
 		", player: {" << p_cards << "} " <<
 		basic_strategy.get_player_state_machine()[ps].name << endl;
 	// after this, peek and prompt for insurance
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+ostream&
+grader::status(ostream& o) const {
+	o << "bankroll: " << bankroll << endl;
+	o << "bet: " << bet << endl;
+	return o;
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
+	\param i the input stream, like cin
+ */
+void
+grader::play(istream&, ostream& o) {
+	// prompting loop
+	o << "table> ";
 }
 
 //=============================================================================
