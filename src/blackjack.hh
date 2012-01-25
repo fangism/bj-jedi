@@ -96,6 +96,8 @@ struct variation {
 
 	/// affects play only, strategy uses infinite deck appx.
 	size_t			num_decks;
+	/// largest fraction of shoe/deck that can be played
+	double			maximum_penetration;
 
 	// known unsupported options:
 	// 5-card charlie -- would need expanded state table
@@ -122,7 +124,8 @@ struct variation {
 		insurance(2.0),
 		surrender_penalty(-0.5),
 		double_multiplier(2.0),
-		num_decks(6) { }
+		num_decks(6),
+		maximum_penetration(0.75) { }
 
 	/// \return true if some form of doubling-down is allowed
 	bool
@@ -177,8 +180,8 @@ public:
 	// these could go into a struct for rules
 	static const size_t		p_initial_card_map[vals];
 	static const size_t		d_initial_card_map[vals];
-private:
 	static const size_t		reveal_print_ordering[];
+private:
 	static const char		player_final_states[][player_states];
 	static const char		dealer_final_states[][dealer_states];
 
@@ -616,6 +619,11 @@ public:
 	ostream&
 	dump(ostream&) const;
 
+	ostream&
+	dump_variation(ostream& o) const {
+		return variation::dump(o);
+	}
+
 };	// end class strategy
 
 ostream&
@@ -644,6 +652,10 @@ class deck_state {
 	typedef	array<size_t, bins>		deck_count_type;
 	size_t					num_decks;
 	/**
+		Already seen cards (discarded)
+	 */
+	deck_count_type				used_cards;
+	/**
 		Sequence of integers representing count of cards 
 		remaining in deck or shoe.
 	 */
@@ -663,6 +675,7 @@ class deck_state {
 	size_t					cards_remaining;
 	/**
 		When cards_remaining falls below this, reshuffle.
+		Maximum allowed should be .90 (90%)
 	 */
 	size_t					maximum_penetration;
 	/**
@@ -671,14 +684,8 @@ class deck_state {
 	 */
 	bool					need_update;
 public:
-	deck_state();
-
-
 	explicit
-	deck_state(const size_t);
-
-	void
-	set_decks(const size_t);
+	deck_state(const variation&);
 
 //	void
 //	count(const size_t);
@@ -705,6 +712,9 @@ public:
 
 	bool
 	reshuffle_auto(void);
+
+	ostream&
+	show_count(ostream&) const;
 
 private:
 	void
@@ -759,8 +769,8 @@ class grader {
 
 	/// current amount of money
 	double					bankroll;
-	/// size of current bet (integer)
-	size_t					bet;
+	/// size of current bet (convert from integer)
+	double					bet;
 
 	// other quantities for grading and statistics
 
@@ -775,6 +785,10 @@ public:
 
 	ostream&
 	status(ostream&) const;
+
+	static
+	ostream&
+	table_help(ostream&);
 
 	void
 	play(istream&, ostream&);

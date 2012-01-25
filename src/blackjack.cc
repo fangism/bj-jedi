@@ -38,6 +38,7 @@ using std::multimap;
 using std::make_pair;
 using std::setw;
 using std::setprecision;
+using std::istringstream;
 using util::normalize;
 
 //=============================================================================
@@ -154,6 +155,7 @@ yn(const bool y) {
 ostream&
 variation::dump(ostream& o) const {
 	o << "number of decks: " << num_decks << endl;
+	o << "maximum penetration: " << maximum_penetration << endl;
 	o << "dealer soft 17: " << (H17 ? "hits" : "stands") << endl;
 	o << "player early surrender: " << yn(surrender_early) << endl;
 	o << "player late surrender: " << yn(surrender_late) << endl;
@@ -1730,27 +1732,13 @@ strategy::dump(ostream& o) const {
 /**
 	Initializes to default.
  */
-deck_state::deck_state() : 
-		num_decks(6), 
-		card_probabilities(10), 
+deck_state::deck_state(const variation& v) : 
+		num_decks(v.num_decks), 
+		card_probabilities(strategy::vals), 
 		need_update(true) {
 	reshuffle();		// does most of the initializing
 	// default penetration before reshuffling: 75%
-	maximum_penetration = cards_remaining /4;
-}
-
-//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/**
-	Initializes to standard deck distributions.  
-	\param d the number of decks.
- */
-deck_state::deck_state(const size_t d) :
-		num_decks(d),
-		card_probabilities(10), 
-		need_update(true) {
-	reshuffle();		// does most of the initializing
-	// default penetration before reshuffling: 75%
-	maximum_penetration = cards_remaining /4;
+	maximum_penetration = (1.0 -v.maximum_penetration) * num_decks *52;
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -1759,6 +1747,7 @@ deck_state::reshuffle(void) {
 	// ACE is at index 0
 	cards_remaining = num_decks*52;
 	const size_t f = num_decks*4;
+	std::fill(used_cards.begin(), used_cards.end(), 0);
 	std::fill(cards.begin(), cards.end() -1, f);
 	cards[strategy::TEN] = f*4;	// T, J, Q, K
 	need_update = true;
@@ -1813,6 +1802,7 @@ deck_state::quick_draw(void) {
 #else
 	const size_t ret = util::random_draw_from_integer_pdf(cards);
 #endif
+	++used_cards[ret];
 	--cards[ret];
 	--cards_remaining;
 	need_update = true;
@@ -1844,6 +1834,7 @@ deck_state::draw_hole_card(void) {
  */
 size_t
 deck_state::reveal_hole_card(void) {
+	++used_cards[hole_card];
 	--cards[hole_card];
 	--cards_remaining;
 	need_update = true;
@@ -1851,11 +1842,39 @@ deck_state::reveal_hole_card(void) {
 	return hole_card;
 }
 
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+ostream&
+deck_state::show_count(ostream& o) const {
+	size_t i = 0;
+	o << "remaining: ";
+	for ( ; i<strategy::vals; ++i) {
+		const size_t j = strategy::reveal_print_ordering[i];
+		o << strategy::card_name[j] << ':' <<
+			cards[j] << ", ";
+	}
+	o << "total:" << cards_remaining << " (" <<
+		double(cards_remaining) *100.0 / (num_decks *52) << "%)\n";
+	// hi-lo count summary, details of true count, running count
+	int hi_lo_count = 0;
+	hi_lo_count += used_cards[1] +used_cards[2] +used_cards[3]
+		+used_cards[4] +used_cards[5];	// 2 through 6
+	hi_lo_count -= used_cards[strategy::ACE] +used_cards[strategy::TEN];
+	double true_count = (double(hi_lo_count) * 52)
+		/ double(cards_remaining);
+	o << "hi-lo: " << hi_lo_count <<
+	// true count adjusts for number of cards remaining
+	// normalized to 1 deck
+		", true count: " << true_count;
+	// adjusted count accounts for the house edge based on rules
+	return o << endl;
+}
+
 //=============================================================================
 // class grader method definitions
 
 grader::grader(const variation& v) : basic_strategy(v), dynamic_strategy(v), 
-	bankroll(100.0), bet(1) {
+	C(v),
+	bankroll(100.0), bet(1.0) {
 	basic_strategy.set_card_distribution(standard_deck);
 	dynamic_strategy.set_card_distribution(standard_deck);
 	basic_strategy.evaluate();
@@ -1893,7 +1912,26 @@ ostream&
 grader::status(ostream& o) const {
 	o << "bankroll: " << bankroll << endl;
 	o << "bet: " << bet << endl;
+	// deck remaning (%)
 	return o;
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+ostream&
+grader::table_help(ostream& o) {
+	return o <<
+"At the BlackJack table, the following commands are available:\n"
+"?,help -- print this help\n"
+"r,rules -- print the rule variation for BlackJack\n"
+"b,bet -- change bet amount\n"
+"d,deal -- deal a hand of BlackJack\n"
+"status -- print current bankroll and bet\n"
+// review basic strategy for this variation
+// analyze count-dependent strategy
+// modify deck (for analysis)
+"mode -- change in-game options\n"
+"c,count -- show current card count\n"
+"q,quit,leave,exit,bye -- leave the table, return to lobby" << endl;
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -1901,9 +1939,64 @@ grader::status(ostream& o) const {
 	\param i the input stream, like cin
  */
 void
-grader::play(istream&, ostream& o) {
+grader::play(istream& i, ostream& o) {
+	o << "You have sat down at a BlackJack table." << endl;
+	o << "Type 'help' for a list of table commands." << endl;
 	// prompting loop
-	o << "table> ";
+do {
+	string line;
+	do {
+		o << "table> ";
+		i >> line;
+	} while (line.empty() && i);
+	// switch-case on
+	if (line == "?" || line == "help") {
+		table_help(o);
+	} else if (line == "d" || line == "deal") {
+		// deal a hand
+		o << "TODO: finish me" << endl;
+	} else if (line == "b" || line == "bet") {
+		// TODO: enforce table minimums
+		o << "bet amount? ";
+		string bamt;
+		i >> bamt;
+		if (bamt.length()) {
+			istringstream iss(bamt);
+			size_t a;
+			iss >> a;
+			if (!iss.fail()) {
+			// enforce table minimum
+			if (a > 0) {
+				bet = double(a);
+			} else {
+				o << "Bet must be positive!" << endl;
+			}
+			} else {
+				o << "Error reading bet amount." << endl;
+			}
+		}
+		// else leave bet unchanged
+		o << "bet: " << bet << endl;
+	} else if (line == "r" || line == "rules") {
+		basic_strategy.dump_variation(o);
+	} else if (line == "c" || line == "count") {
+		C.show_count(o);
+	} else if (line == "status") {
+		status(o);
+	} else if (line == "q" || line == "quit" || line == "exit" ||
+			line == "bye" || line == "leave") {
+		if (bankroll > 0.0) {
+		o << "You collect your remaining chips from the table and "
+			"return to the lobby." << endl;
+		} else {
+			o << "Better luck next time!" << endl;
+		}
+		break;
+	} else {
+		o << "Unknown command: \"" << line <<
+			"\".\nType 'help' for a list of commands." << endl;
+	}
+} while (i);
 }
 
 //=============================================================================
