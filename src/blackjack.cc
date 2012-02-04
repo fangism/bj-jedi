@@ -1497,6 +1497,7 @@ strategy::compute_overall_edge(void) {
  */
 ostream&
 strategy::dump_expectations(const expectations_vector& v, ostream& o) const {
+#if 0
 	const expectations_vector::const_iterator b(v.begin()), e(v.end());
 //	expectations_vector::const_iterator i(b);
 	size_t j;
@@ -1507,8 +1508,13 @@ strategy::dump_expectations(const expectations_vector& v, ostream& o) const {
 			<< action_key[ex.actions[2]];
 	}
 	o << endl;
+#else
+	dump_optimal_actions(v, o);
+#endif
+	const expectations_vector::const_iterator b(v.begin()), e(v.end());
 	expectations z(0,0,0,0);
 	z = accumulate(b, e, z);
+	size_t j;
 #if 1
 #define	EFORMAT(x)	setw(5) << int(x*1000)
 // setprecision?
@@ -1578,19 +1584,61 @@ if (z.split > -2.0 *vals) {
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-#if 0
 /**
 	Print easier-to-use summary of optimal decision table.  
  */
 ostream&
+strategy::dump_optimal_actions(const expectations_vector& v, ostream& o) const {
+	size_t j;
+	for (j=0; j<vals; ++j) {
+		const expectations& ex(v[reveal_print_ordering[j]]);
+		o << '\t' << action_key[ex.actions[0]]
+			<< action_key[ex.actions[1]]
+			<< action_key[ex.actions[2]];
+	}
+	o << endl;
+	return o;
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+ostream&
 strategy::dump_optimal_edges(const expectations_vector& v, ostream& o) const {
+	dump_optimal_actions(v, o);
+#if 1
+#define	EFORMAT(x)	setw(5) << int(x*1000)
+// setprecision?
+#else
+#define	EFORMAT(x)	x
+#endif
+	size_t j;
+	o << "edge";
 	for (j=0; j<vals; ++j) {
 		const expectations& ex(v[reveal_print_ordering[j]]);
 		o << '\t';
+		switch (ex.best()) {
+		case STAND: o << EFORMAT(ex.stand); break;
+		case HIT: o << EFORMAT(ex.hit); break;
+		case DOUBLE: o << EFORMAT(ex.double_down); break;
+		case SPLIT: o << EFORMAT(ex.split); break;
+		case SURRENDER: o << EFORMAT(surrender_penalty); break;
+		default: break;
+		}
 	}
 	o << endl;
-}
+#if 1
+	o << "delta";	// difference between best and next best
+	for (j=0; j<vals; ++j) {
+		const expectations& ex(v[reveal_print_ordering[j]]);
+		o << '\t';
+		const pair<player_choice, player_choice>
+			opt(ex.best_two(true, true, true));
+		o << EFORMAT(ex.margin(opt.first, opt.second, surrender_penalty));
+	}
+	o << endl;
 #endif
+#undef	EFORMAT
+	return o;
+}
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const edge_type&
@@ -1705,6 +1753,30 @@ strategy::dump_action_expectations(ostream& o) const {
 //		o << endl;
 		dump_expectations(*i, o);
 		o << endl;
+	}
+	return o;
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+ostream&
+strategy::dump_optimal_actions(ostream& o) const {
+	o << "Player's optimal action (edges x1000):\n";
+	const expectations_matrix::const_iterator
+		b(player_actions.begin()), e(player_actions.end());
+	expectations_matrix::const_iterator i(b);
+	// ostream_iterator<expectations> osi(o, "\t");
+	o << "P\\D";
+	size_t j;
+	for (j=0; j<vals; ++j) {
+		o << '\t' << card_name[reveal_print_ordering[j]];
+	}
+	o << '\n' << endl;
+	o << setprecision(3);
+	for ( ; i!=e; ++i) {
+		o << player_hit[i-b].name;
+//		o << endl;
+//		dump_optimal_edges(*i, o);	// still too much detail
+		dump_optimal_actions(*i, o);
 	}
 	return o;
 }
@@ -1926,7 +1998,12 @@ grader::table_help(ostream& o) {
 "b,bet -- change bet amount\n"
 "d,deal -- deal a hand of BlackJack\n"
 "status -- print current bankroll and bet\n"
-// review basic strategy for this variation
+"basic-strategy -- print optimal decisions for basic strategy\n"
+"  -edge for player edge details\n"
+"  -verbose for derivation details\n"
+"dynamic-strategy -- print optimal decisions for dynamic strategy\n"
+"  -edge for player edge details\n"
+"  -verbose for derivation details\n"
 // analyze count-dependent strategy
 // modify deck (for analysis)
 "mode -- change in-game options\n"
@@ -1955,6 +2032,8 @@ do {
 	} else if (line == "d" || line == "deal") {
 		// deal a hand
 		o << "TODO: finish me" << endl;
+		C.update_probabilities();
+		dynamic_strategy.set_card_distribution(C.get_card_probabilities());
 	} else if (line == "b" || line == "bet") {
 		// TODO: enforce table minimums
 		o << "bet amount? ";
@@ -1983,6 +2062,18 @@ do {
 		C.show_count(o);
 	} else if (line == "status") {
 		status(o);
+	} else if (line == "basic-strategy-verbose") {
+		basic_strategy.dump(o);
+	} else if (line == "basic-strategy-edges") {
+		basic_strategy.dump_action_expectations(o);
+	} else if (line == "basic-strategy") {
+		basic_strategy.dump_optimal_actions(o);
+	} else if (line == "dynamic-strategy-verbose") {
+		dynamic_strategy.dump(o);
+	} else if (line == "dynamic-strategy-edges") {
+		dynamic_strategy.dump_action_expectations(o);
+	} else if (line == "dynamic-strategy") {
+		dynamic_strategy.dump_optimal_actions(o);
 	} else if (line == "q" || line == "quit" || line == "exit" ||
 			line == "bye" || line == "leave") {
 		if (bankroll > 0.0) {

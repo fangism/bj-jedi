@@ -27,6 +27,8 @@ TARBALL = boc2.tar.gz
 
 all: $(TARGETS)
 
+blackjack.o: blackjack.hh card_state.hh
+
 libutil_OBJ = util/tokenize.o util/string.o
 util/libutil.a: $(libutil_OBJ)
 	$(LINK) $(LDFLAGS) $(libutil_OBJ) -o $@

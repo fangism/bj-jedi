@@ -15,6 +15,7 @@ using util::normalize;
 
 /**
 	Define to 1 to perform distribution sensitivity analysis.
+	Analysis is based on card count.
  */
 #define	SENSITIVITY_ANALYSIS			1
 
@@ -35,7 +36,8 @@ main(int, char*[]) {
 // sensitivity analysis to differential probability
 	// for a 10% relative increase in frequency
 	const edge_type base_edge = S.overall_edge();
-	const probability_type pdel = 0.10;
+//	const probability_type pdel = 0.10;
+	const probability_type pdel = 1.0/52.0;	// +/- 1 card to deck
 	cout <<
 "Sensitivitiy analysis: relative probability increase per card = "
 		<< pdel << endl;

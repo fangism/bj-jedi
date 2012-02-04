@@ -511,6 +511,9 @@ private:
 	dump_expectations(const expectations_vector&, ostream&) const;
 
 	ostream&
+	dump_optimal_actions(const expectations_vector&, ostream&) const;
+
+	ostream&
 	dump_optimal_edges(const expectations_vector&, ostream&) const;
 
 	void
@@ -605,6 +608,9 @@ public:
 	dump_action_expectations(ostream&) const;
 
 	ostream&
+	dump_optimal_actions(ostream&) const;
+
+	ostream&
 	dump_player_hit_edges(ostream&) const;
 
 	ostream&
@@ -690,6 +696,11 @@ public:
 //	void
 //	count(const size_t);
 
+	const deck&
+	get_card_probabilities(void) const {
+		return card_probabilities;
+	}
+
 	size_t
 	quick_draw(void);
 
@@ -716,7 +727,6 @@ public:
 	ostream&
 	show_count(ostream&) const;
 
-private:
 	void
 	update_probabilities(void);
 
