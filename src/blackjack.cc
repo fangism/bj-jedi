@@ -2031,7 +2031,7 @@ do {
 		table_help(o);
 	} else if (line == "d" || line == "deal") {
 		// deal a hand
-		o << "TODO: finish me" << endl;
+		deal_hand(i, o);
 		C.update_probabilities();
 		dynamic_strategy.set_card_distribution(C.get_card_probabilities());
 	} else if (line == "b" || line == "bet") {
@@ -2077,8 +2077,8 @@ do {
 	} else if (line == "q" || line == "quit" || line == "exit" ||
 			line == "bye" || line == "leave") {
 		if (bankroll > 0.0) {
-		o << "You collect your remaining chips from the table and "
-			"return to the lobby." << endl;
+		o << "You collect your remaining chips from the table ("
+			<< bankroll << ") and return to the lobby." << endl;
 		} else {
 			o << "Better luck next time!" << endl;
 		}
@@ -2088,6 +2088,20 @@ do {
 			"\".\nType 'help' for a list of commands." << endl;
 	}
 } while (i);
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+void
+grader::deal_hand(istream&, ostream& o) {
+	o << "TODO: finish me." << endl;
+	// recall bet amount
+	// deal a hand
+	// reveal for dealer
+	// update count as each card is played -- for dynamic_strategy
+	// edges, outcomes, decision imperfections
+	// handle splits
+	// handle payouts
+	// grade: lucky? or good?
 }
 
 //=============================================================================

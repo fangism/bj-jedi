@@ -803,6 +803,9 @@ public:
 	void
 	play(istream&, ostream&);
 
+	void
+	deal_hand(istream&, ostream&);
+
 };	// end class grader
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
