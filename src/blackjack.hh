@@ -148,13 +148,14 @@ public:
 	static const size_t vals = 10;          // number of values, max value
 	static const size_t goal = 21;
 	static const size_t stop = 17;		// dealer stands hard or soft 17
+	// some of these should be outside of this class
 	static const char		card_name[];	// use util::array?
+	static size_t		card_index(const char);	// reverse-map of card_name
 	enum {
 		ACE = 0,		// index of Ace (card_odds)
 		TEN = 9			// index of 10 (T) (card_odds)
 	};
-private:
-	// table offsets
+	// table offsets for state_machine states
 	static const size_t player_blackjack = goal +1;
 	static const size_t dealer_blackjack = goal +1;
 //	static const size_t bust = goal +1;
@@ -164,6 +165,7 @@ private:
 	static const size_t dealer_push = dealer_bust +1;
 	static const size_t dealer_soft = dealer_push +1;	// for push22
 	static const size_t player_soft = player_bust +1;
+private:
 	static const size_t soft_min = 1;       // 1-11
 // only player may split
 	static const size_t pair_offset = player_soft +vals +1;
@@ -766,6 +768,32 @@ class grader {
 			Enumerated state, from the state machine.
 		 */
 		size_t					state;
+
+		hand() { }
+
+		explicit
+		hand(const size_t);
+
+		// initial deal
+		void
+		initial_card(const size_t);
+
+		void
+		deal(const state_machine&, const size_t, const size_t);
+
+		// hit state transition -- use this for double-down too
+		void
+		hit(const state_machine&, const size_t);
+
+		void
+		split(const state_machine&, const size_t);
+
+		bool
+		splittable(void) const;
+
+		ostream&
+		dump(ostream&, const state_machine&) const;
+
 	};	// end struct hand
 
 	/**
@@ -776,6 +804,10 @@ class grader {
 		The dealer's revealed card.
 	 */
 	size_t					dealer_reveal;
+	/**
+		Dealer's hidden card.
+	 */
+	size_t					dealer_hole;
 
 	/// current amount of money
 	double					bankroll;
@@ -789,9 +821,6 @@ public:
 	grader(const variation&);
 
 	~grader();
-
-	void
-	new_deal(void);
 
 	ostream&
 	status(ostream&) const;

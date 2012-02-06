@@ -92,6 +92,22 @@ strategy::expectations::surrender = -0.5;
 
 const char strategy::card_name[] = "A23456789T";
 
+// really should just be a public function
+size_t
+strategy::card_index(const char c) {
+	if (std::isalpha(c)) {
+		if (c == 'A') {
+			return ACE;
+		} else if (c == 'T') {
+			return TEN;
+		}
+	} else if (std::isdigit(c)) {
+		return c -'1';
+	}
+	return size_t(-1);
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
 	Final states applicable to player.
 	TODO: this table should be redundant from player 
@@ -1958,25 +1974,19 @@ grader::~grader() { }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void
-grader::new_deal(void) {
+grader::deal_hand(istream&, ostream& o) {
+	player_hands.clear();
 	player_hands.resize(1);
-	string& p_cards(player_hands.front().cards);
-	p_cards.clear();
 	const size_t p1 = C.quick_draw();
 	const size_t p2 = C.quick_draw();
-	const size_t d1 = C.quick_draw();
-	p_cards.push_back(strategy::card_name[p1]);
-	p_cards.push_back(strategy::card_name[p2]);
+	const state_machine& ps(basic_strategy.get_player_state_machine());
+	player_hands.front().deal(ps, p1, p2);
+	dealer_reveal = C.quick_draw();
 	C.draw_hole_card();
-	const size_t s1 = strategy::p_initial_card_map[p1];
-	const size_t ps = basic_strategy.get_player_state_machine()[s1][p2];
-	player_hands.front().state = ps;
-	const size_t ds = strategy::d_initial_card_map[d1];
-	// print state
-	cout << "dealer: " << basic_strategy.get_dealer_state_machine()[ds].name <<
-		", player: {" << p_cards << "} " <<
-		basic_strategy.get_player_state_machine()[ps].name << endl;
+	o << "dealer: " << strategy::card_name[dealer_reveal] << ", ";
+	player_hands.front().dump(o, ps) << endl;
 	// after this, peek and prompt for insurance
+	o << "TODO: finish me" << endl;
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -2091,17 +2101,69 @@ do {
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+grader::hand::hand(const size_t p1) : cards(), state() {
+	initial_card(p1);
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void
-grader::deal_hand(istream&, ostream& o) {
-	o << "TODO: finish me." << endl;
-	// recall bet amount
-	// deal a hand
-	// reveal for dealer
-	// update count as each card is played -- for dynamic_strategy
-	// edges, outcomes, decision imperfections
-	// handle splits
-	// handle payouts
-	// grade: lucky? or good?
+grader::hand::initial_card(const size_t p1) {
+	// the string stores the card names, not card indices
+	cards.push_back(strategy::card_name[p1]);
+	state = strategy::p_initial_card_map[p1];
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+void
+grader::hand::hit(const state_machine& m, const size_t p2) {
+	cards.push_back(strategy::card_name[p2]);
+	const state_machine::node& current(m[state]);
+	if (!current.is_terminal()) {
+		state = current[p2];
+	}
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
+	Assigns initial state based on player's first two cards.
+ */
+void
+grader::hand::deal(const state_machine& m, const size_t p1, const size_t p2) {
+	initial_card(p1);
+	hit(m, p2);
+	// if initial total is 21, natural blackjack
+	if (state == strategy::goal) {
+		state = strategy::player_blackjack;
+	}
+}
+
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+bool
+grader::hand::splittable(void) const {
+	return (cards.size() == 2) && (cards[0] == cards[1]);
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
+	\param p2 new up-card for player.
+ */
+void
+grader::hand::split(const state_machine& m, const size_t p2) {
+	if (splittable()) {
+		const size_t p1 = strategy::card_index(cards[0]);
+		cards.clear();
+		initial_card(p1);
+		hit(m, p2);
+		// 21 here does not count as blackjack
+	}
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+ostream&
+grader::hand::dump(ostream& o, const state_machine& m) const {
+	o << "player: " << cards << " (" << m[state].name << ")";
+	return o;
 }
 
 //=============================================================================
