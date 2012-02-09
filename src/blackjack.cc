@@ -1513,20 +1513,7 @@ strategy::compute_overall_edge(void) {
  */
 ostream&
 strategy::dump_expectations(const expectations_vector& v, ostream& o) const {
-#if 0
-	const expectations_vector::const_iterator b(v.begin()), e(v.end());
-//	expectations_vector::const_iterator i(b);
-	size_t j;
-	for (j=0; j<vals; ++j) {
-		const expectations& ex(v[reveal_print_ordering[j]]);
-		o << '\t' << action_key[ex.actions[0]]
-			<< action_key[ex.actions[1]]
-			<< action_key[ex.actions[2]];
-	}
-	o << endl;
-#else
-	dump_optimal_actions(v, o);
-#endif
+	dump_optimal_actions(v, o, 3, "\t");
 	const expectations_vector::const_iterator b(v.begin()), e(v.end());
 	expectations z(0,0,0,0);
 	z = accumulate(b, e, z);
@@ -1602,15 +1589,20 @@ if (z.split > -2.0 *vals) {
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
 	Print easier-to-use summary of optimal decision table.  
+	\param n the top number of actions to print.
  */
 ostream&
-strategy::dump_optimal_actions(const expectations_vector& v, ostream& o) const {
+strategy::dump_optimal_actions(const expectations_vector& v, ostream& o, 
+		const size_t n, const char* delim) const {
+	assert(n<=5);
 	size_t j;
 	for (j=0; j<vals; ++j) {
 		const expectations& ex(v[reveal_print_ordering[j]]);
-		o << '\t' << action_key[ex.actions[0]]
-			<< action_key[ex.actions[1]]
-			<< action_key[ex.actions[2]];
+		o << delim;
+		size_t k = 0;
+		for ( ; k<n; ++k) {
+			o << action_key[ex.actions[k]];
+		}
 	}
 	o << endl;
 	return o;
@@ -1619,7 +1611,7 @@ strategy::dump_optimal_actions(const expectations_vector& v, ostream& o) const {
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ostream&
 strategy::dump_optimal_edges(const expectations_vector& v, ostream& o) const {
-	dump_optimal_actions(v, o);
+	dump_optimal_actions(v, o, 3, "\t");
 #if 1
 #define	EFORMAT(x)	setw(5) << int(x*1000)
 // setprecision?
@@ -1776,23 +1768,25 @@ strategy::dump_action_expectations(ostream& o) const {
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ostream&
 strategy::dump_optimal_actions(ostream& o) const {
-	o << "Player's optimal action (edges x1000):\n";
+	o << "Player's optimal action:\n";
 	const expectations_matrix::const_iterator
 		b(player_actions.begin()), e(player_actions.end());
 	expectations_matrix::const_iterator i(b);
 	// ostream_iterator<expectations> osi(o, "\t");
-	o << "P\\D";
+	static const char delim1[] = "   ";
+	static const char delim2[] = "  ";
+	o << "P\\D\t";
 	size_t j;
 	for (j=0; j<vals; ++j) {
-		o << '\t' << card_name[reveal_print_ordering[j]];
+		o << delim1 << card_name[reveal_print_ordering[j]];
 	}
 	o << '\n' << endl;
 	o << setprecision(3);
 	for ( ; i!=e; ++i) {
-		o << player_hit[i-b].name;
+		o << player_hit[i-b].name << "\t";
 //		o << endl;
 //		dump_optimal_edges(*i, o);	// still too much detail
-		dump_optimal_actions(*i, o);
+		dump_optimal_actions(*i, o, 2, delim2);
 	}
 	return o;
 }
@@ -1834,6 +1828,7 @@ void
 deck_state::reshuffle(void) {
 	// ACE is at index 0
 	cards_remaining = num_decks*52;
+	cards_spent = 0;
 	const size_t f = num_decks*4;
 	std::fill(used_cards.begin(), used_cards.end(), 0);
 	std::fill(cards.begin(), cards.end() -1, f);
@@ -1892,6 +1887,7 @@ deck_state::quick_draw(void) {
 #endif
 	++used_cards[ret];
 	--cards[ret];
+	++cards_spent;
 	--cards_remaining;
 	need_update = true;
 	return ret;
@@ -1912,8 +1908,6 @@ deck_state::draw(void) {
 void
 deck_state::draw_hole_card(void) {
 	hole_card = util::random_draw_from_integer_pdf(cards);
-//	--cards_remaining;	// ?
-//	need_update = true;
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -1924,6 +1918,7 @@ size_t
 deck_state::reveal_hole_card(void) {
 	++used_cards[hole_card];
 	--cards[hole_card];
+	++cards_spent;
 	--cards_remaining;
 	need_update = true;
 //	update_probabilities();
@@ -1933,14 +1928,27 @@ deck_state::reveal_hole_card(void) {
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ostream&
 deck_state::show_count(ostream& o) const {
+	const size_t p = o.precision(2);
 	size_t i = 0;
-	o << "remaining: ";
-	for ( ; i<strategy::vals; ++i) {
+	o << "card:\t";
+	for (i=0 ; i<strategy::vals; ++i) {
 		const size_t j = strategy::reveal_print_ordering[i];
-		o << strategy::card_name[j] << ':' <<
-			cards[j] << ", ";
+		o << "   " << strategy::card_name[j];
 	}
-	o << "total:" << cards_remaining << " (" <<
+	o << "\ttotal\t%" << endl;
+	o << "used:\t";
+	for (i=0 ; i<strategy::vals; ++i) {
+		const size_t j = strategy::reveal_print_ordering[i];
+		o << setw(4) << used_cards[j];
+	}
+	o << "\t" << cards_spent << "\t(" <<
+		double(cards_spent) *100.0 / (num_decks *52) << "%)\n";
+	o << "rem:\t";
+	for (i=0; i<strategy::vals; ++i) {
+		const size_t j = strategy::reveal_print_ordering[i];
+		o << setw(4) << cards[j];
+	}
+	o << "\t" << cards_remaining << "\t(" <<
 		double(cards_remaining) *100.0 / (num_decks *52) << "%)\n";
 	// hi-lo count summary, details of true count, running count
 	int hi_lo_count = 0;
@@ -1952,8 +1960,9 @@ deck_state::show_count(ostream& o) const {
 	o << "hi-lo: " << hi_lo_count <<
 	// true count adjusts for number of cards remaining
 	// normalized to 1 deck
-		", true count: " << true_count;
+		", true-count: " << true_count;
 	// adjusted count accounts for the house edge based on rules
+	o.precision(p);
 	return o << endl;
 }
 

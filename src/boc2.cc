@@ -41,8 +41,9 @@ main(int, char*[]) {
 	cout <<
 "Sensitivitiy analysis: relative probability increase per card = "
 		<< pdel << endl;
-	size_t i;		// which card to vary probability
-	for (i=0; i<10; ++i) {
+	size_t j;		// which card to vary probability
+	for (j=0; j<strategy::vals; ++j) {
+		const size_t i = strategy::reveal_print_ordering[j];
 		deck pd(standard_deck);
 		deck nd(standard_deck);
 		pd[i] *= 1 +pdel;

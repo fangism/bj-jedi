@@ -513,7 +513,8 @@ private:
 	dump_expectations(const expectations_vector&, ostream&) const;
 
 	ostream&
-	dump_optimal_actions(const expectations_vector&, ostream&) const;
+	dump_optimal_actions(const expectations_vector&, ostream&, 
+		const size_t, const char*) const;
 
 	ostream&
 	dump_optimal_edges(const expectations_vector&, ostream&) const;
@@ -681,6 +682,7 @@ class deck_state {
 		Countdown of cards remaining.
 	 */
 	size_t					cards_remaining;
+	size_t					cards_spent;
 	/**
 		When cards_remaining falls below this, reshuffle.
 		Maximum allowed should be .90 (90%)
