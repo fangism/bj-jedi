@@ -96,9 +96,13 @@ const char strategy::card_name[] = "A23456789T";
 size_t
 strategy::card_index(const char c) {
 	if (std::isalpha(c)) {
-		if (c == 'A') {
+		if (c == 'A' || c == 'a') {
 			return ACE;
-		} else if (c == 'T') {
+		} else if (c == 'T' || c == 't'
+			|| c == 'J' || c == 'j'
+			|| c == 'Q' || c == 'q'
+			|| c == 'K' || c == 'k'
+			) {
 			return TEN;
 		}
 	} else if (std::isdigit(c)) {
@@ -318,8 +322,9 @@ strategy::player_final_state_probabilities(const probability_vector& s,
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+#if 0
 strategy::strategy() : 
-	variation(), card_odds(standard_deck), dealer_hit() {
+	var(), card_odds(standard_deck), dealer_hit() {
 	// only depends on H17:
 	// don't *have* to do this right away...
 	set_dealer_policy();
@@ -327,10 +332,11 @@ strategy::strategy() :
 	compute_player_split_state();
 	update_player_initial_state_odds();
 }
+#endif
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 strategy::strategy(const variation& v) : 
-	variation(v), card_odds(standard_deck), dealer_hit() {
+	var(v), card_odds(standard_deck), dealer_hit() {
 	// only depends on H17:
 	// don't *have* to do this right away...
 	set_dealer_policy();
@@ -348,7 +354,7 @@ strategy::strategy(const variation& v) :
 void
 strategy::set_dealer_policy(void) {
 	// enumerating edges:
-	const size_t soft_max = H17 ? 7 : 6;	// 6-16, 7-17
+	const size_t soft_max = var.H17 ? 7 : 6;	// 6-16, 7-17
 	// 0-21 are hard values (no ace)
 	// 22 is blackjack
 	// 23 is bust
@@ -364,7 +370,7 @@ strategy::set_dealer_policy(void) {
 	for (c=1; c<vals; ++c) {
 		const size_t t = i +c +1;	// sum value
 		if (t > goal) {			// bust
-			if ((t == goal+1) && push22) {
+			if ((t == goal+1) && var.push22) {
 				dealer_hit.add_edge(i, dealer_push, c, vals);
 			} else {
 				dealer_hit.add_edge(i, dealer_bust, c, vals);
@@ -592,13 +598,13 @@ strategy::compute_dealer_final_table(void) {
 		// isolate the case when dealer shows an ACE or TEN
 		// but hole card is known to NOT give dealer blackjack!
 		if (j == ACE) {
-			if (peek_on_Ace) {
+			if (var.peek_on_Ace) {
 			final = init;
 			dealer_hit.convolve(cards_no_ten, final, init);
 			// then solve the rest
 			}
 		} else if (j == TEN) {
-			if (peek_on_10) {
+			if (var.peek_on_10) {
 			final = init;
 			dealer_hit.convolve(cards_no_ace, final, init);
 			}
@@ -621,7 +627,7 @@ strategy::compute_dealer_final_table(void) {
 	dealer_final_vector_type&
 		ace_row(dealer_final_given_revealed_post_peek[ACE]);
 	probability_type& dbj(ace_row[dealer_blackjack- stop]);
-	if (peek_on_Ace && dbj > 0.0) {
+	if (var.peek_on_Ace && dbj > 0.0) {
 		dbj = 0.0;
 		normalize(ace_row);
 	}
@@ -629,7 +635,7 @@ strategy::compute_dealer_final_table(void) {
 	dealer_final_vector_type&
 		ten_row(dealer_final_given_revealed_post_peek[TEN]);
 	probability_type& dbj(ten_row[dealer_blackjack- stop]);
-	if (peek_on_10 && dbj > 0.0) {
+	if (var.peek_on_10 && dbj > 0.0) {
 		dbj = 0.0;
 		normalize(ten_row);
 	}
@@ -741,10 +747,10 @@ strategy::compute_showdown_odds(const dealer_final_matrix& dfm,
 void
 strategy::compute_player_stand_odds(void) {
 	// pre-peek edges
-	compute_showdown_odds(dealer_final_given_revealed, bj_payoff,
+	compute_showdown_odds(dealer_final_given_revealed, var.bj_payoff,
 		player_stand, player_stand_edges);
 	// post-peek edges
-	compute_showdown_odds(dealer_final_given_revealed_post_peek, bj_payoff,
+	compute_showdown_odds(dealer_final_given_revealed_post_peek, var.bj_payoff,
 		player_stand_post_peek, player_stand_edges_post_peek);
 #if DUMP_DURING_EVALUATE
 	dump_player_stand_odds(cout) << endl;
@@ -895,11 +901,11 @@ strategy::compute_action_expectations(void) {
 			const probability_type& edge(pse[j][k]);
 			p += fin[k] *edge;
 		}
-		p *= double_multiplier;		// because bet is doubled
+		p *= var.double_multiplier;	// because bet is doubled
 	}
 	} else {			// is terminal state, irrelevant
 	for (j=0; j<vals; ++j) {
-		player_actions[i][j].double_down = -double_multiplier;
+		player_actions[i][j].double_down = -var.double_multiplier;
 	}
 	}
 	}
@@ -973,21 +979,21 @@ strategy::compute_action_expectations(void) {
 #endif
 	// OK up to here
 	reset_split_edges();	// zero-out
-if (split) {
-	const bool DAS = double_after_split && some_double();
-if (resplit) {
+if (var.split) {
+	const bool DAS = var.double_after_split && var.some_double();
+if (var.resplit) {
 //	cout << "Resplitting allowed." <<  endl;
 	// need to work backwards from post-split edges
-	compute_player_initial_edges(DAS, resplit, false);
-	compute_player_split_edges(DAS, resplit);	// iterate
-	compute_player_initial_edges(DAS, resplit, false);
-	compute_player_split_edges(DAS, resplit);	// iterate
-	compute_player_initial_edges(some_double(), true, surrender_late);
+	compute_player_initial_edges(DAS, var.resplit, false);
+	compute_player_split_edges(DAS, var.resplit);	// iterate
+	compute_player_initial_edges(DAS, var.resplit, false);
+	compute_player_split_edges(DAS, var.resplit);	// iterate
+	compute_player_initial_edges(var.some_double(), true, var.surrender_late);
 } else {
 //	cout << "Single split allowed." <<  endl;
 	compute_player_initial_edges(DAS, false, false);
 	compute_player_split_edges(DAS, false);	// iterate
-	compute_player_initial_edges(some_double(), true, surrender_late);
+	compute_player_initial_edges(var.some_double(), true, var.surrender_late);
 }
 #if DUMP_DURING_EVALUATE
 	dump_player_split_edges(cout) << endl;
@@ -995,7 +1001,7 @@ if (resplit) {
 } else {
 //	cout << "No split allowed." <<  endl;
 	// no splitting allowed!
-	compute_player_initial_edges(some_double(), false, surrender_late);
+	compute_player_initial_edges(var.some_double(), false, var.surrender_late);
 }
 	// to account for player's blackjack
 #if 0
@@ -1060,7 +1066,7 @@ strategy::compute_player_split_edges(const bool d, const bool s) {
 		edge_type edge = player_initial_edges_post_peek[state][j];
 		// similar to expectation::best(d, i==k, r)
 		// already accounted for player_resplit vs. final_split
-		if ((i == ACE) && one_card_on_split_aces) {
+		if ((i == ACE) && var.one_card_on_split_aces) {
 			// each aces takes exactly one more card only
 			edge = pse[j][player_final_state_map(state)];
 //			cout << "1-card-ACE[D" << j << ",F" << state << "]: " << edge << endl;
@@ -1069,7 +1075,7 @@ strategy::compute_player_split_edges(const bool d, const bool s) {
 	}	// inner product
 		expectations& sum(player_actions[p][j]);
 		sum.split = 2.0 *expected_edge;	// b/c two hands are played
-		sum.optimize(surrender_penalty);
+		sum.optimize(var.surrender_penalty);
 	}	// end for each dealer reveal card
 	}	// end for each player paired card
 
@@ -1082,7 +1088,7 @@ strategy::compute_player_split_edges(const bool d, const bool s) {
 		const expectations& sum(player_actions[p][j]);
 		// player may decide whether or not to split
 		player_split_edges[i][j] =
-			sum.value(sum.best(d, s, false), surrender_penalty);
+			sum.value(sum.best(d, s, false), var.surrender_penalty);
 	}
 	}
 #if DUMP_DURING_EVALUATE
@@ -1263,14 +1269,14 @@ strategy::compute_player_hit_edges(void) {
 	// hit-edges are post-peek, b/c/ using post-peek stand edges
 	__compute_player_hit_edges(player_stand_edges_post_peek, 
 		player_final_state_probability, player_actions, 
-		surrender_penalty, player_hit_edges);
+		var.surrender_penalty, player_hit_edges);
 #else
 	__compute_player_hit_edges(player_stand_edges, 
 		player_final_state_probability, player_actions, 
-		surrender_penalty, player_hit_edges);
+		var.surrender_penalty, player_hit_edges);
 	__compute_player_hit_edges(player_stand_edges_post_peek, 
 		player_final_state_probability, player_actions, 
-		surrender_penalty, player_hit_edges_post_peek);
+		var.surrender_penalty, player_hit_edges_post_peek);
 #endif
 }
 
@@ -1322,12 +1328,12 @@ strategy::compute_player_initial_edges(
 	for (j=0; j<vals; ++j) {		// for dealer-reveal card
 		expectations c(player_actions[i][j]);	// yes, copy
 		c.hit = player_hit_edges[i][j];
-		c.optimize(surrender_penalty);
+		c.optimize(var.surrender_penalty);
 		// since splits are folded into non-pair states
 		const pair<player_choice, player_choice>
 //			splits are computed in a separate section of the table
 			p(c.best_two(D, S, R));
-		const edge_type e = c.value(p.first, surrender_penalty);
+		const edge_type e = c.value(p.first, var.surrender_penalty);
 		player_initial_edges_post_peek[i][j] = e;
 	}
 	}
@@ -1346,7 +1352,7 @@ void
 strategy::finalize_player_initial_edges(void) {
 #if 0
 	fill(player_initial_edges[goal].begin(), 
-		player_initial_edges[goal].end(), bj_payoff);
+		player_initial_edges[goal].end(), var.bj_payoff);
 #endif
 #if DUMP_DURING_EVALUATE
 	dump_player_initial_edges(cout) << endl;
@@ -1392,7 +1398,7 @@ strategy::optimize_actions(void) {
 	for (i=0; i<p_action_states; ++i) {
 	size_t j;
 	for (j=0; j<vals; ++j) {
-		player_actions[i][j].optimize(surrender_penalty);
+		player_actions[i][j].optimize(var.surrender_penalty);
 	}
 	}
 }
@@ -1565,7 +1571,7 @@ if (z.split > -2.0 *vals) {
 	for (j=0; j<vals; ++j) {
 		const expectations& ex(v[reveal_print_ordering[j]]);
 //		o << '\t' << EFORMAT(expectations::surrender);
-		o << '\t' << EFORMAT(surrender_penalty);
+		o << '\t' << EFORMAT(var.surrender_penalty);
 		if (ex.best() == SURRENDER) o << '*';
 	}
 	o << endl;
@@ -1577,7 +1583,7 @@ if (z.split > -2.0 *vals) {
 		o << '\t';
 		const pair<player_choice, player_choice>
 			opt(ex.best_two(true, true, true));
-		o << EFORMAT(ex.margin(opt.first, opt.second, surrender_penalty));
+		o << EFORMAT(ex.margin(opt.first, opt.second, var.surrender_penalty));
 	}
 	o << endl;
 #endif
@@ -1628,7 +1634,7 @@ strategy::dump_optimal_edges(const expectations_vector& v, ostream& o) const {
 		case HIT: o << EFORMAT(ex.hit); break;
 		case DOUBLE: o << EFORMAT(ex.double_down); break;
 		case SPLIT: o << EFORMAT(ex.split); break;
-		case SURRENDER: o << EFORMAT(surrender_penalty); break;
+		case SURRENDER: o << EFORMAT(var.surrender_penalty); break;
 		default: break;
 		}
 	}
@@ -1640,7 +1646,7 @@ strategy::dump_optimal_edges(const expectations_vector& v, ostream& o) const {
 		o << '\t';
 		const pair<player_choice, player_choice>
 			opt(ex.best_two(true, true, true));
-		o << EFORMAT(ex.margin(opt.first, opt.second, surrender_penalty));
+		o << EFORMAT(ex.margin(opt.first, opt.second, var.surrender_penalty));
 	}
 	o << endl;
 #endif
@@ -1794,7 +1800,7 @@ strategy::dump_optimal_actions(ostream& o) const {
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ostream&
 strategy::dump(ostream& o) const {
-	variation::dump(o) << endl;
+	var.dump(o) << endl;
 	dump_dealer_policy(o);				// verified
 	dump_player_hit_state(o);			// verified
 	dump_dealer_final_table(o) << endl;		// verified
@@ -1874,6 +1880,22 @@ deck_state::count(const size_t c) {
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
+	Draws the user-determined card, useful for setting up
+	and querying specific scenarios.
+ */
+void
+deck_state::magic_draw(const size_t r) {
+	// TODO: safe-guard against drawing non-existent
+	assert(cards[r]);
+	++used_cards[r];
+	--cards[r];
+	++cards_spent;
+	--cards_remaining;
+	need_update = true;
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
 	Removes one card from remaining deck at random.
 	Does NOT re-compute probabilities.
  */
@@ -1885,11 +1907,7 @@ deck_state::quick_draw(void) {
 #else
 	const size_t ret = util::random_draw_from_integer_pdf(cards);
 #endif
-	++used_cards[ret];
-	--cards[ret];
-	++cards_spent;
-	--cards_remaining;
-	need_update = true;
+	magic_draw(ret);
 	return ret;
 }
 
@@ -1969,7 +1987,8 @@ deck_state::show_count(ostream& o) const {
 //=============================================================================
 // class grader method definitions
 
-grader::grader(const variation& v) : basic_strategy(v), dynamic_strategy(v), 
+grader::grader(const variation& v) :
+		var(v), basic_strategy(var), dynamic_strategy(var), 
 	C(v),
 	bankroll(100.0), bet(1.0) {
 	basic_strategy.set_card_distribution(standard_deck);
@@ -2027,7 +2046,7 @@ grader::deal_hand(istream& i, ostream& o) {
 	const bool pbj = player_hands.front().has_blackjack();
 	bool end = pbj;
 	if (dealer_reveal == strategy::ACE) {
-		if (basic_strategy.peek_on_Ace) {
+		if (var.peek_on_Ace) {
 		const bool buy_insurance = offer_insurance(i, o, pbj);;
 		// determine change in bankroll
 		// check for blackjack for player
@@ -2035,7 +2054,7 @@ grader::deal_hand(istream& i, ostream& o) {
 		if (C.peek_hole_card() == strategy::TEN) {
 			end = true;
 			if (buy_insurance) {
-				bankroll += basic_strategy.insurance *half_bet;
+				bankroll += var.insurance *half_bet;
 			}
 			if (!pbj) {
 				bankroll -= bet;
@@ -2045,13 +2064,13 @@ grader::deal_hand(istream& i, ostream& o) {
 				bankroll -= half_bet;
 			}
 			if (pbj) {
-				bankroll += basic_strategy.bj_payoff *bet;
+				bankroll += var.bj_payoff *bet;
 			}
 			// eles keep playing
 		}
 		}
 	} else if (dealer_reveal == strategy::TEN) {
-		if (basic_strategy.peek_on_10) {
+		if (var.peek_on_10) {
 		if (C.peek_hole_card() == strategy::ACE) {
 			if (!pbj) {
 				bankroll -= bet;

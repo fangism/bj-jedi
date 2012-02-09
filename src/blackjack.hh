@@ -143,7 +143,7 @@ struct variation {
 	Blackjack player strategy calculator class.
 	TODO: use reference to variation, not inheritance
  */
-class strategy : public variation {
+class strategy {
 public:
 	static	const deck		standard_deck_odds;
 	static const size_t vals = 10;          // number of values, max value
@@ -200,6 +200,8 @@ private:
 	void
 	player_final_state_probabilities(const probability_vector&, 
 		player_final_state_probability_vector&);
+
+	const variation&		var;
 
 	/**
 		the probability vector for card values, A through 10.
@@ -463,7 +465,7 @@ private:
 	 */
 	edge_type				_overall_edge;
 public:
-	strategy();
+//	strategy();
 
 	explicit
 	strategy(const variation&);
@@ -631,7 +633,7 @@ public:
 
 	ostream&
 	dump_variation(ostream& o) const {
-		return variation::dump(o);
+		return var.dump(o);
 	}
 
 };	// end class strategy
@@ -706,6 +708,9 @@ public:
 		return card_probabilities;
 	}
 
+	void
+	magic_draw(const size_t);
+
 	size_t
 	quick_draw(void);
 
@@ -745,6 +750,7 @@ public:
 	Input stream: history of cards seen and transactions.  
  */
 class grader {
+	variation				var;
 	/**
 		Static strategy calculation, based on rule variations
 		only, not current card counts.  
