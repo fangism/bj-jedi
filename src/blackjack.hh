@@ -141,8 +141,9 @@ struct variation {
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
 	Blackjack player strategy calculator class.
+	TODO: use reference to variation, not inheritance
  */
-class strategy : protected variation {
+class strategy : public variation {
 public:
 	static	const deck		standard_deck_odds;
 	static const size_t vals = 10;          // number of values, max value
@@ -793,6 +794,20 @@ class grader {
 		bool
 		splittable(void) const;
 
+		bool
+		doubleable(void) const {
+			return cards.size() == 2;
+		}
+		bool
+		surrenderable(void) const {
+			return cards.size() == 2;
+		}
+
+		bool
+		has_blackjack(void) const {
+			return state == strategy::player_blackjack;
+		}
+
 		ostream&
 		dump(ostream&, const state_machine&) const;
 
@@ -836,6 +851,10 @@ public:
 
 	void
 	deal_hand(istream&, ostream&);
+
+private:
+	bool
+	offer_insurance(istream&, ostream&, const bool) const;
 
 };	// end class grader
 

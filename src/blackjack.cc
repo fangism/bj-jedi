@@ -1982,8 +1982,36 @@ grader::grader(const variation& v) : basic_strategy(v), dynamic_strategy(v),
 grader::~grader() { }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+bool
+grader::offer_insurance(istream& i, ostream& o, const bool pbj) const {
+	// if peek_ACE
+	const char* prompt = pbj ?  "even-money?" : "insurance?";
+	bool done = false;
+	bool buy_insurance = false;
+	string line;
+	do {
+	do {
+		o << prompt << " [ync]: ";
+		i >> line;
+	} while (line.empty() && i);
+	if (line == "n" || line == "N") {
+		done = true;
+	} else if (line == "y" || line == "Y") {
+		buy_insurance = true;
+		done = true;
+	} else if (line == "c" || line == "C") {
+		C.show_count(o);
+	}
+	} while (!done);
+	return buy_insurance;
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
+	Play a hand of blackjack.
+ */
 void
-grader::deal_hand(istream&, ostream& o) {
+grader::deal_hand(istream& i, ostream& o) {
 	player_hands.clear();
 	player_hands.resize(1);
 	const size_t p1 = C.quick_draw();
@@ -1992,10 +2020,54 @@ grader::deal_hand(istream&, ostream& o) {
 	player_hands.front().deal(ps, p1, p2);
 	dealer_reveal = C.quick_draw();
 	C.draw_hole_card();
-	o << "dealer: " << strategy::card_name[dealer_reveal] << ", ";
+	o << "dealer: " << strategy::card_name[dealer_reveal] << endl;
 	player_hands.front().dump(o, ps) << endl;
-	// after this, peek and prompt for insurance
-	o << "TODO: finish me" << endl;
+	// if early_surrender (rare) ...
+	// prompt for insurance
+	const bool pbj = player_hands.front().has_blackjack();
+	bool end = pbj;
+	if (dealer_reveal == strategy::ACE) {
+		if (basic_strategy.peek_on_Ace) {
+		const bool buy_insurance = offer_insurance(i, o, pbj);;
+		// determine change in bankroll
+		// check for blackjack for player
+		const double half_bet = bet / 2.0;
+		if (C.peek_hole_card() == strategy::TEN) {
+			end = true;
+			if (buy_insurance) {
+				bankroll += basic_strategy.insurance *half_bet;
+			}
+			if (!pbj) {
+				bankroll -= bet;
+			}	// else push
+		} else {
+			if (buy_insurance) {
+				bankroll -= half_bet;
+			}
+			if (pbj) {
+				bankroll += basic_strategy.bj_payoff *bet;
+			}
+			// eles keep playing
+		}
+		}
+	} else if (dealer_reveal == strategy::TEN) {
+		if (basic_strategy.peek_on_10) {
+		if (C.peek_hole_card() == strategy::ACE) {
+			if (!pbj) {
+				bankroll -= bet;
+			}	// else push
+		}
+		}
+	}
+	// play ends if either dealer or player had blackjack (and was peeked)
+if (!end) {
+	size_t i = 0;
+	for ( ; i<player_hands.size(); ++i) {
+		player_hands.front().dump(o, ps) << endl;
+		o << "TODO: finish me" << endl;
+		// player may resplit hands
+	}
+}
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
