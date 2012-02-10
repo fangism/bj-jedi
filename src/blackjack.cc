@@ -47,7 +47,7 @@ using util::normalize;
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// mapping of initial card (dealer or player) to state indices
 const size_t
-strategy::vals;
+play_map::vals;
 
 /**
 	index: card from deck
@@ -55,10 +55,10 @@ strategy::vals;
 	ACE is mapped to the lone ace state.
  */
 const size_t
-strategy::p_initial_card_map[strategy::vals] =
+play_map::p_initial_card_map[strategy::vals] =
 	{ player_bust+1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
 const size_t
-strategy::d_initial_card_map[strategy::vals] =
+play_map::d_initial_card_map[strategy::vals] =
 	{ dealer_push+1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
 
 /**
@@ -69,11 +69,11 @@ strategy::d_initial_card_map[strategy::vals] =
 	value: card index (re-ordered)
  */
 const size_t
-strategy::reveal_print_ordering[strategy::vals] =
+play_map::reveal_print_ordering[strategy::vals] =
 	{ 1, 2, 3, 4, 5, 6, 7, 8, TEN, ACE};
 
 const size_t
-strategy::p_action_states;
+play_map::p_action_states;
 
 const char
 strategy::action_key[] = "-SHDPR";
@@ -113,7 +113,7 @@ card_index(const char c) {
 	TODO: this table should be redundant from player 
 	state machine, which already contains strings.
  */
-const char strategy::player_final_states[][player_states] = {
+const char play_map::player_final_states[][player_states] = {
 	"<=16",
 	"17",
 	"18",
@@ -130,7 +130,7 @@ const char strategy::player_final_states[][player_states] = {
 	TODO: this table should be redundant from dealer
 	state machine, which already contains strings.
  */
-const char strategy::dealer_final_states[][dealer_states] = {
+const char play_map::dealer_final_states[][dealer_states] = {
 	"17",
 	"18",
 	"19",
@@ -196,6 +196,15 @@ variation::dump(ostream& o) const {
 	o << "surrender penalty: " << surrender_penalty << endl;
 	o << "double-down multiplier: " << double_multiplier << endl;
 	return o;
+}
+
+//-----------------------------------------------------------------------------
+// class play_map method definitions
+play_map::play_map(const variation& v) : var(v),
+		dealer_hit(), player_hit(), player_resplit(), last_split() {
+	set_dealer_policy();
+	compute_player_hit_state();
+	compute_player_split_state();
 }
 
 //-----------------------------------------------------------------------------
@@ -287,7 +296,7 @@ strategy::evaluate(void) {
 	\return an index [0,player_states) into an array of player final states.
  */
 size_t
-strategy::player_final_state_map(const size_t i) {
+play_map::player_final_state_map(const size_t i) {
 	assert(i < p_action_states);
 	if (i < stop) {
 		return 0;	// represents <= 16
@@ -343,12 +352,15 @@ strategy::strategy() :
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 strategy::strategy(const variation& v) : 
-	var(v), card_odds(standard_deck_distribution), dealer_hit() {
+	play_map(v), 
+	var(v), card_odds(standard_deck_distribution) {
 	// only depends on H17:
 	// don't *have* to do this right away...
+#if 0
 	set_dealer_policy();
 	compute_player_hit_state();
 	compute_player_split_state();
+#endif
 	update_player_initial_state_odds();
 }
 
@@ -359,7 +371,7 @@ strategy::strategy(const variation& v) :
 	\param push22, 22 is dealer push
  */
 void
-strategy::set_dealer_policy(void) {
+play_map::set_dealer_policy(void) {
 	// enumerating edges:
 	const size_t soft_max = var.H17 ? 7 : 6;	// 6-16, 7-17
 	// 0-21 are hard values (no ace)
@@ -441,7 +453,7 @@ strategy::set_dealer_policy(void) {
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ostream&
-strategy::dump_dealer_policy(ostream& o) const {
+play_map::dump_dealer_policy(ostream& o) const {
 	o << "Dealer's action table:\n";
 	return dealer_hit.dump(o) << endl;
 }
@@ -455,7 +467,7 @@ strategy::dump_dealer_policy(ostream& o) const {
 	\post computes player_hit state transition table.
  */
 void
-strategy::compute_player_hit_state(void) {
+play_map::compute_player_hit_state(void) {
 	static const size_t soft_max = 10;
 	// 0-21 are hard values (no ace)
 	// 22-30 are soft 12 through soft 20
@@ -535,7 +547,7 @@ strategy::compute_player_hit_state(void) {
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ostream&
-strategy::dump_player_hit_state(ostream& o) const {
+play_map::dump_player_hit_state(ostream& o) const {
 	o << "Player's hit transition table:\n";
 	return player_hit.dump(o) << endl;
 }
@@ -547,7 +559,7 @@ strategy::dump_player_hit_state(ostream& o) const {
 	\post split-transition table based on hitting on the split card.
  */
 void
-strategy::compute_player_split_state(void) {
+play_map::compute_player_split_state(void) {
 	last_split.resize(vals);
 	size_t i;
 	for (i=0; i<vals; ++i) {
@@ -569,7 +581,7 @@ strategy::compute_player_split_state(void) {
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ostream&
-strategy::dump_player_split_state(ostream& o) const {
+play_map::dump_player_split_state(ostream& o) const {
 	o << "Player's split+hit (final) transition table:\n";
 	last_split.dump(o) << endl;
 	o << "Player's split+hit (resplit) transition table:\n";

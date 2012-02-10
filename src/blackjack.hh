@@ -141,12 +141,13 @@ struct variation {
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
-	Blackjack player strategy calculator class.
-	TODO: use reference to variation, not inheritance
+	Based on the rules, the game state transitions for the 
+	dealer and the player.
+	Edges are NOT computed here.  
  */
-class strategy {
+struct play_map {
 public:
-	static const size_t vals = 10;          // number of values, max value
+	static const size_t vals = card_values;	// number of values, max value
 	static const size_t goal = 21;
 	static const size_t stop = 17;		// dealer stands hard or soft 17
 	// table offsets for state_machine states
@@ -159,7 +160,7 @@ public:
 	static const size_t dealer_push = dealer_bust +1;
 	static const size_t dealer_soft = dealer_push +1;	// for push22
 	static const size_t player_soft = player_bust +1;
-private:
+// private:
 	static const size_t soft_min = 1;       // 1-11
 // only player may split
 	static const size_t pair_offset = player_soft +vals +1;
@@ -177,30 +178,12 @@ public:
 	static const size_t		p_initial_card_map[vals];
 	static const size_t		d_initial_card_map[vals];
 	static const size_t		reveal_print_ordering[];
-private:
+// private:
 	static const char		player_final_states[][player_states];
 	static const char		dealer_final_states[][dealer_states];
 
-	/// maps player state index to player_final_outcome state
-	static
-	size_t
-	player_final_state_map(const size_t);
-
-	typedef	array<probability_type, player_states>
-					player_final_state_probability_vector;
-
-	static
-	void
-	player_final_state_probabilities(const probability_vector&, 
-		player_final_state_probability_vector&);
-
 	const variation&		var;
-
-	/**
-		the probability vector for card values, A through 10.
-		entries are 0-indexed, with 0 = Ace, 1 = 2, etc.
-	 */
-	deck_distribution		card_odds;
+#if 1
 // some of these could be split into a rules struct
 	/// the dealer's fixed state machine, also action table
 	state_machine			dealer_hit;
@@ -210,6 +193,75 @@ private:
 	state_machine			player_resplit;
 	/// transition table for splits, with no re-split
 	state_machine			last_split;
+#endif
+
+public:
+	explicit
+	play_map(const variation&);
+
+	/// maps player state index to player_final_outcome state
+	static
+	size_t
+	player_final_state_map(const size_t);
+
+	void
+	set_dealer_policy(void);
+
+	void
+	compute_player_hit_state(void);
+
+	void
+	compute_player_split_state(void);
+
+	const state_machine&
+	get_player_state_machine(void) const {
+		return player_hit;
+	}
+
+	const state_machine&
+	get_dealer_state_machine(void) const {
+		return dealer_hit;
+	}
+
+	ostream&
+	dump_dealer_policy(ostream&) const;
+
+	ostream&
+	dump_player_hit_state(ostream&) const;
+
+	ostream&
+	dump_player_split_state(ostream&) const;
+
+	ostream&
+	dump_variation(ostream& o) const {
+		return var.dump(o);
+	}
+};	// end class play_map
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
+	Blackjack player strategy calculator class.
+	All expectations, probabilities, edges, and optimal actions
+	are evaluated here.
+ */
+class strategy : public play_map {
+
+	typedef	array<probability_type, player_states>
+					player_final_state_probability_vector;
+
+	static
+	void
+	player_final_state_probabilities(const probability_vector&, 
+		player_final_state_probability_vector&);
+
+//	const play_map&			play;
+	const variation&		var;
+
+	/**
+		the probability vector for card values, A through 10.
+		entries are 0-indexed, with 0 = Ace, 1 = 2, etc.
+	 */
+	deck_distribution		card_odds;
 	/**
 		"Hit until it's not good to hit..."
 		One player decision state machine for each dealer reveal card
@@ -458,8 +510,6 @@ private:
 	 */
 	edge_type				_overall_edge;
 public:
-//	strategy();
-
 	explicit
 	strategy(const variation&);
 
@@ -472,28 +522,9 @@ public:
 	void
 	evaluate(void);
 
-	const state_machine&
-	get_player_state_machine(void) const {
-		return player_hit;
-	}
-
-	const state_machine&
-	get_dealer_state_machine(void) const {
-		return dealer_hit;
-	}
-
 private:
 	void
 	update_player_initial_state_odds(void);
-
-	void
-	set_dealer_policy(void);
-
-	void
-	compute_player_hit_state(void);
-
-	void
-	compute_player_split_state(void);
 
 	void
 	check_odds(void) const;
@@ -572,15 +603,6 @@ public:
 
 	ostream&
 	dump_player_initial_state_odds(ostream&) const;
-
-	ostream&
-	dump_dealer_policy(ostream&) const;
-
-	ostream&
-	dump_player_hit_state(ostream&) const;
-
-	ostream&
-	dump_player_split_state(ostream&) const;
 
 	ostream&
 	dump_player_hit_tables(ostream&) const;
@@ -763,6 +785,9 @@ class grader {
 	 */
 	deck_state				C;
 
+	/**
+		A single player hand state.
+	 */
 	struct hand {
 		/**
 			A,2-9,T.
