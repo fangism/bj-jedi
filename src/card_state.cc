@@ -2,6 +2,7 @@
 
 #include "card_state.hh"
 #include <cassert>
+#include <cstdlib>
 #include <algorithm>
 #include <functional>
 #include <numeric>		// for accumulate
@@ -15,6 +16,29 @@
 using std::ostringstream;
 using std::cout;
 using std::endl;
+
+//-----------------------------------------------------------------------------
+// enumeration-dependent interface
+const char card_name[] = "A23456789T";
+
+// really should just be a public function
+size_t
+card_index(const char c) {
+	if (std::isalpha(c)) {
+		if (c == 'A' || c == 'a') {
+			return ACE;
+		} else if (c == 'T' || c == 't'
+			|| c == 'J' || c == 'j'
+			|| c == 'Q' || c == 'q'
+			|| c == 'K' || c == 'k'
+			) {
+			return TEN;
+		}
+	} else if (std::isdigit(c)) {
+		return c -'1';
+	}
+	return size_t(-1);
+}
 
 static const probability_type __standard_deck[10] = {
 1.0/13.0,		// A
@@ -31,6 +55,7 @@ static const probability_type __standard_deck[10] = {
 
 const deck standard_deck(__standard_deck, __standard_deck+10);
 
+//-----------------------------------------------------------------------------
 /**
 	Assert that no edges point to the 0 state.  
 	Is allowed to have no edges.  
@@ -41,6 +66,7 @@ state_machine::node::check(void) const {
 	assert(find(out_edges.begin(), e, size_t(0)) == e);
 }
 
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ostream&
 state_machine::node::dump_edges(ostream& o) const {
 	std::ostream_iterator<size_t> osi(o, ",");
@@ -48,15 +74,18 @@ state_machine::node::dump_edges(ostream& o) const {
 	return o;
 }
 
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ostream&
 state_machine::node::dump(ostream& o) const {
 	return dump_edges(o << '\"' << name << "\":\t");
 }
 
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 state_machine::state_machine() :
 	states() {
 }
 
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
 	Allocate n states to be encoded.  
  */
@@ -65,6 +94,7 @@ state_machine::resize(const size_t n)  {
 	states.resize(n);
 }
 
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
 	Change the name of the state. 
  */
@@ -74,6 +104,7 @@ state_machine::name_state(const size_t i, const string& n) {
 	states[i].name = n;
 }
 
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
 	Add an edge from state i to state j, using probability[d] from deck.
 	\param i from state

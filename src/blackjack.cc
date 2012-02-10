@@ -85,16 +85,11 @@ strategy::action_key[] = "-SHDPR";
 // R = surrender (run!)
 
 #if 0
-// default value
-const double
-strategy::expectations::surrender = -0.5;
-#endif
-
-const char strategy::card_name[] = "A23456789T";
+const char card_name[] = "A23456789T";
 
 // really should just be a public function
 size_t
-strategy::card_index(const char c) {
+card_index(const char c) {
 	if (std::isalpha(c)) {
 		if (c == 'A' || c == 'a') {
 			return ACE;
@@ -110,6 +105,7 @@ strategy::card_index(const char c) {
 	}
 	return size_t(-1);
 }
+#endif
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
@@ -1838,7 +1834,7 @@ deck_state::reshuffle(void) {
 	const size_t f = num_decks*4;
 	std::fill(used_cards.begin(), used_cards.end(), 0);
 	std::fill(cards.begin(), cards.end() -1, f);
-	cards[strategy::TEN] = f*4;	// T, J, Q, K
+	cards[TEN] = f*4;	// T, J, Q, K
 	need_update = true;
 	update_probabilities();
 }
@@ -1951,7 +1947,7 @@ deck_state::show_count(ostream& o) const {
 	o << "card:\t";
 	for (i=0 ; i<strategy::vals; ++i) {
 		const size_t j = strategy::reveal_print_ordering[i];
-		o << "   " << strategy::card_name[j];
+		o << "   " << card_name[j];
 	}
 	o << "\ttotal\t%" << endl;
 	o << "used:\t";
@@ -1972,7 +1968,7 @@ deck_state::show_count(ostream& o) const {
 	int hi_lo_count = 0;
 	hi_lo_count += used_cards[1] +used_cards[2] +used_cards[3]
 		+used_cards[4] +used_cards[5];	// 2 through 6
-	hi_lo_count -= used_cards[strategy::ACE] +used_cards[strategy::TEN];
+	hi_lo_count -= used_cards[ACE] +used_cards[TEN];
 	double true_count = (double(hi_lo_count) * 52)
 		/ double(cards_remaining);
 	o << "hi-lo: " << hi_lo_count <<
@@ -2039,19 +2035,19 @@ grader::deal_hand(istream& i, ostream& o) {
 	player_hands.front().deal(ps, p1, p2);
 	dealer_reveal = C.quick_draw();
 	C.draw_hole_card();
-	o << "dealer: " << strategy::card_name[dealer_reveal] << endl;
+	o << "dealer: " << card_name[dealer_reveal] << endl;
 	player_hands.front().dump(o, ps) << endl;
 	// if early_surrender (rare) ...
 	// prompt for insurance
 	const bool pbj = player_hands.front().has_blackjack();
 	bool end = pbj;
-	if (dealer_reveal == strategy::ACE) {
+	if (dealer_reveal == ACE) {
 		if (var.peek_on_Ace) {
 		const bool buy_insurance = offer_insurance(i, o, pbj);;
 		// determine change in bankroll
 		// check for blackjack for player
 		const double half_bet = bet / 2.0;
-		if (C.peek_hole_card() == strategy::TEN) {
+		if (C.peek_hole_card() == TEN) {
 			end = true;
 			if (buy_insurance) {
 				bankroll += var.insurance *half_bet;
@@ -2069,9 +2065,9 @@ grader::deal_hand(istream& i, ostream& o) {
 			// eles keep playing
 		}
 		}
-	} else if (dealer_reveal == strategy::TEN) {
+	} else if (dealer_reveal == TEN) {
 		if (var.peek_on_10) {
-		if (C.peek_hole_card() == strategy::ACE) {
+		if (C.peek_hole_card() == ACE) {
 			if (!pbj) {
 				bankroll -= bet;
 			}	// else push
@@ -2209,14 +2205,14 @@ grader::hand::hand(const size_t p1) : cards(), state() {
 void
 grader::hand::initial_card(const size_t p1) {
 	// the string stores the card names, not card indices
-	cards.push_back(strategy::card_name[p1]);
+	cards.push_back(card_name[p1]);
 	state = strategy::p_initial_card_map[p1];
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void
 grader::hand::hit(const state_machine& m, const size_t p2) {
-	cards.push_back(strategy::card_name[p2]);
+	cards.push_back(card_name[p2]);
 	const state_machine::node& current(m[state]);
 	if (!current.is_terminal()) {
 		state = current[p2];
@@ -2251,7 +2247,7 @@ grader::hand::splittable(void) const {
 void
 grader::hand::split(const state_machine& m, const size_t p2) {
 	if (splittable()) {
-		const size_t p1 = strategy::card_index(cards[0]);
+		const size_t p1 = card_index(cards[0]);
 		cards.clear();
 		initial_card(p1);
 		hit(m, p2);

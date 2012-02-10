@@ -26,6 +26,7 @@ using std::pair;
 using std::istream;
 using util::array;
 
+
 /**
 	The mathematical edge (scalar) type.  
  */
@@ -149,13 +150,6 @@ public:
 	static const size_t vals = 10;          // number of values, max value
 	static const size_t goal = 21;
 	static const size_t stop = 17;		// dealer stands hard or soft 17
-	// some of these should be outside of this class
-	static const char		card_name[];	// use util::array?
-	static size_t		card_index(const char);	// reverse-map of card_name
-	enum {
-		ACE = 0,		// index of Ace (card_odds)
-		TEN = 9			// index of 10 (T) (card_odds)
-	};
 	// table offsets for state_machine states
 	static const size_t player_blackjack = goal +1;
 	static const size_t dealer_blackjack = goal +1;

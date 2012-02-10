@@ -58,7 +58,7 @@ main(int, char*[]) {
 		ndel.evaluate();
 		const edge_type diff_edge = del.overall_edge();
 		const edge_type ndiff_edge = ndel.overall_edge();
-	cout << "------------------ " << strategy::card_name[i]
+	cout << "------------------ " << card_name[i]
 		<< " ------------------" << endl;
 	cout << "card odds: (A,2,...T)" << endl;
 	copy(pd.begin(), pd.end(),
@@ -70,10 +70,10 @@ main(int, char*[]) {
 		
 	del.dump_reveal_edges(cout << "+del%: ");
 	ndel.dump_reveal_edges(cout << "-del%: ");
-	cout << "edge sensitivity [card=" << strategy::card_name[i] <<
+	cout << "edge sensitivity [card=" << card_name[i] <<
 		", +" << pdel << "]: edge=" << diff_edge <<
 		"; de/dp=" << (diff_edge -base_edge)/pdel << endl;
-	cout << "edge sensitivity [card=" << strategy::card_name[i] <<
+	cout << "edge sensitivity [card=" << card_name[i] <<
 		", -" << pdel << "]: edge=" << ndiff_edge <<
 		"; de/dp=" << (base_edge -ndiff_edge)/pdel << endl;
 		cout << endl;
@@ -85,10 +85,10 @@ main(int, char*[]) {
 	cout << "------------------ AT ------------------" << endl;
 		deck pd(standard_deck);
 		deck nd(standard_deck);
-		pd[strategy::ACE] *= 1 +hdel;
-		pd[strategy::TEN] *= 1 +hdel;
-		nd[strategy::ACE] /= 1 +hdel;
-		nd[strategy::TEN] /= 1 +hdel;
+		pd[ACE] *= 1 +hdel;
+		pd[TEN] *= 1 +hdel;
+		nd[ACE] /= 1 +hdel;
+		nd[TEN] /= 1 +hdel;
 		normalize(pd);
 		normalize(nd);
 		strategy del(v);

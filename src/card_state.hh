@@ -15,6 +15,14 @@ using std::string;
 
 typedef	double		probability_type;
 
+//-----------------------------------------------------------------------------
+enum {
+	ACE = 0,		// index of Ace (card_odds)
+	TEN = 9			// index of 10 (T) (card_odds)
+};
+extern	const char		card_name[];	// use util::array?
+extern	size_t		card_index(const char);	// reverse-map of card_name
+
 /**
 	A deck is just modeled as a probability vector.  
 	\invariant sum of probabilities should be 1.
@@ -25,6 +33,7 @@ typedef	probability_vector			deck;
 // 13 card values, 2 through A
 extern	const deck				standard_deck;
 
+//-----------------------------------------------------------------------------
 /**
 	Graph must be acyclic, and terminal!  Fortunately, blackjack is acyclic.
 	Technically, this should be done with matrix computations, 
