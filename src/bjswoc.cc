@@ -33,7 +33,7 @@ main(int, char*[]) {
 //	v.surrender_late = true;
 //	v.one_card_on_split_aces = false;
 	strategy S(v);
-	S.set_card_distribution(standard_deck);
+	S.set_card_distribution(standard_deck_distribution);
 	S.evaluate();
 	S.dump(cout);
 	cout << endl;

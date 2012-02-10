@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 #include <iosfwd>
+#include "util/array.hh"
 
 // namesspace?
 
@@ -18,7 +19,8 @@ typedef	double		probability_type;
 //-----------------------------------------------------------------------------
 enum {
 	ACE = 0,		// index of Ace (card_odds)
-	TEN = 9			// index of 10 (T) (card_odds)
+	TEN = 9,		// index of 10 (T) (card_odds)
+	card_values = 10	// number of unique card values (TJQK = 10)
 };
 extern	const char		card_name[];	// use util::array?
 extern	size_t		card_index(const char);	// reverse-map of card_name
@@ -28,10 +30,13 @@ extern	size_t		card_index(const char);	// reverse-map of card_name
 	\invariant sum of probabilities should be 1.
  */
 typedef	vector<probability_type>		probability_vector;
-typedef	probability_vector			deck;
+typedef	util::array<probability_type, card_values>	deck_distribution;
+typedef	util::array<size_t, card_values>	deck_count_type;
 
 // 13 card values, 2 through A
-extern	const deck				standard_deck;
+extern	const deck_count_type			standard_deck_count_reduced;
+extern	const deck_count_type			standard_deck_count;
+extern	const deck_distribution			standard_deck_distribution;
 
 //-----------------------------------------------------------------------------
 /**
@@ -112,11 +117,11 @@ public:
 
 	/// compute terminal probabilities (solve)
 	void
-	solve(const deck&,
+	solve(const deck_distribution&,
 		const probability_vector&, probability_vector&);
 
 	bool
-	convolve(const deck&,
+	convolve(const deck_distribution&,
 		const probability_vector&, probability_vector&);
 
 	void

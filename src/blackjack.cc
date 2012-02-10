@@ -141,6 +141,7 @@ const char strategy::dealer_final_states[][dealer_states] = {
 	"push"	// switch variation only
 };
 
+#if 0
 /**
 	Default deck values and distribution.  
  */
@@ -158,6 +159,7 @@ static const probability_type __standard_deck[strategy::vals] = {
 };
 
 const deck strategy::standard_deck_odds(__standard_deck, __standard_deck+vals);
+#endif
 
 //-----------------------------------------------------------------------------
 // class variation method definitions
@@ -200,9 +202,18 @@ variation::dump(ostream& o) const {
 // class strategy method definitions
 
 void
-strategy::set_card_distribution(const deck& o) {
+strategy::set_card_distribution(const deck_distribution& o) {
 	card_odds = o;
 	update_player_initial_state_odds();
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+void
+strategy::set_card_distribution(const deck_count_type& o) {
+	deck_distribution t;
+	copy(o.begin(), o.end(), t.begin());	// convert int to real
+	normalize(t);
+	set_card_distribution(t);
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -320,7 +331,7 @@ strategy::player_final_state_probabilities(const probability_vector& s,
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 #if 0
 strategy::strategy() : 
-	var(), card_odds(standard_deck), dealer_hit() {
+	var(), card_odds(standard_deck_distribution), dealer_hit() {
 	// only depends on H17:
 	// don't *have* to do this right away...
 	set_dealer_policy();
@@ -332,7 +343,7 @@ strategy::strategy() :
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 strategy::strategy(const variation& v) : 
-	var(v), card_odds(standard_deck), dealer_hit() {
+	var(v), card_odds(standard_deck_distribution), dealer_hit() {
 	// only depends on H17:
 	// don't *have* to do this right away...
 	set_dealer_policy();
@@ -575,8 +586,8 @@ strategy::dump_player_split_state(ostream& o) const {
 void
 strategy::compute_dealer_final_table(void) {
 	// 17, 18, 19, 20, 21, BJ, bust, push
-	deck cards_no_ten(card_odds);
-	deck cards_no_ace(card_odds);
+	deck_distribution cards_no_ten(card_odds);
+	deck_distribution cards_no_ace(card_odds);
 	cards_no_ten[TEN] = 0.0;
 	cards_no_ace[ACE] = 0.0;
 // no need to normalize if accounting for dealer blackjack here
@@ -1987,8 +1998,8 @@ grader::grader(const variation& v) :
 		var(v), basic_strategy(var), dynamic_strategy(var), 
 	C(v),
 	bankroll(100.0), bet(1.0) {
-	basic_strategy.set_card_distribution(standard_deck);
-	dynamic_strategy.set_card_distribution(standard_deck);
+	basic_strategy.set_card_distribution(standard_deck_distribution);
+	dynamic_strategy.set_card_distribution(standard_deck_distribution);
 	basic_strategy.evaluate();
 	dynamic_strategy.evaluate();
 }

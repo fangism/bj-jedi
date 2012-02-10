@@ -9,7 +9,7 @@
 #include <iostream>
 #include <sstream>
 #include <iterator>
-#include "util/array.hh"
+#include "util/array.tcc"
 
 #define	DEBUG_SOLVE		0
 
@@ -40,7 +40,39 @@ card_index(const char c) {
 	return size_t(-1);
 }
 
-static const probability_type __standard_deck[10] = {
+static const size_t __standard_deck_count_reduced[card_values] = {
+1,		// A
+1,		// 2
+1,		// 3
+1,		// 4
+1,		// 5
+1,		// 6
+1,		// 7
+1,		// 8
+1,		// 9
+4		// 10,J,Q,K
+};
+
+const deck_count_type
+standard_deck_count_reduced(__standard_deck_count_reduced);
+
+static const size_t __standard_deck_count[card_values] = {
+4*1,		// A
+4*1,		// 2
+4*1,		// 3
+4*1,		// 4
+4*1,		// 5
+4*1,		// 6
+4*1,		// 7
+4*1,		// 8
+4*1,		// 9
+4*4		// 10,J,Q,K
+};
+
+const deck_count_type
+standard_deck_count(__standard_deck_count);
+
+static const probability_type __standard_deck_distribution[card_values] = {
 1.0/13.0,		// A
 1.0/13.0,		// 2
 1.0/13.0,		// 3
@@ -53,7 +85,8 @@ static const probability_type __standard_deck[10] = {
 4.0/13.0		// 10,J,Q,K
 };
 
-const deck standard_deck(__standard_deck, __standard_deck+10);
+const deck_distribution
+standard_deck_distribution(__standard_deck_distribution);
 
 //-----------------------------------------------------------------------------
 /**
@@ -143,7 +176,7 @@ state_machine::copy_edge_set(const state_machine& s, const size_t i, const size_
 	\return true if there is more work to do.
  */
 bool
-state_machine::convolve(const deck& cards, 
+state_machine::convolve(const deck_distribution& cards, 
 		const probability_vector& init, 
 		probability_vector& final) {
 #if DEBUG_SOLVE
@@ -189,7 +222,7 @@ cout << "::convolve()" << endl;
 		Will be resized to the number of states.  
  */
 void
-state_machine::solve(const deck& cards, 
+state_machine::solve(const deck_distribution& cards, 
 		const probability_vector& init, 
 		probability_vector& final) {
 #if DEBUG_SOLVE

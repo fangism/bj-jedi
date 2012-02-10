@@ -3,7 +3,7 @@
 #include <iostream>
 #include <iterator>
 #include "blackjack.hh"
-#include "util/probability.tcc"
+// #include "util/probability.tcc"
 
 using std::cout;
 using std::endl;
@@ -11,7 +11,6 @@ using std::ostream_iterator;
 using blackjack::variation;
 using blackjack::strategy;
 using blackjack::edge_type;
-using util::normalize;
 
 /**
 	Define to 1 to perform distribution sensitivity analysis.
@@ -28,7 +27,7 @@ main(int, char*[]) {
 //	v.surrender_late = true;
 //	v.one_card_on_split_aces = false;
 	strategy S(v);
-	S.set_card_distribution(standard_deck);
+	S.set_card_distribution(standard_deck_count);
 	S.evaluate();
 	S.dump(cout);
 	cout << endl;
@@ -39,17 +38,15 @@ main(int, char*[]) {
 //	const probability_type pdel = 0.10;
 	const probability_type pdel = 1.0/52.0;	// +/- 1 card to deck
 	cout <<
-"Sensitivitiy analysis: relative probability increase per card = "
+"Sensitivity analysis: relative probability increase per card = "
 		<< pdel << endl;
 	size_t j;		// which card to vary probability
 	for (j=0; j<strategy::vals; ++j) {
 		const size_t i = strategy::reveal_print_ordering[j];
-		deck pd(standard_deck);
-		deck nd(standard_deck);
-		pd[i] *= 1 +pdel;
-		nd[i] /= 1 +pdel;
-		normalize(pd);
-		normalize(nd);
+		deck_count_type pd(standard_deck_count);
+		deck_count_type nd(standard_deck_count);
+		pd[i] += 1;
+		nd[i] -= 1;
 		strategy del(v);
 		strategy ndel(v);
 		del.set_card_distribution(pd);
@@ -62,35 +59,35 @@ main(int, char*[]) {
 		<< " ------------------" << endl;
 	cout << "card odds: (A,2,...T)" << endl;
 	copy(pd.begin(), pd.end(),
-		ostream_iterator<probability_type>(cout, "\t"));
+		ostream_iterator<size_t>(cout, "\t"));
 	cout << "(+)" << endl;
 	copy(nd.begin(), nd.end(),
-		ostream_iterator<probability_type>(cout, "\t"));
+		ostream_iterator<size_t>(cout, "\t"));
 	cout << "(-)" << endl;
 		
-	del.dump_reveal_edges(cout << "+del%: ");
-	ndel.dump_reveal_edges(cout << "-del%: ");
+	del.dump_reveal_edges(cout << "+1: ");
+	ndel.dump_reveal_edges(cout << "-1: ");
 	cout << "edge sensitivity [card=" << card_name[i] <<
-		", +" << pdel << "]: edge=" << diff_edge <<
+		", +1/52]: edge=" << diff_edge <<
 		"; de/dp=" << (diff_edge -base_edge)/pdel << endl;
 	cout << "edge sensitivity [card=" << card_name[i] <<
-		", -" << pdel << "]: edge=" << ndiff_edge <<
+		", -1/52]: edge=" << ndiff_edge <<
 		"; de/dp=" << (base_edge -ndiff_edge)/pdel << endl;
 		cout << endl;
 	}	// end for
 
+#if 0
 	{
 	// for ACEs and TENs (common hi-lo)
 	const probability_type hdel = pdel/2;
+	const probability_type ddel = pdel*2;
 	cout << "------------------ AT ------------------" << endl;
-		deck pd(standard_deck);
-		deck nd(standard_deck);
-		pd[ACE] *= 1 +hdel;
-		pd[TEN] *= 1 +hdel;
-		nd[ACE] /= 1 +hdel;
-		nd[TEN] /= 1 +hdel;
-		normalize(pd);
-		normalize(nd);
+		deck_count_type pd(standard_deck_count);
+		deck_count_type nd(standard_deck_count);
+		pd[ACE] += 1;
+		pd[TEN] += 1;
+		nd[ACE] -= 1;
+		nd[TEN] -= 1;
 		strategy del(v);
 		strategy ndel(v);
 		del.set_card_distribution(pd);
@@ -101,22 +98,23 @@ main(int, char*[]) {
 		const edge_type ndiff_edge = ndel.overall_edge();
 	cout << "card odds: (A,2,...T)" << endl;
 	copy(pd.begin(), pd.end(),
-		ostream_iterator<probability_type>(cout, "\t"));
+		ostream_iterator<size_t>(cout, "\t"));
 	cout << "(+)" << endl;
 	copy(nd.begin(), nd.end(),
-		ostream_iterator<probability_type>(cout, "\t"));
+		ostream_iterator<size_t>(cout, "\t"));
 	cout << "(-)" << endl;
 		
-	del.dump_reveal_edges(cout << "+del%: ");
-	ndel.dump_reveal_edges(cout << "-del%: ");
+	del.dump_reveal_edges(cout << "+1: ");
+	ndel.dump_reveal_edges(cout << "-1: ");
 	cout << "edge sensitivity [card=AT" <<
-		", +" << hdel << "]: edge=" << diff_edge <<
-		"; de/dp=" << (diff_edge -base_edge)/hdel << endl;
+		", +1/52]: edge=" << diff_edge <<
+		"; de/dp=" << (diff_edge -base_edge)/ddel << endl;
 	cout << "edge sensitivity [card=AT" <<
-		", -" << hdel << "]: edge=" << ndiff_edge <<
-		"; de/dp=" << (base_edge -ndiff_edge)/hdel << endl;
+		", -1/52]: edge=" << ndiff_edge <<
+		"; de/dp=" << (base_edge -ndiff_edge)/ddel << endl;
 		cout << endl;
 	}
+#endif
 #endif
 	return 0;
 }

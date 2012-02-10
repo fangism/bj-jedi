@@ -146,7 +146,6 @@ struct variation {
  */
 class strategy {
 public:
-	static	const deck		standard_deck_odds;
 	static const size_t vals = 10;          // number of values, max value
 	static const size_t goal = 21;
 	static const size_t stop = 17;		// dealer stands hard or soft 17
@@ -201,7 +200,7 @@ private:
 		the probability vector for card values, A through 10.
 		entries are 0-indexed, with 0 = Ace, 1 = 2, etc.
 	 */
-	deck				card_odds;
+	deck_distribution		card_odds;
 // some of these could be split into a rules struct
 	/// the dealer's fixed state machine, also action table
 	state_machine			dealer_hit;
@@ -465,7 +464,10 @@ public:
 	strategy(const variation&);
 
 	void
-	set_card_distribution(const deck&);
+	set_card_distribution(const deck_distribution&);
+
+	void
+	set_card_distribution(const deck_count_type&);
 
 	void
 	evaluate(void);
@@ -636,11 +638,13 @@ ostream&
 operator << (ostream&, const strategy::outcome_odds&);
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+#if 0
 /**
 	Classic game.  
  */
 class simulator {
 };	// end class simulator
+#endif
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
@@ -654,8 +658,6 @@ class simulator {
 	then revealed and the count is updated.
  */
 class deck_state {
-	enum { bins = strategy::vals };
-	typedef	array<size_t, bins>		deck_count_type;
 	size_t					num_decks;
 	/**
 		Already seen cards (discarded)
@@ -670,7 +672,7 @@ class deck_state {
 		This is updated everytime cards change, e.g. when
 		a single card is drawn.
 	 */
-	deck					card_probabilities;
+	deck_distribution			card_probabilities;
 	/**
 		Dealer is dealt one hole card (face-down).
 	 */
@@ -697,7 +699,7 @@ public:
 //	void
 //	count(const size_t);
 
-	const deck&
+	const deck_distribution&
 	get_card_probabilities(void) const {
 		return card_probabilities;
 	}

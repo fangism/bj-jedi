@@ -1,6 +1,6 @@
 /**
 	\file "util/array.hh"
-	$Id: array.hh,v 1.2 2012/01/23 08:40:26 fang Exp $
+	$Id: array.hh,v 1.3 2012/02/10 01:41:47 fang Exp $
  */
 
 #ifndef	__UTIL_ARRAY_HH__
@@ -45,8 +45,13 @@ public:
 	explicit
 	array(const T&);
 
+	explicit
+	array(const T*);
+
+#if 0
 	// copy
 	array(const T[S]);
+#endif
 
 	size_type
 	size(void) const { return S; }

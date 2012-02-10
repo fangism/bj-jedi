@@ -1,6 +1,6 @@
 /**
 	\file "util/array.tcc"
-	$Id: array.tcc,v 1.1 2009/12/19 22:53:13 fang Exp $
+	$Id: array.tcc,v 1.2 2012/02/10 01:41:48 fang Exp $
  */
 
 #ifndef	__UTIL_ARRAY_TCC__
@@ -29,12 +29,23 @@ array<T,S>::array(const T& t) {
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
+	Unsafe copy-fill from an array of unknown size.
+ */
+template <class T, size_t S>
+array<T,S>::array(const T* t) {
+	std::copy(t, t+S, this->_value);
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+#if 0
+/**
 	Safe copy-construction from statically sized array of same type.
  */
 template <class T, size_t S>
 array<T,S>::array(const T t[S]) {
 	std::copy(t, t+S, this->_value);
 }
+#endif
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 template <class T, size_t S>
