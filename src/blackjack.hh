@@ -48,6 +48,10 @@ struct variation {
 	bool			surrender_early;
 	/// option to surrender after checking for blackjack (common)
 	bool			surrender_late;
+#if 0
+	/// option to surrender at any point
+	bool			surrender_any_time;
+#endif
 	/// whether or not dealer checks for A hole card (usual)
 	bool			peek_on_10;
 	/// whether or not dealer checks for 10 hole card (standard)
@@ -72,8 +76,16 @@ struct variation {
 #endif
 	/// whether or not player may double on other values (usual)
 	bool			double_other;
+#if 0
+	/// automatic win on 5th card that does not bust
+	bool			five_card_charlie;
+#endif
 	/// double-after-split? (common)
 	bool			double_after_split;
+#if 0
+	/// interesting variation: to allow doubling down at any time
+	bool			double_any_time;
+#endif
 	/// surrender-after-split? (never heard of it)
 // TODO: options or resplitting: 2, 4, 8, INF
 	/// allow splitting (standard)
@@ -141,12 +153,42 @@ struct variation {
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
+	State machine table offsets.
+ */
+enum table_offsets {
+	goal = 21,
+	stop = 17,		// dealer stands hard or soft 17
+	// table offsets for state_machine states
+	player_blackjack = goal +1,
+	dealer_blackjack = goal +1,
+//	bust = goal +1,
+	player_bust = player_blackjack +1,
+	dealer_bust = dealer_blackjack +1,
+	// added one for dealer's "push22" for switch variation
+	dealer_push = dealer_bust +1,
+	dealer_soft = dealer_push +1,	// for push22
+	player_soft = player_bust +1,
+// private:
+	soft_min = 1,       // 1-11
+// only player may split
+	pair_offset = player_soft +card_values +1,
+	p_action_states = pair_offset +card_values,
+	d_action_states = dealer_soft +card_values +1,
+	player_states = goal -stop +4,
+	dealer_states = goal -stop +4
+	// player action table offset
+//	static const size_t p_pair_states = p_action_states +card_values,
+};
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
 	Based on the rules, the game state transitions for the 
 	dealer and the player.
 	Edges are NOT computed here.  
  */
 struct play_map {
 public:
+#if 0
 //	static const size_t vals = card_values;	// number of values, max value
 	static const size_t goal = 21;
 	static const size_t stop = 17;		// dealer stands hard or soft 17
@@ -170,7 +212,7 @@ public:
 	static const size_t dealer_states = goal -stop +4;
 	// player action table offset
 //	static const size_t p_pair_states = p_action_states +card_values;
-
+#endif
 public:
 	// mapping of initial card to initial state
 	// for both dealer AND player
@@ -246,7 +288,7 @@ public:
 class strategy {
 //	static const size_t vals = card_values;	// number of values, max value
 
-	typedef	array<probability_type, play_map::player_states>
+	typedef	array<probability_type, player_states>
 					player_final_state_probability_vector;
 
 	static
@@ -286,7 +328,7 @@ class strategy {
 		cell values are probabilities.
 		Sum of each row should be 1.0.
 	 */
-	typedef	array<probability_type, play_map::dealer_states>
+	typedef	array<probability_type, dealer_states>
 						dealer_final_vector_type;
 	typedef	array<dealer_final_vector_type, card_values>	dealer_final_matrix;
 	/**
@@ -308,7 +350,7 @@ class strategy {
 			(using player_opt)
 	 */
 	typedef	array<array<player_final_state_probability_vector,
-			play_map::p_action_states>, card_values>
+			p_action_states>, card_values>
 					player_final_states_probability_matrix;
 	player_final_states_probability_matrix
 					player_final_state_probability;
@@ -353,7 +395,7 @@ public:
 	typedef	player_choice			action_preference[4];
 
 private:
-	typedef	array<outcome_odds, play_map::player_states>	outcome_vector;
+	typedef	array<outcome_odds, player_states>	outcome_vector;
 	typedef	array<outcome_vector, card_values>		outcome_matrix;
 
 	/**
@@ -365,7 +407,7 @@ private:
 	/**
 		For each entry in 'player_stand': win - lose = edge.
 	 */
-	typedef	array<probability_type, play_map::player_states>
+	typedef	array<probability_type, player_states>
 						player_stand_edges_vector;
 	typedef	array<player_stand_edges_vector, card_values>
 						player_stand_edges_matrix;
@@ -440,7 +482,7 @@ private:
 	};
 
 	typedef	array<expectations, card_values>	expectations_vector;
-	typedef	array<expectations_vector, play_map::p_action_states>
+	typedef	array<expectations_vector, p_action_states>
 						expectations_matrix;
 
 	/**
@@ -458,7 +500,7 @@ private:
 		(when standing or in terminal state).
 		This table is not applicable to doubling, splitting, surrender.
 	 */
-	typedef	array<array<edge_type, card_values>, play_map::p_action_states>
+	typedef	array<array<edge_type, card_values>, p_action_states>
 						player_hit_edges_matrix;
 	player_hit_edges_matrix			player_hit_edges;
 //	player_hit_edges_matrix			player_hit_edges_post_peek;
@@ -486,7 +528,7 @@ private:
 		&player_initial_edges[p_action_states];
 	 */
 	typedef	array<edge_type, card_values>		player_initial_edges_vector;
-	typedef	array<player_initial_edges_vector, play_map::p_action_states>
+	typedef	array<player_initial_edges_vector, p_action_states>
 						player_initial_edges_matrix;
 	/**
 		player's edges, given reveal card, post-peek.
@@ -494,7 +536,7 @@ private:
 //	player_initial_edges_matrix		player_initial_edges_pre_peek;
 	player_initial_edges_matrix		player_initial_edges_post_peek;
 
-	array<probability_type, play_map::p_action_states>
+	array<probability_type, p_action_states>
 						player_initial_state_odds;
 
 	/**
@@ -838,7 +880,7 @@ class grader {
 
 		bool
 		has_blackjack(void) const {
-			return state == play_map::player_blackjack;
+			return state == player_blackjack;
 		}
 
 		ostream&
