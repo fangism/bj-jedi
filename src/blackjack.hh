@@ -147,7 +147,7 @@ struct variation {
  */
 struct play_map {
 public:
-	static const size_t vals = card_values;	// number of values, max value
+//	static const size_t vals = card_values;	// number of values, max value
 	static const size_t goal = 21;
 	static const size_t stop = 17;		// dealer stands hard or soft 17
 	// table offsets for state_machine states
@@ -163,20 +163,20 @@ public:
 // private:
 	static const size_t soft_min = 1;       // 1-11
 // only player may split
-	static const size_t pair_offset = player_soft +vals +1;
-	static const size_t p_action_states = pair_offset +vals;
-	static const size_t d_action_states = dealer_soft +vals +1;
+	static const size_t pair_offset = player_soft +card_values +1;
+	static const size_t p_action_states = pair_offset +card_values;
+	static const size_t d_action_states = dealer_soft +card_values +1;
 	static const size_t player_states = goal -stop +4;
 	static const size_t dealer_states = goal -stop +4;
 	// player action table offset
-//	static const size_t p_pair_states = p_action_states +vals;
+//	static const size_t p_pair_states = p_action_states +card_values;
 
 public:
 	// mapping of initial card to initial state
 	// for both dealer AND player
 	// these could go into a struct for rules
-	static const size_t		p_initial_card_map[vals];
-	static const size_t		d_initial_card_map[vals];
+	static const size_t		p_initial_card_map[card_values];
+	static const size_t		d_initial_card_map[card_values];
 // private:
 	static const char		player_final_states[][player_states];
 	static const char		dealer_final_states[][dealer_states];
@@ -244,7 +244,7 @@ public:
 	are evaluated here.
  */
 class strategy {
-	static const size_t vals = card_values;	// number of values, max value
+//	static const size_t vals = card_values;	// number of values, max value
 
 	typedef	array<probability_type, play_map::player_states>
 					player_final_state_probability_vector;
@@ -276,7 +276,7 @@ class strategy {
 			using a single convolve step; double-downs are not
 			included, they should be looked up.
 	 */
-	array<state_machine, vals>		player_opt;
+	array<state_machine, card_values>		player_opt;
 
 	// TODO: support a mode where a player's strategy (however suboptimal)
 	// can be mathematically evaluated (submit and score).
@@ -288,7 +288,7 @@ class strategy {
 	 */
 	typedef	array<probability_type, play_map::dealer_states>
 						dealer_final_vector_type;
-	typedef	array<dealer_final_vector_type, vals>	dealer_final_matrix;
+	typedef	array<dealer_final_vector_type, card_values>	dealer_final_matrix;
 	/**
 		Prior to peek, these are the odds of the dealer's final state
 		given the reveal card.
@@ -308,7 +308,7 @@ class strategy {
 			(using player_opt)
 	 */
 	typedef	array<array<player_final_state_probability_vector,
-			play_map::p_action_states>, vals>
+			play_map::p_action_states>, card_values>
 					player_final_states_probability_matrix;
 	player_final_states_probability_matrix
 					player_final_state_probability;
@@ -354,7 +354,7 @@ public:
 
 private:
 	typedef	array<outcome_odds, play_map::player_states>	outcome_vector;
-	typedef	array<outcome_vector, vals>		outcome_matrix;
+	typedef	array<outcome_vector, card_values>		outcome_matrix;
 
 	/**
 		Matrix is indexed: [reveal][player-state]
@@ -367,7 +367,7 @@ private:
 	 */
 	typedef	array<probability_type, play_map::player_states>
 						player_stand_edges_vector;
-	typedef	array<player_stand_edges_vector, vals>
+	typedef	array<player_stand_edges_vector, card_values>
 						player_stand_edges_matrix;
 	/**
 		index i: dealer's reveal card
@@ -439,7 +439,7 @@ private:
 		dump_choice_actions(ostream&) const;
 	};
 
-	typedef	array<expectations, vals>	expectations_vector;
+	typedef	array<expectations, card_values>	expectations_vector;
 	typedef	array<expectations_vector, play_map::p_action_states>
 						expectations_matrix;
 
@@ -458,7 +458,7 @@ private:
 		(when standing or in terminal state).
 		This table is not applicable to doubling, splitting, surrender.
 	 */
-	typedef	array<array<edge_type, vals>, play_map::p_action_states>
+	typedef	array<array<edge_type, card_values>, play_map::p_action_states>
 						player_hit_edges_matrix;
 	player_hit_edges_matrix			player_hit_edges;
 //	player_hit_edges_matrix			player_hit_edges_post_peek;
@@ -482,10 +482,10 @@ private:
 		and should be updated to recompute player_initial_edges.
 		Index: player's pair, dealer's reveal card
 
-	edge_type (*player_split_edges)[vals] =
+	edge_type (*player_split_edges)[card_values] =
 		&player_initial_edges[p_action_states];
 	 */
-	typedef	array<edge_type, vals>		player_initial_edges_vector;
+	typedef	array<edge_type, card_values>		player_initial_edges_vector;
 	typedef	array<player_initial_edges_vector, play_map::p_action_states>
 						player_initial_edges_matrix;
 	/**

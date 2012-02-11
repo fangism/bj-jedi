@@ -46,8 +46,6 @@ using util::normalize;
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// mapping of initial card (dealer or player) to state indices
-const size_t
-play_map::vals;
 
 /**
 	index: card from deck
@@ -207,11 +205,11 @@ strategy::update_player_initial_state_odds(void) {
 	fill(player_initial_state_odds.begin(),
 		player_initial_state_odds.end(), 0.0);
 	size_t i;
-for (i=0; i<vals; ++i) {
+for (i=0; i<card_values; ++i) {
 	const probability_type& f(card_odds[i]); // / not_bj_odds;
 	// scale up, to normalize for lack of blackjack
 	size_t j;
-	for (j=0; j<vals; ++j) {
+	for (j=0; j<card_values; ++j) {
 		const probability_type fs = f * card_odds[j];
 		if (i == j) {		// splittable pairs
 			player_initial_state_odds[play_map::pair_offset +i] += fs;
@@ -280,7 +278,7 @@ play_map::player_final_state_map(const size_t i) {
 		return play_map::player_states -1;
 	} else if (i < play_map::pair_offset) {
 		// is Ace state, take the higher value
-		return player_final_state_map(i -player_bust +vals);
+		return player_final_state_map(i -player_bust +card_values);
 	} else if (i == play_map::pair_offset) {
 		// pair of Aces
 		return player_final_state_map(player_soft +1);
@@ -357,29 +355,29 @@ play_map::set_dealer_policy(void) {
 		ostringstream oss;
 		oss << i;
 		dealer_hit.name_state(i, oss.str());
-	for (c=1; c<vals; ++c) {
+	for (c=1; c<card_values; ++c) {
 		const size_t t = i +c +1;	// sum value
 		if (t > goal) {			// bust
 			if ((t == goal+1) && var.push22) {
-				dealer_hit.add_edge(i, dealer_push, c, vals);
+				dealer_hit.add_edge(i, dealer_push, c, card_values);
 			} else {
-				dealer_hit.add_edge(i, dealer_bust, c, vals);
+				dealer_hit.add_edge(i, dealer_bust, c, card_values);
 			}
 		} else {
-			dealer_hit.add_edge(i, t, c, vals);
+			dealer_hit.add_edge(i, t, c, card_values);
 		}
 	}
 		// for c=0 (ace)
 		const size_t t = i+1;		// A = 1
-		const size_t tA = t+vals;	// A = 11
+		const size_t tA = t+card_values;	// A = 11
 		if (t >= soft_min && t <= soft_max) {
-			dealer_hit.add_edge(i, t +dealer_soft -soft_min, 0, vals);
+			dealer_hit.add_edge(i, t +dealer_soft -soft_min, 0, card_values);
 		} else if (tA <= goal) {
-			dealer_hit.add_edge(i, tA, 0, vals);
+			dealer_hit.add_edge(i, tA, 0, card_values);
 		} else if (t <= goal) {
-			dealer_hit.add_edge(i, t, 0, vals);
+			dealer_hit.add_edge(i, t, 0, card_values);
 		} else {
-			dealer_hit.add_edge(i, dealer_bust, 0, vals);
+			dealer_hit.add_edge(i, dealer_bust, 0, card_values);
 		}
 	}
 	for ( ; i<=goal; ++i) {
@@ -394,15 +392,15 @@ play_map::set_dealer_policy(void) {
 		oss << "A";
 		if (i>soft_min) { oss << "," << i-1; }
 		dealer_hit.name_state(i+offset, oss.str());
-	for (c=0; c<vals; ++c) {		// A = 1 only
+	for (c=0; c<card_values; ++c) {		// A = 1 only
 		const size_t t = i+c;
-		const size_t tA = t +vals +1;
+		const size_t tA = t +card_values +1;
 		if (tA > goal) {
-			dealer_hit.add_edge(i+offset, t +1, c, vals);
-		} else if (tA > soft_max +vals) {
-			dealer_hit.add_edge(i+offset, tA, c, vals);
+			dealer_hit.add_edge(i+offset, t +1, c, card_values);
+		} else if (tA > soft_max +card_values) {
+			dealer_hit.add_edge(i+offset, tA, c, card_values);
 		} else {
-			dealer_hit.add_edge(i+offset, t +dealer_soft, c, vals);
+			dealer_hit.add_edge(i+offset, t +dealer_soft, c, card_values);
 		}
 	}
 	}
@@ -450,25 +448,25 @@ play_map::compute_player_hit_state(void) {
 		ostringstream oss;
 		oss << i;
 		player_hit.name_state(i, oss.str());
-	for (c=1; c<vals; ++c) {
+	for (c=1; c<card_values; ++c) {
 		const size_t t = i +c +1;	// sum value
 		if (t > goal) {			// bust
-			player_hit.add_edge(i, player_bust, c, vals);
+			player_hit.add_edge(i, player_bust, c, card_values);
 		} else {
-			player_hit.add_edge(i, t, c, vals);
+			player_hit.add_edge(i, t, c, card_values);
 		}
 	}
 		// for c=0 (ace)
 		const size_t t = i+1;		// A = 1
-		const size_t tA = t+vals;	// A = 11
+		const size_t tA = t+card_values;	// A = 11
 		if (t >= soft_min && t <= soft_max) {
-			player_hit.add_edge(i, t +player_soft -soft_min, 0, vals);
+			player_hit.add_edge(i, t +player_soft -soft_min, 0, card_values);
 		} else if (tA <= goal) {
-			player_hit.add_edge(i, tA, 0, vals);
+			player_hit.add_edge(i, tA, 0, card_values);
 		} else if (t <= goal) {
-			player_hit.add_edge(i, t, 0, vals);
+			player_hit.add_edge(i, t, 0, card_values);
 		} else {
-			player_hit.add_edge(i, player_bust, 0, vals);
+			player_hit.add_edge(i, player_bust, 0, card_values);
 		}
 	}
 	for ( ; i<=goal; ++i) {
@@ -479,27 +477,27 @@ play_map::compute_player_hit_state(void) {
 	// player doesn't have a push state like the dealer
 	const size_t offset = player_bust+1;
 	// soft-values: A, A1, A2, ...
-	for (i=0; i<=vals; ++i) {
+	for (i=0; i<=card_values; ++i) {
 		ostringstream oss;
 		oss << "A";
 		if (i) { oss << "," << i; }
 		player_hit.name_state(i+offset, oss.str());
-	for (c=0; c<vals; ++c) {		// A = 1 only
+	for (c=0; c<card_values; ++c) {		// A = 1 only
 		const size_t t = i+c+1;
-		const size_t tA = t +vals +1;
+		const size_t tA = t +card_values +1;
 		if (tA > goal) {
-			player_hit.add_edge(i+offset, t +1, c, vals);
-		} else if (tA > soft_max +vals) {
-			player_hit.add_edge(i+offset, tA, c, vals);
+			player_hit.add_edge(i+offset, t +1, c, card_values);
+		} else if (tA > soft_max +card_values) {
+			player_hit.add_edge(i+offset, tA, c, card_values);
 		} else {
-			player_hit.add_edge(i+offset, t +player_soft, c, vals);
+			player_hit.add_edge(i+offset, t +player_soft, c, card_values);
 		}
 	}
 	}
 	player_hit.name_state(player_blackjack, "BJ");
 	player_hit.name_state(player_bust, "bust");
 	// HERE: splits
-	for (i=0; i<vals; ++i) {
+	for (i=0; i<card_values; ++i) {
 		ostringstream oss;
 		const char c = card_name[i];
 		oss << c << ',' << c;
@@ -531,9 +529,9 @@ play_map::dump_player_hit_state(ostream& o) const {
  */
 void
 play_map::compute_player_split_state(void) {
-	last_split.resize(vals);
+	last_split.resize(card_values);
 	size_t i;
-	for (i=0; i<vals; ++i) {
+	for (i=0; i<card_values; ++i) {
 		ostringstream oss;
 		const char c = card_name[i];
 		oss << c << ',' << c;
@@ -543,8 +541,8 @@ play_map::compute_player_split_state(void) {
 	}
 	// copy table, then adjust
 	player_resplit = last_split;
-	for (i=0; i<vals; ++i) {
-		player_resplit.add_edge(i, play_map::pair_offset+i, i, vals);
+	for (i=0; i<card_values; ++i) {
+		player_resplit.add_edge(i, play_map::pair_offset+i, i, card_values);
 	}
 #if DUMP_DURING_EVALUATE
 	dump_player_split_state(cout);
@@ -581,7 +579,7 @@ strategy::compute_dealer_final_table(void) {
 	// use cards_no_ace when dealer draws 10, and is not blackjack
 	//	this is called 'peek'
 	size_t j;
-	for (j=0 ; j<vals; ++j) {
+	for (j=0 ; j<card_values; ++j) {
 		probability_vector init(play.dealer_hit.get_states().size(), 0.0);
 		probability_vector final(init.size());
 		init[play_map::d_initial_card_map[j]] = 1.0;
@@ -687,7 +685,7 @@ strategy::compute_showdown_odds(const dealer_final_matrix& dfm,
 	static const size_t d_bj_ind = play_map::dealer_states -3;
 	static const size_t p_bj_ind = play_map::player_states -2;
 	size_t j;
-	for (j=0; j < vals; ++j) {	// dealer's revealed card, initial state
+	for (j=0; j < card_values; ++j) {	// dealer's revealed card, initial state
 		const dealer_final_vector_type& dfv(dfm[j]);	// pre-peek!
 		outcome_vector& ps(stand[j]);
 	size_t k;
@@ -717,7 +715,7 @@ strategy::compute_showdown_odds(const dealer_final_matrix& dfm,
 		ps[k+1].lose += 1.0;	// player busts
 	}
 	// now compute player edges
-	for (j=0; j<vals; ++j) {	// dealer's reveal card
+	for (j=0; j<card_values; ++j) {	// dealer's reveal card
 		const outcome_vector& ps(stand[j]);
 		player_stand_edges_vector& ev(edges[j]);
 		transform(ps.begin(), ps.end(), ev.begin(), 
@@ -864,7 +862,7 @@ strategy::compute_action_expectations(void) {
 // stand
 	size_t i, j;
 	for (i=0; i<play_map::p_action_states; ++i) {
-	for (j=0; j<vals; ++j) {
+	for (j=0; j<card_values; ++j) {
 		const probability_type&
 			edge(pse[j][play_map::player_final_state_map(i)]);
 		player_actions[i][j].stand = edge;
@@ -881,7 +879,7 @@ strategy::compute_action_expectations(void) {
 		play.player_hit.convolve(card_odds, before_hit, after_hit);
 		player_final_state_probability_vector fin;
 		player_final_state_probabilities(after_hit, fin);
-	for (j=0; j<vals; ++j) {	// dealer shows
+	for (j=0; j<card_values; ++j) {	// dealer shows
 		// static_assert
 		assert(size_t(player_final_state_probability_vector::Size)
 			== size_t(outcome_vector::Size));
@@ -895,7 +893,7 @@ strategy::compute_action_expectations(void) {
 		p *= var.double_multiplier;	// because bet is doubled
 	}
 	} else {			// is terminal state, irrelevant
-	for (j=0; j<vals; ++j) {
+	for (j=0; j<card_values; ++j) {
 		player_actions[i][j].double_down = -var.double_multiplier;
 	}
 	}
@@ -905,7 +903,7 @@ strategy::compute_action_expectations(void) {
 	vector<size_t> reorder;		// reordering for-loop: player states
 	reorder.reserve(play_map::p_action_states);
 	// backwards, starting from high hard value states
-	for (i=play_map::goal-1; i>play_map::goal-vals; --i) {
+	for (i=play_map::goal-1; i>play_map::goal-card_values; --i) {
 		reorder.push_back(i);
 	}
 	// backwards from soft states (Aces)
@@ -913,7 +911,7 @@ strategy::compute_action_expectations(void) {
 		reorder.push_back(i);
 	}
 	// backwards from low hard values
-	for (i=play_map::goal-vals; i<play_map::p_action_states; --i) {
+	for (i=play_map::goal-card_values; i<play_map::p_action_states; --i) {
 		reorder.push_back(i);
 	}
 	// evaluate split states at their face value
@@ -929,11 +927,11 @@ strategy::compute_action_expectations(void) {
 		const size_t i = reorder[r];
 		const state_machine::node& ni(play.player_hit[i]);
 		assert(ni.size());
-	for (j=0; j<vals; ++j) {
+	for (j=0; j<card_values; ++j) {
 		expectations& p(player_actions[i][j]);
 		p.hit = 0.0;
 	size_t k;
-	for (k=0; k<vals; ++k) {
+	for (k=0; k<card_values; ++k) {
 //		cout << "i,j=" << i << ',' << j <<
 //			", card-index " << k << ", odds=" << card_odds[k];
 		if (play.player_hit[k].size()) {
@@ -1014,7 +1012,7 @@ strategy::reset_split_edges(void) {
 	player_initial_edges_vector *player_split_edges =
 		&player_initial_edges_post_peek[play_map::pair_offset];
 	size_t i;
-	for (i=0; i<vals; ++i) {
+	for (i=0; i<card_values; ++i) {
 		player_split_edges[i] =
 			player_hit_edges[play.p_initial_card_map[i]];
 	}
@@ -1040,17 +1038,17 @@ strategy::compute_player_split_edges(const bool d, const bool s) {
 		&player_initial_edges_post_peek[play_map::pair_offset];
 	const state_machine& split_table(s ? play.player_resplit : play.last_split);
 	size_t i;
-	for (i=0; i<vals; ++i) {
+	for (i=0; i<card_values; ++i) {
 	// the single-card state after split
 	size_t j;
 	const size_t p = play_map::pair_offset +i;
-	for (j=0; j<vals; ++j) {	// for each dealer reveal card
+	for (j=0; j<card_values; ++j) {	// for each dealer reveal card
 		// need to take weighted sum over initial states
 		// depending on initial card and spread of next states.
 		edge_type expected_edge = 0.0;
 	// convolution: spread over the player's next card
 	size_t k;
-	for (k=0; k<vals; ++k) {	// player's second card
+	for (k=0; k<card_values; ++k) {	// player's second card
 		const probability_type& o(card_odds[k]);
 		// initial edges may not have double-downs, splits, nor surrenders
 		// since player is forced to take the next card in each hand
@@ -1072,11 +1070,11 @@ strategy::compute_player_split_edges(const bool d, const bool s) {
 	}	// end for each player paired card
 
 	// update the split entries for the initial-edges
-	for (i=0; i<vals; ++i) {
+	for (i=0; i<card_values; ++i) {
 	// the single-card state after split
 	size_t j;
 	const size_t p = play_map::pair_offset +i;
-	for (j=0; j<vals; ++j) {	// for each dealer reveal card
+	for (j=0; j<card_values; ++j) {	// for each dealer reveal card
 		const expectations& sum(player_actions[p][j]);
 		// player may decide whether or not to split
 		player_split_edges[i][j] =
@@ -1097,14 +1095,14 @@ strategy::dump_player_split_edges(ostream& o) const {
 	o << "Player's split-permitted edges:" << endl;
 	o << "P\\D";
 	size_t j;
-	for (j=0; j<vals; ++j) {
+	for (j=0; j<card_values; ++j) {
 		o << '\t' << card_name[j];
 	}
 	o << endl;
-	for (j=0 ; j<vals; ++j) {
+	for (j=0 ; j<card_values; ++j) {
 		o << card_name[j] << ',' << card_name[j];
 		size_t i;
-		for (i=0; i<vals; ++i) {
+		for (i=0; i<card_values; ++i) {
 			o << '\t' << player_split_edges[j][i];
 		}
 		o << endl;
@@ -1125,7 +1123,7 @@ strategy::dump_player_split_edges(ostream& o) const {
 void
 strategy::optimize_player_hit_tables(void) {
 	size_t j;
-	for (j=0; j<vals; ++j) {	// for each reveal card
+	for (j=0; j<card_values; ++j) {	// for each reveal card
 		player_opt[j] = play.player_hit;	// copy state machine
 		// use default assignment operator of util::array
 		size_t i;
@@ -1150,7 +1148,7 @@ strategy::optimize_player_hit_tables(void) {
 	// now compute player_final_state_probability
 	probability_vector unit(play_map::p_action_states, 0.0);
 	probability_vector result;
-	for (j=0; j<vals; ++j) {
+	for (j=0; j<card_values; ++j) {
 		size_t i;
 		for (i=0; i<play_map::p_action_states; ++i) {
 			unit[i] = 1.0;
@@ -1169,7 +1167,7 @@ strategy::optimize_player_hit_tables(void) {
 ostream&
 strategy::dump_player_hit_tables(ostream& o) const {
 	size_t j;
-	for (j=0; j<vals; ++j) {
+	for (j=0; j<card_values; ++j) {
 		// dump for debugging only
 		o << "Dealer shows " << card_name[j] <<
 			", player hit state machine:" << endl;
@@ -1182,7 +1180,7 @@ strategy::dump_player_hit_tables(ostream& o) const {
 ostream&
 strategy::dump_player_final_state_probabilities(ostream& o) const {
 	size_t j;
-	for (j=0; j<vals; ++j) {
+	for (j=0; j<card_values; ++j) {
 		o << "Dealer shows " << card_name[j] <<
 			", player\'s final state spread (hit/stand only):" << endl;
 		o << "player";
@@ -1227,7 +1225,7 @@ strategy::__compute_player_hit_edges(
 		pse(player_stand_edges_post_peek);
 #endif
 	size_t i;
-	for (i=0; i<vals; ++i) {
+	for (i=0; i<card_values; ++i) {
 		const player_stand_edges_vector& edges(pse[i]);
 	size_t j;
 	for (j=0; j<play_map::p_action_states; ++j) {
@@ -1279,14 +1277,14 @@ strategy::dump_player_hit_edges(ostream& o) const {
 	o << "Player's hit edges:\n";
 	o << "P\\D";
 	size_t j;
-	for (j=0; j<vals; ++j) {
+	for (j=0; j<card_values; ++j) {
 		o << '\t' << card_name[j];
 	}
 	o << endl;
 	for (j=0 ; j<play_map::p_action_states; ++j) {
 		o << play.player_hit[j].name;
 		size_t i;
-		for (i=0; i<vals; ++i) {
+		for (i=0; i<card_values; ++i) {
 			o << '\t' << player_hit_edges[j][i];
 		}
 		o << endl;
@@ -1317,7 +1315,7 @@ strategy::compute_player_initial_edges(
 	size_t i;
 	for (i=0; i<play_map::pair_offset; ++i) {		// exclude splits first
 	size_t j;
-	for (j=0; j<vals; ++j) {		// for dealer-reveal card
+	for (j=0; j<card_values; ++j) {		// for dealer-reveal card
 		expectations c(player_actions[i][j]);	// yes, copy
 		c.hit = player_hit_edges[i][j];
 		c.optimize(var.surrender_penalty);
@@ -1362,14 +1360,14 @@ strategy::dump_player_initial_edges(ostream& o) const {
 	o << "Player's initial edges (post-peek):" << endl;
 	o << "P\\D";
 	size_t j;
-	for (j=0; j<vals; ++j) {
+	for (j=0; j<card_values; ++j) {
 		o << '\t' << card_name[j];
 	}
 	o << endl;
 	for (j=0 ; j<play_map::p_action_states; ++j) { // print split edges separately
 		o << play.player_hit[j].name;
 		size_t i;
-		for (i=0; i<vals; ++i) {
+		for (i=0; i<card_values; ++i) {
 			o << '\t' << player_initial_edges_post_peek[j][i];
 		}
 		o << endl;
@@ -1389,7 +1387,7 @@ strategy::optimize_actions(void) {
 	size_t i;
 	for (i=0; i<play_map::p_action_states; ++i) {
 	size_t j;
-	for (j=0; j<vals; ++j) {
+	for (j=0; j<card_values; ++j) {
 		player_actions[i][j].optimize(var.surrender_penalty);
 	}
 	}
@@ -1407,7 +1405,7 @@ strategy::optimize_actions(void) {
 void
 strategy::compute_reveal_edges(void) {
 size_t r;	// index of dealer's reveal card
-for (r=0; r<vals; ++r) {
+for (r=0; r<card_values; ++r) {
 	edge_type& x(player_edges_given_reveal_post_peek[r]);
 	x = 0.0;
 	size_t i;	// index of player's initial state
@@ -1523,25 +1521,25 @@ strategy::dump_expectations(const expectations_vector& v, ostream& o) const {
 #define	EFORMAT(x)	x
 #endif
 	o << "stand";
-	for (j=0; j<vals; ++j) {
+	for (j=0; j<card_values; ++j) {
 		const expectations& ex(v[reveal_print_ordering[j]]);
 		o << '\t' << EFORMAT(ex.stand);
 		if (ex.best() == STAND) o << '*';
 	}
 	o << endl;
-if (z.hit > -1.0 * vals) {
+if (z.hit > -1.0 * card_values) {
 	o << "hit";
-	for (j=0; j<vals; ++j) {
+	for (j=0; j<card_values; ++j) {
 		const expectations& ex(v[reveal_print_ordering[j]]);
 		o << '\t' << EFORMAT(ex.hit);
 		if (ex.best() == HIT) o << '*';
 	}
 	o << endl;
 }
-if (z.double_down > -2.0 *vals) {
+if (z.double_down > -2.0 *card_values) {
 	// TODO: pass double_multiplier?
 	o << "double";
-	for (j=0; j<vals; ++j) {
+	for (j=0; j<card_values; ++j) {
 		const expectations& ex(v[reveal_print_ordering[j]]);
 		o << '\t' << EFORMAT(ex.double_down);
 		if (ex.best() == DOUBLE) o << '*';
@@ -1549,9 +1547,9 @@ if (z.double_down > -2.0 *vals) {
 	o << endl;
 }
 // for brevity, could omit non-splittable states...
-if (z.split > -2.0 *vals) {
+if (z.split > -2.0 *card_values) {
 	o << "split";
-	for (j=0; j<vals; ++j) {
+	for (j=0; j<card_values; ++j) {
 		const expectations& ex(v[reveal_print_ordering[j]]);
 		o << '\t' << EFORMAT(ex.split);
 		if (ex.best() == SPLIT) o << '*';
@@ -1560,7 +1558,7 @@ if (z.split > -2.0 *vals) {
 }
 #if 1
 	o << "surr.";
-	for (j=0; j<vals; ++j) {
+	for (j=0; j<card_values; ++j) {
 		const expectations& ex(v[reveal_print_ordering[j]]);
 //		o << '\t' << EFORMAT(expectations::surrender);
 		o << '\t' << EFORMAT(var.surrender_penalty);
@@ -1570,7 +1568,7 @@ if (z.split > -2.0 *vals) {
 #endif
 #if 1
 	o << "delta";
-	for (j=0; j<vals; ++j) {
+	for (j=0; j<card_values; ++j) {
 		const expectations& ex(v[reveal_print_ordering[j]]);
 		o << '\t';
 		const pair<player_choice, player_choice>
@@ -1594,7 +1592,7 @@ strategy::dump_optimal_actions(const expectations_vector& v, ostream& o,
 		const size_t n, const char* delim) const {
 	assert(n<=5);
 	size_t j;
-	for (j=0; j<vals; ++j) {
+	for (j=0; j<card_values; ++j) {
 		const expectations& ex(v[reveal_print_ordering[j]]);
 		o << delim;
 		size_t k = 0;
@@ -1618,7 +1616,7 @@ strategy::dump_optimal_edges(const expectations_vector& v, ostream& o) const {
 #endif
 	size_t j;
 	o << "edge";
-	for (j=0; j<vals; ++j) {
+	for (j=0; j<card_values; ++j) {
 		const expectations& ex(v[reveal_print_ordering[j]]);
 		o << '\t';
 		switch (ex.best()) {
@@ -1633,7 +1631,7 @@ strategy::dump_optimal_edges(const expectations_vector& v, ostream& o) const {
 	o << endl;
 #if 1
 	o << "delta";	// difference between best and next best
-	for (j=0; j<vals; ++j) {
+	for (j=0; j<card_values; ++j) {
 		const expectations& ex(v[reveal_print_ordering[j]]);
 		o << '\t';
 		const pair<player_choice, player_choice>
@@ -1749,7 +1747,7 @@ strategy::dump_action_expectations(ostream& o) const {
 	// ostream_iterator<expectations> osi(o, "\t");
 	o << "P\\D";
 	size_t j;
-	for (j=0; j<vals; ++j) {
+	for (j=0; j<card_values; ++j) {
 		o << '\t' << card_name[reveal_print_ordering[j]];
 	}
 	o << '\n' << endl;
@@ -1775,7 +1773,7 @@ strategy::dump_optimal_actions(ostream& o) const {
 	static const char delim2[] = "  ";
 	o << "P\\D\t";
 	size_t j;
-	for (j=0; j<vals; ++j) {
+	for (j=0; j<card_values; ++j) {
 		o << delim1 << card_name[reveal_print_ordering[j]];
 	}
 	o << '\n' << endl;
