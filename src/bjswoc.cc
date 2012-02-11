@@ -11,6 +11,7 @@ using std::cout;
 using std::endl;
 using std::ostream_iterator;
 using blackjack::variation;
+using blackjack::play_map;
 using blackjack::strategy;
 using blackjack::edge_type;
 using util::normalize;
@@ -32,7 +33,8 @@ main(int, char*[]) {
 //	v.H17 = false;
 //	v.surrender_late = true;
 //	v.one_card_on_split_aces = false;
-	strategy S(v);
+	play_map pm(v);
+	strategy S(pm);
 	S.set_card_distribution(standard_deck_distribution);
 	S.evaluate();
 	S.dump(cout);

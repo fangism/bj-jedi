@@ -3,7 +3,7 @@
 	Implements a game/simulator and in-game analyzer.
 	TODO: name this drbj (Dr. BJ)
 	Also rates how good you are vs. how lucky you are.  
-	$Id: bjgrader.cc,v 1.5 2012/01/25 07:15:28 fang Exp $
+	$Id: bjgrader.cc,v 1.6 2012/02/11 23:02:55 fang Exp $
  */
 
 #include <iostream>
@@ -72,7 +72,7 @@ do {
 		// simulate, train, analyze
 		// inner loop: play game
 		blackjack::grader G(var);
-		G.play(i, o);
+		G.play_hand(i, o);
 	} else if (line == "q" || line == "exit" ||
 			line == "quit" || line == "bye") {
 		break;

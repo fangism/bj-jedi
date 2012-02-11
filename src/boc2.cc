@@ -9,6 +9,7 @@ using std::cout;
 using std::endl;
 using std::ostream_iterator;
 using blackjack::variation;
+using blackjack::play_map;
 using blackjack::strategy;
 using blackjack::edge_type;
 
@@ -26,7 +27,8 @@ main(int, char*[]) {
 //	v.H17 = false;
 //	v.surrender_late = true;
 //	v.one_card_on_split_aces = false;
-	strategy S(v);
+	play_map pm(v);
+	strategy S(pm);
 	S.set_card_distribution(standard_deck_count);
 	S.evaluate();
 	S.dump(cout);
@@ -41,14 +43,14 @@ main(int, char*[]) {
 "Sensitivity analysis: relative probability increase per card = "
 		<< pdel << endl;
 	size_t j;		// which card to vary probability
-	for (j=0; j<strategy::vals; ++j) {
-		const size_t i = strategy::reveal_print_ordering[j];
+	for (j=0; j<card_values; ++j) {
+		const size_t i = reveal_print_ordering[j];
 		deck_count_type pd(standard_deck_count);
 		deck_count_type nd(standard_deck_count);
 		pd[i] += 1;
 		nd[i] -= 1;
-		strategy del(v);
-		strategy ndel(v);
+		strategy del(pm);
+		strategy ndel(pm);
 		del.set_card_distribution(pd);
 		ndel.set_card_distribution(nd);
 		del.evaluate();
@@ -88,8 +90,8 @@ main(int, char*[]) {
 		pd[TEN] += 1;
 		nd[ACE] -= 1;
 		nd[TEN] -= 1;
-		strategy del(v);
-		strategy ndel(v);
+		strategy del(pm);
+		strategy ndel(pm);
 		del.set_card_distribution(pd);
 		ndel.set_card_distribution(nd);
 		del.evaluate();

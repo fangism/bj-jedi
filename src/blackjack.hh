@@ -177,7 +177,6 @@ public:
 	// these could go into a struct for rules
 	static const size_t		p_initial_card_map[vals];
 	static const size_t		d_initial_card_map[vals];
-	static const size_t		reveal_print_ordering[];
 // private:
 	static const char		player_final_states[][player_states];
 	static const char		dealer_final_states[][dealer_states];
@@ -244,9 +243,10 @@ public:
 	All expectations, probabilities, edges, and optimal actions
 	are evaluated here.
  */
-class strategy : public play_map {
+class strategy {
+	static const size_t vals = card_values;	// number of values, max value
 
-	typedef	array<probability_type, player_states>
+	typedef	array<probability_type, play_map::player_states>
 					player_final_state_probability_vector;
 
 	static
@@ -254,8 +254,8 @@ class strategy : public play_map {
 	player_final_state_probabilities(const probability_vector&, 
 		player_final_state_probability_vector&);
 
-//	const play_map&			play;
 	const variation&		var;
+	const play_map&			play;
 
 	/**
 		the probability vector for card values, A through 10.
@@ -286,7 +286,8 @@ class strategy : public play_map {
 		cell values are probabilities.
 		Sum of each row should be 1.0.
 	 */
-	typedef	array<probability_type, dealer_states>	dealer_final_vector_type;
+	typedef	array<probability_type, play_map::dealer_states>
+						dealer_final_vector_type;
 	typedef	array<dealer_final_vector_type, vals>	dealer_final_matrix;
 	/**
 		Prior to peek, these are the odds of the dealer's final state
@@ -307,7 +308,7 @@ class strategy : public play_map {
 			(using player_opt)
 	 */
 	typedef	array<array<player_final_state_probability_vector,
-			p_action_states>, vals>
+			play_map::p_action_states>, vals>
 					player_final_states_probability_matrix;
 	player_final_states_probability_matrix
 					player_final_state_probability;
@@ -352,7 +353,7 @@ public:
 	typedef	player_choice			action_preference[4];
 
 private:
-	typedef	array<outcome_odds, player_states>	outcome_vector;
+	typedef	array<outcome_odds, play_map::player_states>	outcome_vector;
 	typedef	array<outcome_vector, vals>		outcome_matrix;
 
 	/**
@@ -364,7 +365,7 @@ private:
 	/**
 		For each entry in 'player_stand': win - lose = edge.
 	 */
-	typedef	array<probability_type, player_states>
+	typedef	array<probability_type, play_map::player_states>
 						player_stand_edges_vector;
 	typedef	array<player_stand_edges_vector, vals>
 						player_stand_edges_matrix;
@@ -439,7 +440,8 @@ private:
 	};
 
 	typedef	array<expectations, vals>	expectations_vector;
-	typedef	array<expectations_vector, p_action_states>	expectations_matrix;
+	typedef	array<expectations_vector, play_map::p_action_states>
+						expectations_matrix;
 
 	/**
 		Matrix is indexed: [player-state][reveal]
@@ -456,7 +458,7 @@ private:
 		(when standing or in terminal state).
 		This table is not applicable to doubling, splitting, surrender.
 	 */
-	typedef	array<array<edge_type, vals>, p_action_states>
+	typedef	array<array<edge_type, vals>, play_map::p_action_states>
 						player_hit_edges_matrix;
 	player_hit_edges_matrix			player_hit_edges;
 //	player_hit_edges_matrix			player_hit_edges_post_peek;
@@ -484,7 +486,7 @@ private:
 		&player_initial_edges[p_action_states];
 	 */
 	typedef	array<edge_type, vals>		player_initial_edges_vector;
-	typedef	array<player_initial_edges_vector, p_action_states>
+	typedef	array<player_initial_edges_vector, play_map::p_action_states>
 						player_initial_edges_matrix;
 	/**
 		player's edges, given reveal card, post-peek.
@@ -492,7 +494,7 @@ private:
 //	player_initial_edges_matrix		player_initial_edges_pre_peek;
 	player_initial_edges_matrix		player_initial_edges_post_peek;
 
-	array<probability_type, p_action_states>
+	array<probability_type, play_map::p_action_states>
 						player_initial_state_odds;
 
 	/**
@@ -511,7 +513,7 @@ private:
 	edge_type				_overall_edge;
 public:
 	explicit
-	strategy(const variation&);
+	strategy(const play_map&);
 
 	void
 	set_card_distribution(const deck_distribution&);
@@ -770,6 +772,10 @@ public:
 class grader {
 	variation				var;
 	/**
+		Game state machines.
+	 */
+	play_map				play;
+	/**
 		Static strategy calculation, based on rule variations
 		only, not current card counts.  
 	 */
@@ -802,21 +808,21 @@ class grader {
 		hand() { }
 
 		explicit
-		hand(const size_t);
+		hand(const play_map&, const size_t);
 
 		// initial deal
 		void
-		initial_card(const size_t);
+		initial_card(const play_map&, const size_t);
 
 		void
-		deal(const state_machine&, const size_t, const size_t);
+		deal(const play_map&, const size_t, const size_t);
 
 		// hit state transition -- use this for double-down too
 		void
 		hit(const state_machine&, const size_t);
 
 		void
-		split(const state_machine&, const size_t);
+		split(const play_map&, const size_t);
 
 		bool
 		splittable(void) const;
@@ -832,7 +838,7 @@ class grader {
 
 		bool
 		has_blackjack(void) const {
-			return state == strategy::player_blackjack;
+			return state == play_map::player_blackjack;
 		}
 
 		ostream&
@@ -874,7 +880,7 @@ public:
 	table_help(ostream&);
 
 	void
-	play(istream&, ostream&);
+	play_hand(istream&, ostream&);
 
 	void
 	deal_hand(istream&, ostream&);

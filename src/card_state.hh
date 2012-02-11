@@ -25,6 +25,8 @@ enum {
 extern	const char		card_name[];	// use util::array?
 extern	size_t		card_index(const char);	// reverse-map of card_name
 
+extern	const size_t		reveal_print_ordering[];
+
 /**
 	A deck is just modeled as a probability vector.  
 	\invariant sum of probabilities should be 1.
@@ -118,11 +120,11 @@ public:
 	/// compute terminal probabilities (solve)
 	void
 	solve(const deck_distribution&,
-		const probability_vector&, probability_vector&);
+		const probability_vector&, probability_vector&) const;
 
 	bool
 	convolve(const deck_distribution&,
-		const probability_vector&, probability_vector&);
+		const probability_vector&, probability_vector&) const;
 
 	void
 	check(void) const;

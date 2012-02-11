@@ -40,6 +40,19 @@ card_index(const char c) {
 	return size_t(-1);
 }
 
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
+	Permute the ordering of columns for the dealer's reveal card.
+	This ordering is standard in the literature, and is easier
+	to read when considering favorable vs. unfavorable cards.
+	index: sequence index
+	value: card index (re-ordered)
+ */
+const size_t
+reveal_print_ordering[card_values] =
+	{ 1, 2, 3, 4, 5, 6, 7, 8, TEN, ACE};
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 static const size_t __standard_deck_count_reduced[card_values] = {
 1,		// A
 1,		// 2
@@ -178,7 +191,7 @@ state_machine::copy_edge_set(const state_machine& s, const size_t i, const size_
 bool
 state_machine::convolve(const deck_distribution& cards, 
 		const probability_vector& init, 
-		probability_vector& final) {
+		probability_vector& final) const {
 #if DEBUG_SOLVE
 cout << "::convolve()" << endl;
 #endif
@@ -224,7 +237,7 @@ cout << "::convolve()" << endl;
 void
 state_machine::solve(const deck_distribution& cards, 
 		const probability_vector& init, 
-		probability_vector& final) {
+		probability_vector& final) const {
 #if DEBUG_SOLVE
 cout << "::solve()" << endl;
 #endif
