@@ -32,6 +32,24 @@ using util::array;
  */
 typedef	probability_type		edge_type;
 
+enum player_choice {
+	NIL = 0,	// invalid
+	// useful values for analysis
+	STAND = 1,
+	HIT = 2,
+	DOUBLE = 3,
+	SPLIT = 4,
+	SURRENDER = 5,
+	// for interactive mode-only
+	HINT = 6,
+	OPTIM = 7
+};
+
+extern
+player_choice
+prompt_player_action(istream&, ostream&,
+	const bool d, const bool p, const bool r);
+
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
 	Options for game variations.
@@ -382,14 +400,6 @@ public:
 		check(void);
 	};
 
-	enum player_choice {
-		NIL = 0,	// invalid
-		STAND = 1,
-		HIT = 2,
-		DOUBLE = 3,
-		SPLIT = 4,
-		SURRENDER = 5
-	};
 	static const char			action_key[];
 	// order of preference
 	typedef	player_choice			action_preference[4];
@@ -858,6 +868,10 @@ class grader {
 			Enumerated state, from the state machine.
 		 */
 		size_t					state;
+		/**
+			Whether or not this hand was doubled-down.
+		 */
+		bool					doubled_down;
 
 		hand() { }
 
@@ -874,6 +888,9 @@ class grader {
 		// hit state transition -- use this for double-down too
 		void
 		hit(const state_machine&, const size_t);
+
+		void
+		presplit(const play_map&);
 
 		void
 		split(const play_map&, const size_t);
@@ -949,6 +966,11 @@ public:
 private:
 	bool
 	offer_insurance(istream&, ostream&, const bool) const;
+
+	bool
+	already_split(void) const {
+		return player_hands.size() >= 2;
+	}
 
 };	// end class grader
 

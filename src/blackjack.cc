@@ -473,8 +473,8 @@ play_map::compute_player_hit_state(void) {
 	// HERE: splits
 	for (i=0; i<card_values; ++i) {
 		ostringstream oss;
-		const char c = card_name[i];
-		oss << c << ',' << c;
+		const char cc = card_name[i];
+		oss << cc << ',' << cc;
 		player_hit.name_state(i+pair_offset, oss.str());
 		// copy from non-paired equivalent value
 		const size_t equiv = (i ? (i+1)<<1 : i+player_soft +1);
@@ -898,15 +898,15 @@ strategy::compute_action_expectations(void) {
 #endif
 	size_t r;
 	for (r=0; r<reorder.size(); ++r) {
-		const size_t i = reorder[r];
-		const state_machine::node& ni(play.player_hit[i]);
+		const size_t ii = reorder[r];
+		const state_machine::node& ni(play.player_hit[ii]);
 		assert(ni.size());
 	for (j=0; j<card_values; ++j) {
-		expectations& p(player_actions[i][j]);
+		expectations& p(player_actions[ii][j]);
 		p.hit = 0.0;
 	size_t k;
 	for (k=0; k<card_values; ++k) {
-//		cout << "i,j=" << i << ',' << j <<
+//		cout << "i,j=" << ii << ',' << j <<
 //			", card-index " << k << ", odds=" << card_odds[k];
 		if (play.player_hit[k].size()) {
 			// is not a terminal state
@@ -1664,7 +1664,7 @@ strategy::expectations::optimize(const edge_type& surrender) {
 	\param r whether surrender is a valid option
 	Invalid options are skipped in the response.  
  */
-pair<strategy::player_choice, strategy::player_choice>
+pair<player_choice, player_choice>
 strategy::expectations::best_two(
 	const bool d, const bool s, const bool r) const {
 	player_choice ret[2];
@@ -2061,12 +2061,15 @@ grader::deal_hand(istream& i, ostream& o) {
 	C.option_draw_hole_card(pick_cards, i, o);
 	o << "dealer: " << card_name[dealer_reveal] << endl;
 	const state_machine& ps(play.get_player_state_machine());
-	player_hands.front().dump(o, ps) << endl;
-	// if early_surrender (rare) ...
+	// TODO: if early_surrender (rare) ...
 	// prompt for insurance
 	const bool pbj = player_hands.front().has_blackjack();
+	if (pbj) {
+		o << "Player has blackjack!" << endl;
+	}
 	bool end = pbj;
 	if (dealer_reveal == ACE) {
+		player_hands.front().dump(o, ps) << endl;
 		if (var.peek_on_Ace) {
 		const bool buy_insurance = offer_insurance(i, o, pbj);;
 		// determine change in bankroll
@@ -2074,13 +2077,17 @@ grader::deal_hand(istream& i, ostream& o) {
 		const double half_bet = bet / 2.0;
 		if (C.peek_hole_card() == TEN) {
 			end = true;
+			o << "Dealer has blackjack." << endl;
 			if (buy_insurance) {
 				bankroll += var.insurance *half_bet;
 			}
 			if (!pbj) {
 				bankroll -= bet;
-			}	// else push
+			} else {
+				o << "Push." << endl;
+			}
 		} else {
+//			o << "No dealer blackjack." << endl;
 			if (buy_insurance) {
 				bankroll -= half_bet;
 			}
@@ -2089,25 +2096,133 @@ grader::deal_hand(istream& i, ostream& o) {
 			}
 			// else keep playing
 		}
-		}
+		}	// peek_on_Ace
 	} else if (dealer_reveal == TEN) {
+		player_hands.front().dump(o, ps) << endl;
 		if (var.peek_on_10) {
 		if (C.peek_hole_card() == ACE) {
+			end = true;
+			o << "Dealer has blackjack." << endl;
 			if (!pbj) {
 				bankroll -= bet;
-			}	// else push
+			} else {
+				o << "Push." << endl;
+			}
+		} else {
+//			o << "No dealer blackjack." << endl;
 		}
-		}
+		}	// peek_on_10
 	}
 	// play ends if either dealer or player had blackjack (and was peeked)
 if (!end) {
-	size_t i = 0;
-	for ( ; i<player_hands.size(); ++i) {
-		player_hands.front().dump(o, ps) << endl;
-		o << "TODO: finish me" << endl;
+	size_t j = 0;
+	for ( ; j<player_hands.size(); ++j) {
+		hand& ph(player_hands[j]);
+		o << '[' << j+1 << '/' << player_hands.size() << "] ";
+		o << "dealer: " << card_name[dealer_reveal] << ", ";
+		ph.dump(o, ps) << endl;
+		// prompt for player action
+		// o << "TODO: finish me" << endl;
 		// player may resplit hands
+		bool live = true;
+		do {
+			// these predicates can be further refined by
+			// variation/rules etc...
+			const bool d = ph.doubleable();
+			// check for double_after_split and other limitations
+			const bool p = ph.splittable();
+			// check for resplit limit
+			const bool r = ph.surrenderable() && !already_split();
+			// only first hand is surrenderrable, normally
+			bool prompt = false;
+			do {
+			const player_choice pc =
+				prompt_player_action(i, o, d, p, r);
+			switch (pc) {
+			case STAND: live = false; break;
+			case DOUBLE:
+				live = false;
+				ph.doubled_down = true;
+				// fall-through
+			case HIT:
+				ph.hit(play.player_hit,
+					C.option_draw(pick_cards, i, o));
+				break;
+			case SPLIT:
+				ph.presplit(play);
+				player_hands.push_back(ph);
+				ph.hit(play.player_hit,
+					C.option_draw(pick_cards, i, o));
+				// check for special case of split-Aces
+				break;
+			case SURRENDER: bankroll -= bet *var.surrender_penalty;
+				live = false; break;
+			case HINT:
+			case OPTIM:
+				prompt = true;
+				o << "Hints not yet available." << endl;
+				break;
+			default:
+				prompt = true;
+				break;
+			}
+			} while (prompt);
+			if (ph.state == player_bust) {
+				o << "Player busts." << endl;
+				live = false;
+			}
+		} while (live);
 	}
+	// dealer plays after player is done
+	// should dealer play when there are no live hands?
+	
+	
+	// suspense double-down?
 }
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+player_choice
+prompt_player_action(istream& i, ostream& o, 
+		const bool d, const bool p, const bool r) {
+	player_choice c = NIL;
+do {
+	string line;
+	do {
+		// prompt for legal choices
+		o << "action? [hs";
+		if (d) o << 'd';
+		if (p) o << 'p';
+		if (r) o << 'r';
+		o << "?!] ";
+		i >> line;
+	} while (line.empty() && i);
+	switch (line[0]) {
+	case 'h':
+	case 'H':
+		c = HIT; break;
+	case 'd':
+	case 'D':
+		c = DOUBLE; break;
+	case 'p':
+	case 'P':
+		c = SPLIT; break;
+	case 's':
+	case 'S':
+		c = STAND; break;
+	case 'r':
+	case 'R':
+		c = SURRENDER; break;
+	case '?':
+		c = HINT; break;
+		// caller should provide detailed hint with edges
+		// for both basic and dynamic strategies
+	case '!':
+		c = OPTIM; break;
+	default: break;
+	}
+} while (c == NIL);
+	return c;
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -2271,15 +2386,25 @@ grader::hand::splittable(void) const {
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
+	Split back to single-card.
+	Does not hit.
+ */
+void
+grader::hand::presplit(const play_map& play) {
+	const size_t p1 = card_index(cards[0]);
+	cards.clear();
+	initial_card(play, p1);
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
 	\param p2 new up-card for player.
 	TODO: check for one-card on split-aces
  */
 void
 grader::hand::split(const play_map& play, const size_t p2) {
 	if (splittable()) {
-		const size_t p1 = card_index(cards[0]);
-		cards.clear();
-		initial_card(play, p1);
+		presplit(play);
 		hit(play.get_player_state_machine(), p2);
 		// 21 here does not count as blackjack
 	}
