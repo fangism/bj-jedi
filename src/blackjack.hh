@@ -777,10 +777,22 @@ public:
 	quick_draw(void);
 
 	size_t
+	quick_draw_uncounted(void);
+
+	size_t
+	option_draw_uncounted(const bool, istream&, ostream&);
+
+	size_t
+	option_draw(const bool, istream&, ostream&);
+
+	size_t
 	draw(void);
 
 	void
 	draw_hole_card(void);
+
+	void
+	option_draw_hole_card(const bool, istream&, ostream&);
 
 	size_t
 	peek_hole_card(void) const {
@@ -901,6 +913,13 @@ class grader {
 	 */
 	size_t					dealer_hole;
 
+// options:
+	/**
+		If true, give user the option of hand-picking every card with prompt.
+	 */
+	bool					pick_cards;
+
+// state:
 	/// current amount of money
 	double					bankroll;
 	/// size of current bet (convert from integer)

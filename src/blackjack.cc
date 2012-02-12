@@ -68,29 +68,6 @@ strategy::action_key[] = "-SHDPR";
 // P = split pair
 // R = surrender (run!)
 
-#if 0
-const char card_name[] = "A23456789T";
-
-// really should just be a public function
-size_t
-card_index(const char c) {
-	if (std::isalpha(c)) {
-		if (c == 'A' || c == 'a') {
-			return ACE;
-		} else if (c == 'T' || c == 't'
-			|| c == 'J' || c == 'j'
-			|| c == 'Q' || c == 'q'
-			|| c == 'K' || c == 'k'
-			) {
-			return TEN;
-		}
-	} else if (std::isdigit(c)) {
-		return c -'1';
-	}
-	return size_t(-1);
-}
-#endif
-
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
 	Final states applicable to player.
@@ -1869,6 +1846,7 @@ deck_state::count(const size_t c) {
 /**
 	Draws the user-determined card, useful for setting up
 	and querying specific scenarios.
+	Counts specified card as drawn from deck.
  */
 void
 deck_state::magic_draw(const size_t r) {
@@ -1888,12 +1866,55 @@ deck_state::magic_draw(const size_t r) {
  */
 size_t
 deck_state::quick_draw(void) {
+	const size_t ret = quick_draw_uncounted();
+	magic_draw(ret);
+	return ret;
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
+	Peeks at one card from remaining deck at random.
+	Does NOT re-compute probabilities.
+ */
+size_t
+deck_state::quick_draw_uncounted(void) {
 #if 0
-	update_probabilities();
-	const size_t ret = util::random_draw_from_real_pdf(card_probabilities);
+	return util::random_draw_from_real_pdf(card_probabilities);
 #else
-	const size_t ret = util::random_draw_from_integer_pdf(cards);
+	return util::random_draw_from_integer_pdf(cards);
 #endif
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
+	Gives user to choose her own card.
+	Useful for specific scenario testing.
+	\param m if true, prompt user to choose a specific card.
+ */
+size_t
+deck_state::option_draw_uncounted(const bool m, istream& i, ostream& o) {
+if (m) {
+	string line;
+	do {
+		o << "card? ";
+		i >> line;
+	} while (line.empty() && i);
+	const size_t c = card_index(line[0]);
+	if (c != size_t(-1)) {
+		return c;
+	} else {
+		o << "drawing randomly." << endl;
+		return quick_draw_uncounted();
+	}
+} else {
+	return quick_draw_uncounted();
+}
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+size_t
+deck_state::option_draw(const bool m, istream& i, ostream& o) {
+	const size_t ret = option_draw_uncounted(m, i, o);
 	magic_draw(ret);
 	return ret;
 }
@@ -1912,7 +1933,13 @@ deck_state::draw(void) {
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void
 deck_state::draw_hole_card(void) {
-	hole_card = util::random_draw_from_integer_pdf(cards);
+	hole_card = quick_draw_uncounted();
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+void
+deck_state::option_draw_hole_card(const bool m, istream& i, ostream& o) {
+	hole_card = option_draw_uncounted(m, i, o);
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -1921,11 +1948,7 @@ deck_state::draw_hole_card(void) {
  */
 size_t
 deck_state::reveal_hole_card(void) {
-	++used_cards[hole_card];
-	--cards[hole_card];
-	++cards_spent;
-	--cards_remaining;
-	need_update = true;
+	magic_draw(hole_card);
 //	update_probabilities();
 	return hole_card;
 }
@@ -1976,7 +1999,9 @@ deck_state::show_count(ostream& o) const {
 
 grader::grader(const variation& v) :
 		var(v), play(v), basic_strategy(play), dynamic_strategy(play), 
-	C(v),
+		C(v),
+	player_hands(), 
+	pick_cards(false),
 	bankroll(100.0), bet(1.0) {
 	basic_strategy.set_card_distribution(standard_deck_distribution);
 	dynamic_strategy.set_card_distribution(standard_deck_distribution);
@@ -2020,11 +2045,20 @@ void
 grader::deal_hand(istream& i, ostream& o) {
 	player_hands.clear();
 	player_hands.resize(1);
-	const size_t p1 = C.quick_draw();
-	const size_t p2 = C.quick_draw();
+	if (pick_cards) {
+		o << "choose player cards." << endl;
+	}
+	const size_t p1 = C.option_draw(pick_cards, i, o);
+	const size_t p2 = C.option_draw(pick_cards, i, o);
 	player_hands.front().deal(play, p1, p2);
-	dealer_reveal = C.quick_draw();
-	C.draw_hole_card();
+	if (pick_cards) {
+		o << "choose dealer up-card." << endl;
+	}
+	dealer_reveal = C.option_draw(pick_cards, i, o);
+	if (pick_cards) {
+		o << "choose dealer hole-card." << endl;
+	}
+	C.option_draw_hole_card(pick_cards, i, o);
 	o << "dealer: " << card_name[dealer_reveal] << endl;
 	const state_machine& ps(play.get_player_state_machine());
 	player_hands.front().dump(o, ps) << endl;
@@ -2053,7 +2087,7 @@ grader::deal_hand(istream& i, ostream& o) {
 			if (pbj) {
 				bankroll += var.bj_payoff *bet;
 			}
-			// eles keep playing
+			// else keep playing
 		}
 		}
 	} else if (dealer_reveal == TEN) {
@@ -2159,6 +2193,10 @@ do {
 		C.show_count(o);
 	} else if (line == "status") {
 		status(o);
+	} else if (line == "cards-random") {
+		pick_cards = false;
+	} else if (line == "cards-pick") {
+		pick_cards = true;
 	} else if (line == "basic-strategy-verbose") {
 		basic_strategy.dump(o);
 	} else if (line == "basic-strategy-edges") {
