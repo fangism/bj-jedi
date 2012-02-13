@@ -148,6 +148,62 @@ play_map::play_map(const variation& v) : var(v),
 	compute_player_split_state();
 }
 
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+size_t
+play_map::initial_card_player(const size_t p1) const {
+	return p_initial_card_map[p1];
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+size_t
+play_map::initial_card_dealer(const size_t p1) const {
+	return d_initial_card_map[p1];
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+bool
+play_map::is_player_terminal(const size_t state) const {
+	return player_hit[state].is_terminal();
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+bool
+play_map::is_dealer_terminal(const size_t state) const {
+	return dealer_hit[state].is_terminal();
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+size_t
+play_map::hit_player(const size_t state, const size_t c) const {
+	const state_machine::node& current(player_hit[state]);
+	if (!current.is_terminal()) {
+		return current[c];
+	} else {
+		return state;
+	}
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+size_t
+play_map::hit_dealer(const size_t state, const size_t c) const {
+	const state_machine::node& current(dealer_hit[state]);
+	if (!current.is_terminal()) {
+		return current[c];
+	} else {
+		return state;
+	}
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+size_t
+play_map::deal_player(const size_t p1, const size_t p2) const {
+	size_t state = hit_player(initial_card_player(p1), p2);
+	if (state == goal) {
+		state = player_blackjack;
+	}
+	return state;
+}
+
 //-----------------------------------------------------------------------------
 // class strategy method definitions
 
@@ -1901,6 +1957,8 @@ if (m) {
 	} while (line.empty() && i);
 	const size_t c = card_index(line[0]);
 	if (c != size_t(-1)) {
+		assert(c < card_values);
+		assert(cards[c]);		// count check
 		return c;
 	} else {
 		o << "drawing randomly." << endl;
@@ -2040,6 +2098,8 @@ grader::offer_insurance(istream& i, ostream& o, const bool pbj) const {
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
 	Play a hand of blackjack.
+	Player hands, dealer state, hole cards, etc...
+	could all just be local variables?
  */
 void
 grader::deal_hand(istream& i, ostream& o) {
@@ -2050,32 +2110,37 @@ grader::deal_hand(istream& i, ostream& o) {
 	}
 	const size_t p1 = C.option_draw(pick_cards, i, o);
 	const size_t p2 = C.option_draw(pick_cards, i, o);
-	player_hands.front().deal(play, p1, p2);
+	hand& pih(player_hands.front());
+	pih.deal_player(play, p1, p2);
+#if 0
+	pih.dump_player(o, play) << endl;
+#endif
 	if (pick_cards) {
 		o << "choose dealer up-card." << endl;
 	}
 	dealer_reveal = C.option_draw(pick_cards, i, o);
+	dealer_hand.initial_card_dealer(play, dealer_reveal);
 	if (pick_cards) {
 		o << "choose dealer hole-card." << endl;
 	}
 	C.option_draw_hole_card(pick_cards, i, o);
+	const size_t hole_card = C.peek_hole_card();
 	o << "dealer: " << card_name[dealer_reveal] << endl;
-	const state_machine& ps(play.get_player_state_machine());
 	// TODO: if early_surrender (rare) ...
 	// prompt for insurance
-	const bool pbj = player_hands.front().has_blackjack();
+	const bool pbj = pih.has_blackjack();
 	if (pbj) {
 		o << "Player has blackjack!" << endl;
 	}
 	bool end = pbj;
 	if (dealer_reveal == ACE) {
-		player_hands.front().dump(o, ps) << endl;
+		pih.dump_player(o, play) << endl;
 		if (var.peek_on_Ace) {
 		const bool buy_insurance = offer_insurance(i, o, pbj);;
 		// determine change in bankroll
 		// check for blackjack for player
 		const double half_bet = bet / 2.0;
-		if (C.peek_hole_card() == TEN) {
+		if (hole_card == TEN) {
 			end = true;
 			o << "Dealer has blackjack." << endl;
 			if (buy_insurance) {
@@ -2098,9 +2163,9 @@ grader::deal_hand(istream& i, ostream& o) {
 		}
 		}	// peek_on_Ace
 	} else if (dealer_reveal == TEN) {
-		player_hands.front().dump(o, ps) << endl;
+		pih.dump_player(o, play) << endl;
 		if (var.peek_on_10) {
-		if (C.peek_hole_card() == ACE) {
+		if (hole_card == ACE) {
 			end = true;
 			o << "Dealer has blackjack." << endl;
 			if (!pbj) {
@@ -2118,14 +2183,10 @@ if (!end) {
 	size_t j = 0;
 	for ( ; j<player_hands.size(); ++j) {
 		hand& ph(player_hands[j]);
-		o << '[' << j+1 << '/' << player_hands.size() << "] ";
-		o << "dealer: " << card_name[dealer_reveal] << ", ";
-		ph.dump(o, ps) << endl;
-		// prompt for player action
-		// o << "TODO: finish me" << endl;
 		// player may resplit hands
 		bool live = true;
 		do {
+			dump_situation(o, j);
 			// these predicates can be further refined by
 			// variation/rules etc...
 			const bool d = ph.doubleable();
@@ -2145,13 +2206,13 @@ if (!end) {
 				ph.doubled_down = true;
 				// fall-through
 			case HIT:
-				ph.hit(play.player_hit,
+				ph.hit_player(play, 
 					C.option_draw(pick_cards, i, o));
 				break;
 			case SPLIT:
 				ph.presplit(play);
 				player_hands.push_back(ph);
-				ph.hit(play.player_hit,
+				ph.hit_player(play, 
 					C.option_draw(pick_cards, i, o));
 				// check for special case of split-Aces
 				break;
@@ -2168,17 +2229,37 @@ if (!end) {
 			}
 			} while (prompt);
 			if (ph.state == player_bust) {
-				o << "Player busts." << endl;
+				ph.dump_player(o, play) << endl;
+				// o << "Player busts." << endl;
 				live = false;
 			}
 		} while (live);
+		dump_situation(o, j);
 	}
+#if 1
+	o << "Dealer plays..." << endl;
+#endif
 	// dealer plays after player is done
 	// should dealer play when there are no live hands?
-	
-	
-	// suspense double-down?
+	dealer_hand.hit_dealer(play, hole_card);
+	// dealer_hand.dump_dealer(o, play);
+	while (!play.is_dealer_terminal(dealer_hand.state)) {
+		dealer_hand.hit_dealer(play, C.option_draw(pick_cards, i, o));
+	}
+	dealer_hand.dump_dealer(o, play) << endl;
+	// suspense double-down?  nah
+	o << "TODO: result? who wins?" << endl;
 }
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+ostream&
+grader::dump_situation(ostream& o, const size_t j) const {
+	assert(j < player_hands.size());
+	o << '[' << j+1 << '/' << player_hands.size() << "] ";
+	o << "dealer: " << card_name[dealer_reveal] << ", ";
+	player_hands[j].dump_player(o, play) << endl;
+	return o;
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -2203,16 +2284,16 @@ do {
 		c = HIT; break;
 	case 'd':
 	case 'D':
-		c = DOUBLE; break;
+		if (d) { c = DOUBLE; } break;
 	case 'p':
 	case 'P':
-		c = SPLIT; break;
+		if (p) { c = SPLIT; } break;
 	case 's':
 	case 'S':
 		c = STAND; break;
 	case 'r':
 	case 'R':
-		c = SURRENDER; break;
+		if (r) { c = SURRENDER; } break;
 	case '?':
 		c = HINT; break;
 		// caller should provide detailed hint with edges
@@ -2221,7 +2302,7 @@ do {
 		c = OPTIM; break;
 	default: break;
 	}
-} while (c == NIL);
+} while (c == NIL && i);
 	return c;
 }
 
@@ -2341,26 +2422,35 @@ do {
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-grader::hand::hand(const play_map& play, const size_t p1) : cards(), state() {
-	initial_card(play, p1);
-}
-
-//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void
-grader::hand::initial_card(const play_map& play, const size_t p1) {
+grader::hand::initial_card_player(const play_map& play, const size_t p1) {
 	// the string stores the card names, not card indices
+	cards.clear();
 	cards.push_back(card_name[p1]);
-	state = play.p_initial_card_map[p1];
+	state = play.initial_card_player(p1);
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void
-grader::hand::hit(const state_machine& m, const size_t p2) {
+grader::hand::initial_card_dealer(const play_map& play, const size_t p1) {
+	// the string stores the card names, not card indices
+	cards.clear();
+	cards.push_back(card_name[p1]);
+	state = play.initial_card_dealer(p1);
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+void
+grader::hand::hit_player(const play_map& play, const size_t p2) {
 	cards.push_back(card_name[p2]);
-	const state_machine::node& current(m[state]);
-	if (!current.is_terminal()) {
-		state = current[p2];
-	}
+	state = play.hit_player(state, p2);
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+void
+grader::hand::hit_dealer(const play_map& play, const size_t p2) {
+	cards.push_back(card_name[p2]);
+	state = play.hit_dealer(state, p2);
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -2368,15 +2458,12 @@ grader::hand::hit(const state_machine& m, const size_t p2) {
 	Assigns initial state based on player's first two cards.
  */
 void
-grader::hand::deal(const play_map& play, const size_t p1, const size_t p2) {
-	initial_card(play, p1);
-	hit(play.get_player_state_machine(), p2);
-	// if initial total is 21, natural blackjack
-	if (state == goal) {
-		state = player_blackjack;
-	}
+grader::hand::deal_player(const play_map& play,
+		const size_t p1, const size_t p2) {
+	cards.push_back(card_name[p1]);
+	cards.push_back(card_name[p2]);
+	state = play.deal_player(p1, p2);
 }
-
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 bool
@@ -2393,7 +2480,7 @@ void
 grader::hand::presplit(const play_map& play) {
 	const size_t p1 = card_index(cards[0]);
 	cards.clear();
-	initial_card(play, p1);
+	initial_card_player(play, p1);
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -2405,15 +2492,22 @@ void
 grader::hand::split(const play_map& play, const size_t p2) {
 	if (splittable()) {
 		presplit(play);
-		hit(play.get_player_state_machine(), p2);
+		hit_player(play, p2);
 		// 21 here does not count as blackjack
 	}
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ostream&
-grader::hand::dump(ostream& o, const state_machine& m) const {
-	o << "player: " << cards << " (" << m[state].name << ")";
+grader::hand::dump_player(ostream& o, const play_map& m) const {
+	o << "player: " << cards << " (" << m.player_hit[state].name << ")";
+	return o;
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+ostream&
+grader::hand::dump_dealer(ostream& o, const play_map& m) const {
+	o << "dealer: " << cards << " (" << m.dealer_hit[state].name << ")";
 	return o;
 }
 

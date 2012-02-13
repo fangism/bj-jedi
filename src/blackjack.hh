@@ -206,32 +206,6 @@ enum table_offsets {
  */
 struct play_map {
 public:
-#if 0
-//	static const size_t vals = card_values;	// number of values, max value
-	static const size_t goal = 21;
-	static const size_t stop = 17;		// dealer stands hard or soft 17
-	// table offsets for state_machine states
-	static const size_t player_blackjack = goal +1;
-	static const size_t dealer_blackjack = goal +1;
-//	static const size_t bust = goal +1;
-	static const size_t player_bust = player_blackjack +1;
-	static const size_t dealer_bust = dealer_blackjack +1;
-	// added one for dealer's "push22" for switch variation
-	static const size_t dealer_push = dealer_bust +1;
-	static const size_t dealer_soft = dealer_push +1;	// for push22
-	static const size_t player_soft = player_bust +1;
-// private:
-	static const size_t soft_min = 1;       // 1-11
-// only player may split
-	static const size_t pair_offset = player_soft +card_values +1;
-	static const size_t p_action_states = pair_offset +card_values;
-	static const size_t d_action_states = dealer_soft +card_values +1;
-	static const size_t player_states = goal -stop +4;
-	static const size_t dealer_states = goal -stop +4;
-	// player action table offset
-//	static const size_t p_pair_states = p_action_states +card_values;
-#endif
-public:
 	// mapping of initial card to initial state
 	// for both dealer AND player
 	// these could go into a struct for rules
@@ -242,7 +216,6 @@ public:
 	static const char		dealer_final_states[][dealer_states];
 
 	const variation&		var;
-#if 1
 // some of these could be split into a rules struct
 	/// the dealer's fixed state machine, also action table
 	state_machine			dealer_hit;
@@ -252,7 +225,6 @@ public:
 	state_machine			player_resplit;
 	/// transition table for splits, with no re-split
 	state_machine			last_split;
-#endif
 
 public:
 	explicit
@@ -281,6 +253,28 @@ public:
 	get_dealer_state_machine(void) const {
 		return dealer_hit;
 	}
+
+	bool
+	is_player_terminal(const size_t) const;
+
+	bool
+	is_dealer_terminal(const size_t) const;
+
+	// action transitions
+	size_t
+	initial_card_player(const size_t) const;
+
+	size_t
+	initial_card_dealer(const size_t) const;
+
+	size_t
+	deal_player(const size_t, const size_t) const;
+
+	size_t
+	hit_player(const size_t, const size_t) const;
+
+	size_t
+	hit_dealer(const size_t, const size_t) const;
 
 	ostream&
 	dump_dealer_policy(ostream&) const;
@@ -875,19 +869,25 @@ class grader {
 
 		hand() { }
 
-		explicit
-		hand(const play_map&, const size_t);
-
 		// initial deal
 		void
-		initial_card(const play_map&, const size_t);
+		initial_card_player(const play_map&, const size_t);
 
 		void
-		deal(const play_map&, const size_t, const size_t);
+		initial_card_dealer(const play_map&, const size_t);
+
+		void
+		deal_player(const play_map&, const size_t, const size_t);
+
+		void
+		deal_dealer(const play_map&, const size_t, const size_t);
 
 		// hit state transition -- use this for double-down too
 		void
-		hit(const state_machine&, const size_t);
+		hit_player(const play_map&, const size_t);
+
+		void
+		hit_dealer(const play_map&, const size_t);
 
 		void
 		presplit(const play_map&);
@@ -913,7 +913,10 @@ class grader {
 		}
 
 		ostream&
-		dump(ostream&, const state_machine&) const;
+		dump_dealer(ostream&, const play_map&) const;
+
+		ostream&
+		dump_player(ostream&, const play_map&) const;
 
 	};	// end struct hand
 
@@ -922,7 +925,11 @@ class grader {
 	 */
 	vector<hand>				player_hands;
 	/**
-		The dealer's revealed card.
+		Dealer's hand, as it develops.  
+	 */
+	hand					dealer_hand;
+	/**
+		The dealer's revealed card.  Redundant with dealer_hand.
 	 */
 	size_t					dealer_reveal;
 	/**
@@ -935,6 +942,12 @@ class grader {
 		If true, give user the option of hand-picking every card with prompt.
 	 */
 	bool					pick_cards;
+	/**
+		More computationally intense.
+		Re-calculates dynamic strategy optimization immediately
+		before prompting user for action.  
+	 */
+	bool					use_dynamic_strategy;
 
 // state:
 	/// current amount of money
@@ -971,6 +984,9 @@ private:
 	already_split(void) const {
 		return player_hands.size() >= 2;
 	}
+
+	ostream&
+	dump_situation(ostream& o, const size_t) const;
 
 };	// end class grader
 
