@@ -102,6 +102,13 @@ const char play_map::dealer_final_states[][dealer_states] = {
 	"push"	// switch variation only
 };
 
+play_map::outcome_matrix_type		play_map::__outcome_matrix;
+
+const play_map::outcome_matrix_type&
+play_map::outcome_matrix = play_map::__outcome_matrix;
+
+const int play_map::init_outcome_matrix = play_map::compute_final_outcomes();
+
 //-----------------------------------------------------------------------------
 // class variation method definitions
 
@@ -146,6 +153,7 @@ play_map::play_map(const variation& v) : var(v),
 	set_dealer_policy();
 	compute_player_hit_state();
 	compute_player_split_state();
+	compute_final_outcomes();
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -336,30 +344,12 @@ strategy::player_final_state_probabilities(const probability_vector& s,
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-#if 0
-strategy::strategy() : 
-	var(), card_odds(standard_deck_distribution), dealer_hit() {
-	// only depends on H17:
-	// don't *have* to do this right away...
-	set_dealer_policy();
-	compute_player_hit_state();
-	compute_player_split_state();
-	update_player_initial_state_odds();
-}
-#endif
-
-//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 strategy::strategy(const play_map& v) : 
 	var(v.var),
 	play(v), 
 	card_odds(standard_deck_distribution) {
 	// only depends on H17:
 	// don't *have* to do this right away...
-#if 0
-	set_dealer_policy();
-	compute_player_hit_state();
-	compute_player_split_state();
-#endif
 	update_player_initial_state_odds();
 }
 
@@ -454,7 +444,7 @@ play_map::set_dealer_policy(void) {
 ostream&
 play_map::dump_dealer_policy(ostream& o) const {
 	o << "Dealer's action table:\n";
-	return dealer_hit.dump(o) << endl;
+	return dealer_hit.dump(o);
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -540,7 +530,7 @@ play_map::compute_player_hit_state(void) {
 	// the bust-state is terminal
 	player_hit.check();
 #if DUMP_DURING_EVALUATE
-	dump_player_hit_state(cout);
+	dump_player_hit_state(cout) << endl;
 #endif
 }	// end compute_player_hit_state()
 
@@ -548,7 +538,7 @@ play_map::compute_player_hit_state(void) {
 ostream&
 play_map::dump_player_hit_state(ostream& o) const {
 	o << "Player's hit transition table:\n";
-	return player_hit.dump(o) << endl;
+	return player_hit.dump(o);
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -668,13 +658,15 @@ strategy::compute_dealer_final_table(void) {
 ostream&
 strategy::dump_dealer_final_table(ostream& o) const {
 	o << "Dealer's final state odds (pre-peek):\n";
+	static const char header[] = 
+		"show\\do\t17\t18\t19\t20\t21\tBJ\tbust\tpush";
 	ostream_iterator<probability_type> osi(o, "\t");
 {
 	const dealer_final_matrix::const_iterator
 		b(dealer_final_given_revealed.begin()),
 		e(dealer_final_given_revealed.end());
 	dealer_final_matrix::const_iterator i(b);
-	o << "show\\do\t17\t18\t19\t20\t21\tBJ\tbust\tpush\n";
+	o << header << endl;
 	o << setprecision(4);
 	for ( ; i!=e; ++i) {
 		o << play.dealer_hit[play_map::d_initial_card_map[i-b]].name << '\t';
@@ -689,7 +681,7 @@ strategy::dump_dealer_final_table(ostream& o) const {
 		b(dealer_final_given_revealed_post_peek.begin()),
 		e(dealer_final_given_revealed_post_peek.end());
 	dealer_final_matrix::const_iterator i(b);
-	o << "show\\do\t17\t18\t19\t20\t21\tBJ\tbust\tpush\n";
+	o << header << endl;
 	o << setprecision(4);
 	for ( ; i!=e; ++i) {
 		o << play.dealer_hit[play_map::d_initial_card_map[i-b]].name << '\t';
@@ -697,6 +689,61 @@ strategy::dump_dealer_final_table(ostream& o) const {
 		o << endl;
 	}
 }
+	return o;
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+int
+play_map::compute_final_outcomes(void) {
+	size_t k;
+	// player blackjack and bust is separate
+	for (k=0; k < player_states -2; ++k) {	// player's final state
+	size_t d;
+		outcome_array_type& v(__outcome_matrix[k]);
+	// -1: blackjack, push, and bust states separate
+	for (d=0; d < dealer_states -3; ++d) {	// dealer's final state
+		outcome& o(v[d]);
+		int diff = k -d -1;
+		if (diff > 0) {
+			o = WIN;
+		} else if (!diff) {
+			o = PUSH;
+		} else {
+			o = LOSE;
+		}
+	}
+		v[d] = LOSE;	// dealer blackjack
+		v[d+1] = WIN;	// dealer busts
+		v[d+2] = PUSH;	// dealer pushes
+	}
+	outcome_array_type& pbj(__outcome_matrix[k]);	// player blackjack
+	outcome_array_type& px(__outcome_matrix[k+1]);	// player busts
+	std::fill(pbj.begin(), pbj.end(), WIN);
+	pbj[dealer_states -3] = PUSH;			// both blackjack
+	std::fill(px.begin(), px.end(), LOSE);
+	return 1;
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+ostream&
+play_map::dump_final_outcomes(ostream& o) {
+	static const char header[] = "P\\D\t17\t18\t19\t20\t21\tBJ\tbust\tpush";
+	o << "Dealer vs. player final state outcomes." << endl;
+	o << header << endl;
+	size_t k;
+	for (k=0; k<player_states; ++k) {
+		o << player_final_states[k];
+		const outcome_array_type& v(outcome_matrix[k]);
+	size_t d;
+	for (d=0; d<player_states; ++d) {
+		switch (v[d]) {
+		case WIN: o << "\twin"; break;
+		case LOSE: o << "\tlose"; break;
+		case PUSH: o << "\tpush"; break;
+		}
+	}
+		o << endl;
+	}
 	return o;
 }
 
@@ -712,7 +759,7 @@ strategy::compute_showdown_odds(const dealer_final_matrix& dfm,
 		const edge_type& bjp, 
 		outcome_matrix& stand, player_stand_edges_matrix& edges) {
 	// represents: <=16, 17, 18, 19, 20, 21, BJ, bust
-	static const size_t d_bj_ind = dealer_states -3;
+//	static const size_t d_bj_ind = dealer_states -3;
 	static const size_t p_bj_ind = player_states -2;
 	size_t j;
 	for (j=0; j < card_values; ++j) {	// dealer's revealed card, initial state
@@ -720,38 +767,35 @@ strategy::compute_showdown_odds(const dealer_final_matrix& dfm,
 		outcome_vector& ps(stand[j]);
 	size_t k;
 	// player blackjack and bust is separate
-	for (k=0; k < player_states -2; ++k) {	// player's final state
+	for (k=0; k < player_states; ++k) {	// player's final state
 		outcome_odds& o(ps[k]);
+		const play_map::outcome_array_type&
+			v(play_map::outcome_matrix[k]);
 	size_t d;
 	// -1: blackjack, push, and bust states separate
-	for (d=0; d < dealer_states -3; ++d) {	// dealer's final state
+	for (d=0; d < dealer_states; ++d) {	// dealer's final state
 		const probability_type& p(dfv[d]);
-		int diff = k -d;
-		if (diff > 1) {
-			o.win += p;
-		} else if (diff == 1) {
-			o.push += p;
-		} else {
-			o.lose += p;
+		switch (v[d]) {
+		case WIN: o.win += p; break;
+		case LOSE: o.lose += p; break;
+		case PUSH: o.push += p; break;
 		}
-	}
-		o.lose += dfv[d];	// dealer blackjack
-		o.win += dfv[d+1];	// dealer busts
-		o.push += dfv[d+2];	// dealer pushes
-	}
+	}	// end for dealer_states
+	}	// end for player_states
+#if 0
 		const probability_type& d_bj(dfv[d_bj_ind]);
 		ps[k].win += 1.0 -d_bj;	// player blackjack, dealer none
 		ps[k].push += d_bj;	// both blackjack
 		ps[k+1].lose += 1.0;	// player busts
-	}
+#endif
+	}	// end for card_values
 	// now compute player edges
 	for (j=0; j<card_values; ++j) {	// dealer's reveal card
 		const outcome_vector& ps(stand[j]);
 		player_stand_edges_vector& ev(edges[j]);
 		transform(ps.begin(), ps.end(), ev.begin(), 
 			mem_fun_ref(&outcome_odds::edge));
-		// TODO: or mem_fun_ref(&outcome_odds::ratioed_edge)?
-		// compensate for player blackjack, pays 3:2
+		// later, compensate for player blackjack, pays 3:2
 		ev[p_bj_ind] = ps[p_bj_ind].weighted_edge(bjp, 1.0);
 	}
 }	// end compute_showdown_odds
@@ -1821,8 +1865,9 @@ strategy::dump_optimal_actions(ostream& o) const {
 ostream&
 strategy::dump(ostream& o) const {
 	var.dump(o) << endl;
-	play.dump_dealer_policy(o);				// verified
-	play.dump_player_hit_state(o);			// verified
+	play_map::dump_final_outcomes(o) << endl;	// verified
+	play.dump_dealer_policy(o) << endl;		// verified
+	play.dump_player_hit_state(o) << endl;		// verified
 	dump_dealer_final_table(o) << endl;		// verified
 	dump_player_stand_odds(o) << endl;		// verified
 
@@ -2501,6 +2546,9 @@ grader::hand::split(const play_map& play, const size_t p2) {
 ostream&
 grader::hand::dump_player(ostream& o, const play_map& m) const {
 	o << "player: " << cards << " (" << m.player_hit[state].name << ")";
+	if (doubled_down) {
+		o << " x2";
+	}
 	return o;
 }
 

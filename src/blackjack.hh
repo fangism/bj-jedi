@@ -50,6 +50,15 @@ player_choice
 prompt_player_action(istream&, ostream&,
 	const bool d, const bool p, const bool r);
 
+/**
+	Dealer vs. player showdown outcomes.  
+ */
+enum outcome {
+	WIN,
+	PUSH,
+	LOSE
+};
+
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
 	Options for game variations.
@@ -226,6 +235,15 @@ public:
 	/// transition table for splits, with no re-split
 	state_machine			last_split;
 
+	/// in the dealer/player final states, who wins
+	typedef	array<outcome, dealer_states>		outcome_array_type;
+	typedef	array<outcome_array_type, player_states>
+							outcome_matrix_type;
+	static const outcome_matrix_type&	outcome_matrix;
+private:
+	static outcome_matrix_type	__outcome_matrix;
+	static const int		init_outcome_matrix;
+
 public:
 	explicit
 	play_map(const variation&);
@@ -235,6 +253,7 @@ public:
 	size_t
 	player_final_state_map(const size_t);
 
+private:
 	void
 	set_dealer_policy(void);
 
@@ -244,16 +263,11 @@ public:
 	void
 	compute_player_split_state(void);
 
-	const state_machine&
-	get_player_state_machine(void) const {
-		return player_hit;
-	}
+	static
+	int
+	compute_final_outcomes(void);
 
-	const state_machine&
-	get_dealer_state_machine(void) const {
-		return dealer_hit;
-	}
-
+public:
 	bool
 	is_player_terminal(const size_t) const;
 
@@ -284,6 +298,10 @@ public:
 
 	ostream&
 	dump_player_split_state(ostream&) const;
+
+	static
+	ostream&
+	dump_final_outcomes(ostream&);
 
 	ostream&
 	dump_variation(ostream& o) const {
