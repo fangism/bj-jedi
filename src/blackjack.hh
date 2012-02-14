@@ -884,8 +884,14 @@ class grader {
 			Whether or not this hand was doubled-down.
 		 */
 		bool					doubled_down;
+#if 0
+		/**
+			Whether or not this hand was surrendered.
+		 */
+		bool					surrendered;
+#endif
 
-		hand() { }
+		hand() : cards(), state(0), doubled_down(false) { }
 
 		// initial deal
 		void

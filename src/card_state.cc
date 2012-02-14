@@ -34,7 +34,7 @@ card_index(const char c) {
 			) {
 			return TEN;
 		}
-	} else if (std::isdigit(c)) {
+	} else if (c >= '2' && c <= '9') {
 		return c -'1';
 	}
 	return size_t(-1);

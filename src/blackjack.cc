@@ -86,7 +86,6 @@ const char play_map::player_final_states[][player_states] = {
 };
 
 /**
-	TODO: this isn't even used...
 	Final states applicable to dealer.
 	TODO: this table should be redundant from dealer
 	state machine, which already contains strings.
@@ -159,12 +158,14 @@ play_map::play_map(const variation& v) : var(v),
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 size_t
 play_map::initial_card_player(const size_t p1) const {
+	assert(p1 < card_values);
 	return p_initial_card_map[p1];
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 size_t
 play_map::initial_card_dealer(const size_t p1) const {
+	assert(p1 < card_values);
 	return d_initial_card_map[p1];
 }
 
@@ -183,6 +184,7 @@ play_map::is_dealer_terminal(const size_t state) const {
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 size_t
 play_map::hit_player(const size_t state, const size_t c) const {
+	assert(c < card_values);
 	const state_machine::node& current(player_hit[state]);
 	if (!current.is_terminal()) {
 		return current[c];
@@ -194,6 +196,7 @@ play_map::hit_player(const size_t state, const size_t c) const {
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 size_t
 play_map::hit_dealer(const size_t state, const size_t c) const {
+	assert(c < card_values);
 	const state_machine::node& current(dealer_hit[state]);
 	if (!current.is_terminal()) {
 		return current[c];
@@ -2106,6 +2109,7 @@ grader::grader(const variation& v) :
 	player_hands(), 
 	pick_cards(false),
 	bankroll(100.0), bet(1.0) {
+	player_hands.reserve(16);
 	basic_strategy.set_card_distribution(standard_deck_distribution);
 	dynamic_strategy.set_card_distribution(standard_deck_distribution);
 	basic_strategy.evaluate();
@@ -2228,6 +2232,7 @@ if (!end) {
 	size_t j = 0;
 	for ( ; j<player_hands.size(); ++j) {
 		hand& ph(player_hands[j]);
+		// caution, reference may dangle after a vector::push_back
 		// player may resplit hands
 		bool live = true;
 		do {
@@ -2236,7 +2241,8 @@ if (!end) {
 			// variation/rules etc...
 			const bool d = ph.doubleable();
 			// check for double_after_split and other limitations
-			const bool p = ph.splittable();
+			const bool p = ph.splittable() &&
+				(player_hands.size() < player_hands.capacity());
 			// check for resplit limit
 			const bool r = ph.surrenderable() && !already_split();
 			// only first hand is surrenderrable, normally
@@ -2259,7 +2265,10 @@ if (!end) {
 				player_hands.push_back(ph);
 				ph.hit_player(play, 
 					C.option_draw(pick_cards, i, o));
+				player_hands.back().hit_player(play, 
+					C.option_draw(pick_cards, i, o));
 				// check for special case of split-Aces
+				// show other split hand for counting purposes
 				break;
 			case SURRENDER: bankroll -= bet *var.surrender_penalty;
 				live = false; break;
@@ -2287,22 +2296,41 @@ if (!end) {
 	// dealer plays after player is done
 	// should dealer play when there are no live hands?
 	dealer_hand.hit_dealer(play, hole_card);
+	C.reveal_hole_card();
 	// dealer_hand.dump_dealer(o, play);
 	while (!play.is_dealer_terminal(dealer_hand.state)) {
 		dealer_hand.hit_dealer(play, C.option_draw(pick_cards, i, o));
 	}
 	dealer_hand.dump_dealer(o, play) << endl;
 	// suspense double-down?  nah
-	o << "TODO: result? who wins?" << endl;
+for (j=0; j<player_hands.size(); ++j) {
+	dump_situation(o, j);
+	const outcome& wlp(play_map::outcome_matrix
+		[play_map::player_final_state_map(player_hands[j].state)]
+		[dealer_hand.state -stop]);
+	const double delta = player_hands[j].doubled_down ?
+		var.double_multiplier * bet : bet;
+	switch (wlp) {
+	case WIN: o << "Player wins." << endl; bankroll += delta; break;
+	case LOSE: o << "Player loses." << endl; bankroll -= delta; break;
+	case PUSH: o << "Push." << endl; break;
+	}	// end switch
+}	// end for
 }
-}
+	status(o);
+}	// end grader::deal_hand
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ostream&
 grader::dump_situation(ostream& o, const size_t j) const {
 	assert(j < player_hands.size());
 	o << '[' << j+1 << '/' << player_hands.size() << "] ";
-	o << "dealer: " << card_name[dealer_reveal] << ", ";
+	if (dealer_hand.cards.size() > 1) {
+		dealer_hand.dump_dealer(o, play);
+	} else {
+		o << "dealer: " << card_name[dealer_reveal];
+	}
+	o << ", ";
 	player_hands[j].dump_player(o, play) << endl;
 	return o;
 }
@@ -2354,8 +2382,8 @@ do {
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ostream&
 grader::status(ostream& o) const {
-	o << "bankroll: " << bankroll << endl;
-	o << "bet: " << bet << endl;
+	o << "bankroll: " << bankroll <<
+		", bet: " << bet << endl;
 	// deck remaning (%)
 	return o;
 }
@@ -2470,6 +2498,7 @@ do {
 void
 grader::hand::initial_card_player(const play_map& play, const size_t p1) {
 	// the string stores the card names, not card indices
+	assert(p1 < card_values);
 	cards.clear();
 	cards.push_back(card_name[p1]);
 	state = play.initial_card_player(p1);
@@ -2479,6 +2508,7 @@ grader::hand::initial_card_player(const play_map& play, const size_t p1) {
 void
 grader::hand::initial_card_dealer(const play_map& play, const size_t p1) {
 	// the string stores the card names, not card indices
+	assert(p1 < card_values);
 	cards.clear();
 	cards.push_back(card_name[p1]);
 	state = play.initial_card_dealer(p1);
@@ -2487,6 +2517,7 @@ grader::hand::initial_card_dealer(const play_map& play, const size_t p1) {
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void
 grader::hand::hit_player(const play_map& play, const size_t p2) {
+	assert(p2 < card_values);
 	cards.push_back(card_name[p2]);
 	state = play.hit_player(state, p2);
 }
@@ -2494,6 +2525,7 @@ grader::hand::hit_player(const play_map& play, const size_t p2) {
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void
 grader::hand::hit_dealer(const play_map& play, const size_t p2) {
+	assert(p2 < card_values);
 	cards.push_back(card_name[p2]);
 	state = play.hit_dealer(state, p2);
 }
@@ -2524,7 +2556,6 @@ grader::hand::splittable(void) const {
 void
 grader::hand::presplit(const play_map& play) {
 	const size_t p1 = card_index(cards[0]);
-	cards.clear();
 	initial_card_player(play, p1);
 }
 
