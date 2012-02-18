@@ -145,6 +145,16 @@ variation::dump(ostream& o) const {
 	return o;
 }
 
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
+	set individual options: set key value
+	configure-all: one-by-one
+ */
+void
+variation::configure(istream&, ostream& o) {
+	o << "TODO: finish variation::configure" << endl;
+}
+
 //-----------------------------------------------------------------------------
 // class play_map method definitions
 play_map::play_map(const variation& v) : var(v),
@@ -2317,6 +2327,9 @@ for (j=0; j<player_hands.size(); ++j) {
 	}	// end switch
 }	// end for
 }
+	if (C.reshuffle_auto()) {
+		o << "Reshuffling..." << endl;
+	}
 	status(o);
 }	// end grader::deal_hand
 

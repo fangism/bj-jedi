@@ -2,7 +2,7 @@
 	\file "util/string.hh"
 	Configure-detected string library header.  
 	For now, this is really reserved for C++.
-	$Id: string.hh,v 1.1 2010/11/22 02:42:36 fang Exp $
+	$Id: string.hh,v 1.2 2012/02/18 21:13:39 fang Exp $
  */
 
 #ifndef	__UTIL_STRING_HH__
@@ -36,6 +36,7 @@ template <class I>
 bool
 string_to_num(const std::string&, I&);
 
+#if 0
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // regex-like functions
 // waiting for std::regex <c++0x>
@@ -70,6 +71,7 @@ string_tolower(const std::string&);
 
 std::string
 string_toupper(const std::string&);
+#endif
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 }	// end namespace strings

@@ -1,7 +1,7 @@
 /**
 	\file "util/string.tcc"
 	Implementations of some useful string functions.  
-	$Id: string.tcc,v 1.1 2010/11/22 02:42:36 fang Exp $
+	$Id: string.tcc,v 1.2 2012/02/18 21:13:39 fang Exp $
  */
 
 #ifndef	__UTIL_STRING_TCC__
@@ -39,6 +39,7 @@ string_to_num(const string& s, I& i) {
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+#if 0
 /**
 	Common routing for string transformations.
 	\return new transformed copy of string.
@@ -50,6 +51,7 @@ transform_string(const string& s, T t) {
 	std::transform(s.begin(), s.end(), std::back_inserter(ret), t);
 	return ret;
 }
+#endif
 
 //=============================================================================
 }	// end namespace strings

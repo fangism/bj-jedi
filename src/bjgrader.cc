@@ -3,7 +3,7 @@
 	Implements a game/simulator and in-game analyzer.
 	TODO: name this drbj (Dr. BJ)
 	Also rates how good you are vs. how lucky you are.  
-	$Id: bjgrader.cc,v 1.6 2012/02/11 23:02:55 fang Exp $
+	$Id: bjgrader.cc,v 1.7 2012/02/18 21:13:36 fang Exp $
  */
 
 #include <iostream>
@@ -67,7 +67,8 @@ do {
 	} else if (line == "r" || line == "rules") {	// variation
 		// dump variation
 		var.dump(o);
-		// TODO: option to change rules
+	} else if (line == "c" || line == "configure") {	// variation
+		var.configure(i, o);
 	} else if (line == "p" || line == "play") {
 		// simulate, train, analyze
 		// inner loop: play game

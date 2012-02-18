@@ -176,6 +176,9 @@ struct variation {
 	ostream&
 	dump(ostream&) const;
 
+	void
+	configure(istream& i, ostream& o);
+
 };	// end struct variation
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

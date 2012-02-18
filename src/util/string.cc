@@ -1,6 +1,6 @@
 /**
 	\file "util/string.cc"
-	$Id: string.cc,v 1.1 2010/11/22 02:42:35 fang Exp $
+	$Id: string.cc,v 1.2 2012/02/18 21:13:39 fang Exp $
 	Additional string utilities.
  */
 
@@ -17,6 +17,7 @@ namespace strings {
 using std::string;
 
 //=============================================================================
+#if 0
 bool
 string_begins_with(const string& s, const string& pre) {
 	return s.find(pre) == 0;
@@ -78,6 +79,7 @@ string
 string_toupper(const string& s) {
 	return transform_string(s, &toupper);
 }
+#endif
 
 //=============================================================================
 }	// end namespace strings
