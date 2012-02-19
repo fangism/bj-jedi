@@ -1,6 +1,6 @@
 /**
 	\file "util/command.tcc"
-	$Id: command.tcc,v 1.1 2012/02/19 20:56:06 fang Exp $
+	$Id: command.tcc,v 1.2 2012/02/19 21:37:52 fang Exp $
  */
 
 #ifndef	__UTIL_COMMAND_TCC__
@@ -78,7 +78,7 @@ template <class Cmd>
 void
 command_registry<Cmd>::list_commands(ostream& o) {
 	typedef typename command_map_type::const_iterator      const_iterator;
-	o << "available commands: " << endl;
+	o << "Available commands: " << endl;
 	const_iterator i(command_map.begin());
 	const const_iterator e(command_map.end());
 	for ( ; i!=e; ++i) {
@@ -163,14 +163,24 @@ if (s) {
 		// ignore comments
 		return CommandStatus::NORMAL;
 	}
-	const typename command_map_type::const_iterator
-		p(command_map.find(cmd));
+	typedef	typename command_map_type::const_iterator	const_iterator;
+	const const_iterator p(command_map.find(cmd));
 	if (p != command_map.end()) {
 		// not echoing commands
 		return p->second.main(st, args);
 	} else {
-		cerr << "Unknown command: " << cmd << endl;
-		return CommandStatus::SYNTAX;
+		string cmdp(cmd);
+		++cmdp[cmdp.size() -1];	// bump the last character for prefix matching
+		const const_iterator l(command_map.lower_bound(cmd));
+		const const_iterator u(command_map.upper_bound(cmdp));
+		const size_t d = std::distance(l, u);
+		if (d == 1) {
+			cout << "unique-matched: " << l->first << endl;
+			return l->second.main(st, args);
+		} else {
+			cerr << "Unknown command: " << cmd << endl;
+			return CommandStatus::SYNTAX;
+		}
 	}
 } else  return CommandStatus::NORMAL;
 }
