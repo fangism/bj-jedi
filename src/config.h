@@ -8,5 +8,6 @@
 #define	HAVE_READLINE_HISTORY_H		1
 #define	READLINE_PROMPT_CONST		1
 #define	HAVE_RL_COMPLETION_MATCHES	1
+#define	__ATTRIBUTE_UNUSED__		__attribute__ ((unused))
 
 #endif	// BJ_CONFIG_H

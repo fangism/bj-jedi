@@ -54,7 +54,7 @@ BJG_OBJ = bjgrader.o
 BJG_LIBS = libbj.a util/libutil.a
 bjgrader: $(BJG_OBJ) $(BJG_LIBS)
 	$(CXXLD) $(LDFLAGS) $(BJG_OBJ) $(BJG_LIBS) $(LIBS) -o $@
-bjgrader.o: blackjack.hh card_state.hh
+bjgrader.o: blackjack.hh card_state.hh util/command.tcc util/command.hh
 
 clean:
 	-rm -f *.a *.o

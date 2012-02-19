@@ -3,7 +3,7 @@
 	Convenience wrapper for readline and editline.  
 	NOTE: the readline headers really aren't needed here, 
 	only needed in the implementation of this module.  
-	$Id: readline_wrap.hh,v 1.1 2012/02/18 21:13:39 fang Exp $
+	$Id: readline_wrap.hh,v 1.2 2012/02/19 20:56:06 fang Exp $
  */
 
 #ifndef	__UTIL_READLINE_WRAP_H__
@@ -203,6 +203,9 @@ private:
 	__add_history(const_char_type* const);
 
 };	// end class readline_wrapper
+
+
+typedef	char** (*completion_function_ptr)(const char*, int, int);
 
 //=============================================================================
 }	// end namespace util
