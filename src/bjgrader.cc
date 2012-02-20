@@ -3,7 +3,7 @@
 	Implements a game/simulator and in-game analyzer.
 	TODO: name this drbj (Dr. BJ)
 	Also rates how good you are vs. how lucky you are.  
-	$Id: bjgrader.cc,v 1.9 2012/02/19 21:37:51 fang Exp $
+	$Id: bjgrader.cc,v 1.10 2012/02/20 01:42:37 fang Exp $
  */
 
 #include <iostream>
@@ -51,37 +51,37 @@ typedef	command_registry<LobbyCommand>		lobby_command_registry;
 	DECLARE_AND_INITIALIZE_COMMAND_CLASS(lobby, class_name, _cmd, _brief)
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-DECLARE_LOBBY_COMMAND_CLASS(Help, "help", "list all commands")
+DECLARE_LOBBY_COMMAND_CLASS(Help, "help", ": list all lobby commands")
 int
 Help::main(lobby&, const string_list&) {
-	command_registry<LobbyCommand>::list_commands(cout);
+	lobby_command_registry::list_commands(cout);
 	return CommandStatus::NORMAL;
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-DECLARE_LOBBY_COMMAND_CLASS(Help2, "?", "list all commands")
+DECLARE_LOBBY_COMMAND_CLASS(Help2, "?", ": list all lobby commands")
 int
 Help2::main(lobby&, const string_list&) {
-	command_registry<LobbyCommand>::list_commands(cout);
+	lobby_command_registry::list_commands(cout);
 	return CommandStatus::NORMAL;
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-DECLARE_LOBBY_COMMAND_CLASS(Quit, "quit", "exit program")
+DECLARE_LOBBY_COMMAND_CLASS(Quit, "quit", ": exit program")
 int
 Quit::main(lobby&, const string_list&) {
 	return CommandStatus::END;
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-DECLARE_LOBBY_COMMAND_CLASS(Exit, "exit", "exit program")
+DECLARE_LOBBY_COMMAND_CLASS(Exit, "exit", ": exit program")
 int
 Exit::main(lobby&, const string_list&) {
 	return CommandStatus::END;
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-DECLARE_LOBBY_COMMAND_CLASS(Rules, "rules", "show rule variations")
+DECLARE_LOBBY_COMMAND_CLASS(Rules, "rules", ": show rule variations")
 int
 Rules::main(lobby& L, const string_list&) {
 	L.var.dump(cout);
@@ -89,7 +89,7 @@ Rules::main(lobby& L, const string_list&) {
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-DECLARE_LOBBY_COMMAND_CLASS(Configure, "configure", "set rule variations")
+DECLARE_LOBBY_COMMAND_CLASS(Configure, "configure", ": set rule variations")
 int
 Configure::main(lobby& L, const string_list&) {
 	L.var.configure(cin, cout);
@@ -97,13 +97,16 @@ Configure::main(lobby& L, const string_list&) {
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-DECLARE_LOBBY_COMMAND_CLASS(Play, "play", "start playing blackjack")
+DECLARE_LOBBY_COMMAND_CLASS(Play, "play", ": start playing blackjack")
 int
 Play::main(lobby& L, const string_list&) {
 	blackjack::grader G(L.var);
-	G.play_hand(cin, cout);
+//	G.play_hand(cin, cout);
+	G.main();
 	return CommandStatus::NORMAL;
 }
+
+#undef	DECLARE_LOBBY_COMMAND_CLASS
 
 //=============================================================================
 int

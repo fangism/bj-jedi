@@ -887,14 +887,13 @@ class grader {
 			Whether or not this hand was doubled-down.
 		 */
 		bool					doubled_down;
-#if 0
 		/**
 			Whether or not this hand was surrendered.
 		 */
 		bool					surrendered;
-#endif
 
-		hand() : cards(), state(0), doubled_down(false) { }
+		hand() : cards(), state(0),
+			doubled_down(false), surrendered(false) { }
 
 		// initial deal
 		void
@@ -964,6 +963,7 @@ class grader {
 	 */
 	size_t					dealer_hole;
 
+public:
 // options:
 	/**
 		If true, give user the option of hand-picking every card with prompt.
@@ -976,9 +976,11 @@ class grader {
 	 */
 	bool					use_dynamic_strategy;
 
+private:
 // state:
 	/// current amount of money
 	double					bankroll;
+public:
 	/// size of current bet (convert from integer)
 	double					bet;
 
@@ -993,15 +995,26 @@ public:
 	ostream&
 	status(ostream&) const;
 
-	static
-	ostream&
-	table_help(ostream&);
-
-	void
-	play_hand(istream&, ostream&);
-
 	void
 	deal_hand(istream&, ostream&);
+
+	const double&
+	get_bankroll(void) const { return bankroll; }
+
+	const variation&
+	get_variation(void) const { return var; }
+
+	const deck_state&
+	get_deck_state(void) const { return C; }
+
+	const strategy&
+	get_basic_strategy(void) const { return basic_strategy; }
+
+	const strategy&
+	get_dynamic_strategy(void) const { return dynamic_strategy; }
+
+	int
+	main(void);
 
 private:
 	bool

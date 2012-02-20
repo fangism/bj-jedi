@@ -15,6 +15,10 @@
 #include "util/array.tcc"
 #include "util/probability.tcc"
 
+#include "util/string.tcc"	// for string_to_num
+#include "util/command.tcc"
+#include "util/value_saver.hh"
+
 /**
 	Debug switch: print tables as they are computed.
  */
@@ -31,6 +35,7 @@ using std::accumulate;
 using std::mem_fun_ref;
 using std::ostringstream;
 using std::ostream_iterator;
+using std::cin;
 using std::cout;
 using std::cerr;
 using std::endl;
@@ -40,6 +45,13 @@ using std::setw;
 using std::setprecision;
 using std::istringstream;
 using util::normalize;
+
+using util::value_saver;
+using util::Command;
+using util::CommandStatus;
+using util::command_registry;
+using util::string_list;
+using util::strings::string_to_num;
 
 //=============================================================================
 // Blackjack specific routines
@@ -2280,7 +2292,9 @@ if (!end) {
 				// check for special case of split-Aces
 				// show other split hand for counting purposes
 				break;
-			case SURRENDER: bankroll -= bet *var.surrender_penalty;
+			case SURRENDER: bankroll += bet *var.surrender_penalty;
+				// recall surrender_penalty is negative
+				ph.surrendered = true;
 				live = false; break;
 			case HINT:
 			case OPTIM:
@@ -2315,6 +2329,8 @@ if (!end) {
 	// suspense double-down?  nah
 for (j=0; j<player_hands.size(); ++j) {
 	dump_situation(o, j);
+	if (!player_hands[j].surrendered) {
+		// check for surrender could/should be outside this loop
 	const outcome& wlp(play_map::outcome_matrix
 		[play_map::player_final_state_map(player_hands[j].state)]
 		[dealer_hand.state -stop]);
@@ -2325,12 +2341,15 @@ for (j=0; j<player_hands.size(); ++j) {
 	case LOSE: o << "Player loses." << endl; bankroll -= delta; break;
 	case PUSH: o << "Push." << endl; break;
 	}	// end switch
+	}
 }	// end for
 }
 	if (C.reshuffle_auto()) {
 		o << "Reshuffling..." << endl;
 	}
 	status(o);
+	C.update_probabilities();
+	dynamic_strategy.set_card_distribution(C.get_card_probabilities());
 }	// end grader::deal_hand
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -2402,109 +2421,217 @@ grader::status(ostream& o) const {
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-ostream&
-grader::table_help(ostream& o) {
-	return o <<
-"At the BlackJack table, the following commands are available:\n"
-"?,help -- print this help\n"
-"r,rules -- print the rule variation for BlackJack\n"
-"b,bet -- change bet amount\n"
-"d,deal -- deal a hand of BlackJack\n"
-"status -- print current bankroll and bet\n"
-"basic-strategy -- print optimal decisions for basic strategy\n"
-"  -edge for player edge details\n"
-"  -verbose for derivation details\n"
-"dynamic-strategy -- print optimal decisions for dynamic strategy\n"
-"  -edge for player edge details\n"
-"  -verbose for derivation details\n"
-// analyze count-dependent strategy
-// modify deck (for analysis)
-"mode -- change in-game options\n"
-"c,count -- show current card count\n"
-"q,quit,leave,exit,bye -- leave the table, return to lobby" << endl;
+typedef	Command<grader>		GraderCommand;
+
+}
+namespace util {
+template class command_registry<blackjack::GraderCommand>;
+}
+namespace blackjack {
+typedef	command_registry<GraderCommand>		grader_command_registry;
+
+#define	DECLARE_GRADER_COMMAND_CLASS(class_name, _cmd, _brief)		\
+	DECLARE_AND_INITIALIZE_COMMAND_CLASS(grader, class_name, _cmd, _brief)
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+DECLARE_GRADER_COMMAND_CLASS(Help, "help", ": list all table commands")
+int
+Help::main(grader&, const string_list&) {
+	grader_command_registry::list_commands(cout);
+	return CommandStatus::NORMAL;
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/**
-	\param i the input stream, like cin
- */
-void
-grader::play_hand(istream& i, ostream& o) {
-	o << "You have sat down at a BlackJack table." << endl;
-	o << "Type 'help' for a list of table commands." << endl;
-	// prompting loop
-do {
-	string line;
-	do {
-		o << "table> ";
-		i >> line;
-	} while (line.empty() && i);
-	// switch-case on
-	if (line == "?" || line == "help") {
-		table_help(o);
-	} else if (line == "d" || line == "deal") {
-		// deal a hand
-		deal_hand(i, o);
-		C.update_probabilities();
-		dynamic_strategy.set_card_distribution(C.get_card_probabilities());
-	} else if (line == "b" || line == "bet") {
-		// TODO: enforce table minimums
-		o << "bet amount? ";
-		string bamt;
-		i >> bamt;
-		if (bamt.length()) {
-			istringstream iss(bamt);
-			size_t a;
-			iss >> a;
-			if (!iss.fail()) {
-			// enforce table minimum
-			if (a > 0) {
-				bet = double(a);
-			} else {
-				o << "Bet must be positive!" << endl;
-			}
-			} else {
-				o << "Error reading bet amount." << endl;
-			}
-		}
-		// else leave bet unchanged
-		o << "bet: " << bet << endl;
-	} else if (line == "r" || line == "rules") {
-		basic_strategy.dump_variation(o);
-	} else if (line == "c" || line == "count") {
-		C.show_count(o);
-	} else if (line == "status") {
-		status(o);
-	} else if (line == "cards-random") {
-		pick_cards = false;
-	} else if (line == "cards-pick") {
-		pick_cards = true;
-	} else if (line == "basic-strategy-verbose") {
-		basic_strategy.dump(o);
-	} else if (line == "basic-strategy-edges") {
-		basic_strategy.dump_action_expectations(o);
-	} else if (line == "basic-strategy") {
-		basic_strategy.dump_optimal_actions(o);
-	} else if (line == "dynamic-strategy-verbose") {
-		dynamic_strategy.dump(o);
-	} else if (line == "dynamic-strategy-edges") {
-		dynamic_strategy.dump_action_expectations(o);
-	} else if (line == "dynamic-strategy") {
-		dynamic_strategy.dump_optimal_actions(o);
-	} else if (line == "q" || line == "quit" || line == "exit" ||
-			line == "bye" || line == "leave") {
-		if (bankroll > 0.0) {
-		o << "You collect your remaining chips from the table ("
-			<< bankroll << ") and return to the lobby." << endl;
-		} else {
-			o << "Better luck next time!" << endl;
-		}
-		break;
+DECLARE_GRADER_COMMAND_CLASS(Help2, "?", ": list all table commands")
+int
+Help2::main(grader&, const string_list&) {
+	grader_command_registry::list_commands(cout);
+	return CommandStatus::NORMAL;
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+DECLARE_GRADER_COMMAND_CLASS(Quit, "quit", ": leave table, return to lobby")
+int
+Quit::main(grader& g, const string_list&) {
+	const double b = g.get_bankroll();
+	if (b > 0.0) {
+		cout << "You collect your remaining chips from the table ("
+			<< b << ") and return to the lobby." << endl;
 	} else {
-		o << "Unknown command: \"" << line <<
-			"\".\nType 'help' for a list of commands." << endl;
+		cout << "Better luck next time!" << endl;
 	}
-} while (i);
+	return CommandStatus::END;
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+DECLARE_GRADER_COMMAND_CLASS(Exit, "exit", ": leave table, return to lobby")
+int
+Exit::main(grader& g, const string_list& args) {
+	return Quit::main(g, args);
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+DECLARE_GRADER_COMMAND_CLASS(Rules, "rules", ": show rule variations")
+int
+Rules::main(grader& g, const string_list&) {
+	g.get_variation().dump(cout);
+	return CommandStatus::NORMAL;
+}
+// can't configure here
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+DECLARE_GRADER_COMMAND_CLASS(Bet, "bet", "[amt] : change/show bet amount")
+int
+Bet::main(grader& g, const string_list& args) {
+	const double br = g.get_bankroll();
+switch (args.size()) {
+case 1: break;
+case 2: {
+	const string& amt(*++args.begin());
+	double nb;
+	// or less than min
+	if (string_to_num(amt, nb)) {
+		cerr << "Error: invalid quantity." << endl;
+		return CommandStatus::BADARG;
+	}
+	if (nb < 0.0) {
+		cerr << "Error: bet must be positive." << endl;
+		return CommandStatus::BADARG;
+	}
+	if (nb > br) {
+		cerr << "Error: bet cannot exceed bankroll." << endl;
+		return CommandStatus::BADARG;
+	}
+	// TODO: enforce table min/max
+	g.bet = nb;
+	break;
+}
+default:
+	cerr << "usage: " << name << ' ' << brief << endl;
+	return CommandStatus::SYNTAX;
+}
+	cout << "bet: " << g.bet << ", bankroll: " << br << endl;
+	return CommandStatus::NORMAL;
+}
+// can't configure here
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+DECLARE_GRADER_COMMAND_CLASS(Status, "status", ": show bankroll and bet amount")
+int
+Status::main(grader& g, const string_list&) {
+#if 0
+	const double br = g.get_bankroll();
+	cout << "bankroll: " << br << ", bet: " << g.bet << endl;
+#else
+	g.status(cout);
+#endif
+	return CommandStatus::NORMAL;
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+DECLARE_GRADER_COMMAND_CLASS(Count, "count", ": show card counts")
+int
+Count::main(grader& g, const string_list&) {
+	g.get_deck_state().show_count(cout);
+	return CommandStatus::NORMAL;
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+DECLARE_GRADER_COMMAND_CLASS(Deal, "deal", ": deal next hand")
+int
+Deal::main(grader& g, const string_list&) {
+	g.deal_hand(cin, cout);
+	return CommandStatus::NORMAL;
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+DECLARE_GRADER_COMMAND_CLASS(Basic, "basic-strategy",
+	"[-edge|-verbose]: show basic strategy")
+int
+Basic::main(grader& g, const string_list& args) {
+	const strategy& b(g.get_basic_strategy());
+switch (args.size()) {
+case 1: b.dump_optimal_actions(cout); break;
+case 2: {
+	const string& t(args.back());
+	if (t == "-edges") {
+		b.dump_action_expectations(cout);
+	} else if (t == "-verbose") {
+		b.dump(cout);
+	} else {
+		cerr << "Error: invalid option." << endl;
+		return CommandStatus::BADARG;
+	}
+	break;
+}
+default:
+	cerr << "Error: command expects at most 1 option." << endl;
+	return CommandStatus::SYNTAX;
+}
+	return CommandStatus::NORMAL;
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+DECLARE_GRADER_COMMAND_CLASS(Dynamic, "dynamic-strategy",
+	"[-edge|-verbose]: show dynamic strategy")
+int
+Dynamic::main(grader& g, const string_list& args) {
+	const strategy& b(g.get_dynamic_strategy());
+switch (args.size()) {
+case 1: b.dump_optimal_actions(cout); break;
+case 2: {
+	const string& t(args.back());
+	if (t == "-edges") {
+		b.dump_action_expectations(cout);
+	} else if (t == "-verbose") {
+		b.dump(cout);
+	} else {
+		cerr << "Error: invalid option." << endl;
+		return CommandStatus::BADARG;
+	}
+	break;
+}
+default:
+	cerr << "Error: command expects at most 1 option." << endl;
+	return CommandStatus::SYNTAX;
+}
+	return CommandStatus::NORMAL;
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// TODO: group these into options
+DECLARE_GRADER_COMMAND_CLASS(CardsRandom, "cards-random",
+	": randomly draw cards")
+int
+CardsRandom::main(grader& g, const string_list&) {
+	g.pick_cards = false;
+	return CommandStatus::NORMAL;
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+DECLARE_GRADER_COMMAND_CLASS(CardsPick, "cards-pick",
+	": draw user-chosen cards")
+int
+CardsPick::main(grader& g, const string_list&) {
+	g.pick_cards = true;
+	return CommandStatus::NORMAL;
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// EditDeck
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+int
+grader::main(void) {
+	cout <<
+"You sit down at a blackjack table.\n"
+"Type 'help' or '?' for a list of table commands." << endl;
+	const value_saver<string>
+		tmp1(grader_command_registry::prompt, "table> ");
+	const value_saver<util::completion_function_ptr>
+		tmp(rl_attempted_completion_function,
+			&grader_command_registry::completion);
+	grader_command_registry::interpret(*this);
+	return 0;
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -2592,6 +2719,9 @@ grader::hand::dump_player(ostream& o, const play_map& m) const {
 	o << "player: " << cards << " (" << m.player_hit[state].name << ")";
 	if (doubled_down) {
 		o << " x2";
+	}
+	if (surrendered) {
+		o << " surrendered";
 	}
 	return o;
 }
