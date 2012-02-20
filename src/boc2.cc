@@ -2,12 +2,20 @@
 
 #include <iostream>
 #include <iterator>
+#include "variation.hh"
 #include "blackjack.hh"
+#include "strategy.hh"
 // #include "util/probability.tcc"
 
 using std::cout;
 using std::endl;
 using std::ostream_iterator;
+using cards::card_name;
+using cards::card_values;
+using cards::standard_deck_count;
+using cards::deck_count_type;
+using cards::probability_type;
+using cards::reveal_print_ordering;
 using blackjack::variation;
 using blackjack::play_map;
 using blackjack::strategy;

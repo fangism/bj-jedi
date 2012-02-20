@@ -1,6 +1,6 @@
 /**
 	\file "util/command.hh"
-	$Id: command.hh,v 1.1 2012/02/19 20:56:05 fang Exp $
+	$Id: command.hh,v 1.2 2012/02/20 23:08:14 fang Exp $
  */
 
 #ifndef	__UTIL_COMMAND_HH__
@@ -40,6 +40,8 @@ util::command_registry<Command<_state_type> >::register_command<_class >();
 
 //-----------------------------------------------------------------------------
 namespace util {
+using std::string;
+using std::ostream;
 
 /**
 	Enumeration of command statuses

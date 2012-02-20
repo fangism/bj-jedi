@@ -28,13 +28,15 @@ TARBALL = boc2.tar.gz
 
 all: $(TARGETS)
 
-blackjack.o: blackjack.hh card_state.hh
+BLACKJACK_HEADERS = blackjack.hh card_state.hh deck.hh deck_state.hh enums.hh grader.hh hand.hh strategy.hh variation.hh
+
+blackjack.o: $(BLACKJACK_HEADERS)
 
 libutil_OBJ = util/tokenize.o util/string.o util/readline_wrap.o
 util/libutil.a: $(libutil_OBJ)
 	$(LINK) $(LDFLAGS) $(libutil_OBJ) $(LIBS) -o $@
 
-libbj_OBJ = card_state.o blackjack.o
+libbj_OBJ = deck.o card_state.o deck_state.o grader.o hand.o blackjack.o variation.o strategy.o
 libbj.a: $(libbj_OBJ)
 	$(LINK) $(LDFLAGS) $(libbj_OBJ) -o $@
 
@@ -42,19 +44,19 @@ BOC_OBJ = boc2.o
 BOC_LIBS = libbj.a util/libutil.a
 boc2:	$(BOC_OBJ) $(BOC_LIBS)
 	$(CXXLD) $(LDFLAGS) $(BOC_OBJ) $(BOC_LIBS) $(LIBS) -o $@
-boc2.o: blackjack.hh card_state.hh
+boc2.o: $(BLACKJACK_HEADERS)
 
 BJSWOC_OBJ = bjswoc.o
 BJSWOC_LIBS = $(BOC_LIBS)
 bjswoc:	$(BJSWOC_OBJ) $(BOC_LIBS)
 	$(CXXLD) $(LDFLAGS) $(BJSWOC_OBJ) $(BJSWOC_LIBS) $(LIBS) -o $@
-bjswoc.o: blackjack.hh card_state.hh
+bjswoc.o: $(BLACKJACK_HEADERS)
 
 BJG_OBJ = bjgrader.o
 BJG_LIBS = libbj.a util/libutil.a
 bjgrader: $(BJG_OBJ) $(BJG_LIBS)
 	$(CXXLD) $(LDFLAGS) $(BJG_OBJ) $(BJG_LIBS) $(LIBS) -o $@
-bjgrader.o: blackjack.hh card_state.hh util/command.tcc util/command.hh
+bjgrader.o: $(BLACKJACK_HEADERS) util/command.tcc util/command.hh
 
 clean:
 	-rm -f *.a *.o

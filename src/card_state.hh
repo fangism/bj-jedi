@@ -3,42 +3,21 @@
 #ifndef	__BOC2_CARD_STATE_HH__
 #define	__BOC2_CARD_STATE_HH__
 
+#include <iosfwd>
 #include <string>
 #include <vector>
-#include <iosfwd>
-#include "util/array.hh"
+#include "deck.hh"
 
-// namesspace?
-
+namespace cards {
 using std::ostream;
-using std::vector;
 using std::string;
 
-typedef	double		probability_type;
-
 //-----------------------------------------------------------------------------
-enum {
-	ACE = 0,		// index of Ace (card_odds)
-	TEN = 9,		// index of 10 (T) (card_odds)
-	card_values = 10	// number of unique card values (TJQK = 10)
-};
-extern	const char		card_name[];	// use util::array?
-extern	size_t		card_index(const char);	// reverse-map of card_name
-
-extern	const size_t		reveal_print_ordering[];
-
 /**
 	A deck is just modeled as a probability vector.  
 	\invariant sum of probabilities should be 1.
  */
-typedef	vector<probability_type>		probability_vector;
-typedef	util::array<probability_type, card_values>	deck_distribution;
-typedef	util::array<size_t, card_values>	deck_count_type;
-
-// 13 card values, 2 through A
-extern	const deck_count_type			standard_deck_count_reduced;
-extern	const deck_count_type			standard_deck_count;
-extern	const deck_distribution			standard_deck_distribution;
+typedef	std::vector<probability_type>		probability_vector;
 
 //-----------------------------------------------------------------------------
 /**
@@ -50,7 +29,7 @@ extern	const deck_distribution			standard_deck_distribution;
  */
 class state_machine {
 public:
-	typedef	vector<size_t>		edge_vector;
+	typedef	std::vector<size_t>		edge_vector;
 	struct node {
 		string			name;	///< e.g. "busted" or "21"
 		/**
@@ -81,7 +60,7 @@ public:
 		dump(ostream&) const;
 	};
 private:
-	typedef	vector<node>		state_set_type;
+	typedef	std::vector<node>		state_set_type;
 	/**
 		States are enumerated and indexed.  
 		It is up to the caller/user to interpret the indices. 
@@ -132,6 +111,8 @@ public:
 	ostream&
 	dump(ostream&) const;
 };	// end struct state_machine
+
+}	// end namespace cards
 
 #endif	// __BOC2_CARD_STATE_HH__
 

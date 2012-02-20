@@ -3,17 +3,17 @@
 	Implements a game/simulator and in-game analyzer.
 	TODO: name this drbj (Dr. BJ)
 	Also rates how good you are vs. how lucky you are.  
-	$Id: bjgrader.cc,v 1.10 2012/02/20 01:42:37 fang Exp $
+	$Id: bjgrader.cc,v 1.11 2012/02/20 23:08:12 fang Exp $
  */
 
 #include <iostream>
 #include <map>
-#include <numeric>		// for partial_sum
+#include "grader.hh"
 #include "util/readline.h"
-#include "blackjack.hh"
 #include "util/command.tcc"
 #include "util/value_saver.hh"
 
+using std::string;
 using std::cin;
 using std::istream;
 using std::ostream;

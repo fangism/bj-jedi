@@ -80,7 +80,7 @@ random_draw_from_real_pdf(const R& p) {
 template <class R>
 size_t
 random_draw_from_real_cdf(const R& s) {
-	const probability_type roll = drand48();
+	const double roll = drand48();
 	typedef	typename R::const_iterator	const_iterator;
 	const const_iterator f(std::upper_bound(s.begin(), s.end(), roll));
 	return std::distance(s.begin(), f);

@@ -4,7 +4,9 @@
 
 #include <iostream>
 #include <iterator>
+#include "variation.hh"
 #include "blackjack.hh"
+#include "strategy.hh"
 #include "util/probability.tcc"
 
 using std::cout;
@@ -14,6 +16,7 @@ using blackjack::variation;
 using blackjack::play_map;
 using blackjack::strategy;
 using blackjack::edge_type;
+using cards::standard_deck_distribution;
 using util::normalize;
 
 /**
