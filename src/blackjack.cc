@@ -34,7 +34,7 @@ play_map::d_initial_card_map[card_values] =
 	{ dealer_push+1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// follows player_action in "enums.hh"
+/// follows enum player_choice in "enums.hh"
 const char*
 action_names[] = {
 	"nil",
@@ -43,6 +43,7 @@ action_names[] = {
 	"double-down",
 	"split",
 	"surrender",
+	"count",
 	"hint",
 	"optimal"
 };
@@ -150,14 +151,16 @@ play_map::hit_dealer(const size_t state, const size_t c) const {
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
 	Should result in splittable states.
+	\param nat true if 21 should be considered natural blackjack,
+		false if should just be considered 21.
  */
 size_t
-play_map::deal_player(const size_t p1, const size_t p2) const {
+play_map::deal_player(const size_t p1, const size_t p2, const bool nat) const {
 	if (p1 == p2) {
 		return pair_offset +p1;
 	}
 	size_t state = hit_player(initial_card_player(p1), p2);
-	if (state == goal) {
+	if (nat && (state == goal)) {
 		return player_blackjack;
 	}
 	return state;

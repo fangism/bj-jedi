@@ -91,7 +91,7 @@ grader::deal_hand(istream& i, ostream& o) {
 	const size_t p1 = C.option_draw(pick_cards, i, o);
 	const size_t p2 = C.option_draw(pick_cards, i, o);
 	hand& pih(player_hands.front());
-	pih.deal_player(play, p1, p2);
+	pih.deal_player(play, p1, p2, true);
 #if 0
 	pih.dump_player(o, play) << endl;
 #endif
@@ -212,14 +212,14 @@ grader::play_out_hand(istream& i, ostream& o, const size_t j) {
 	hand& ph(player_hands[j]);
 	// caution, reference may dangle after a vector::push_back
 	// player may resplit hands
-	bool live = true;
+	bool live = true;	// indicates whether or not hand is still active
 do {
-	bool prompt = false;
+	bool prompt = false;	// when hand is finished, live or not, stop prompt
 	do {
 	// these predicates can be further refined by
 	// variation/rules etc...
 	const bool d = ph.doubleable();
-	// check for double_after_split and other limitations
+	// TODO: check for double_after_split and other limitations
 	const bool p = ph.splittable() &&
 		(player_hands.size() < player_hands.capacity());
 	// TODO: check for resplit limit
@@ -248,9 +248,12 @@ do {
 	case SPLIT: {
 		const size_t split_card = ph.state - pair_offset;
 		// ph.presplit(play);
-		ph.deal_player(play, split_card, C.option_draw(pick_cards, i, o));
+		// 21 should not be considered blackjack when splitting
+		ph.deal_player(play, split_card,
+			C.option_draw(pick_cards, i, o), false);
 		hand nh;
-		nh.deal_player(play, split_card, C.option_draw(pick_cards, i, o));
+		nh.deal_player(play, split_card,
+			C.option_draw(pick_cards, i, o), false);
 		player_hands.push_back(nh);
 		dump_situation(o, j);
 		dump_situation(o, player_hands.size() -1);
@@ -264,6 +267,10 @@ do {
 		ph.surrendered = true;
 		live = false;
 		prompt = false;
+		break;
+	case COUNT:
+		C.show_count(o);
+		prompt = true;
 		break;
 	case HINT: {
 		// basic:
@@ -337,7 +344,7 @@ do {
 		if (d) o << 'd';
 		if (p) o << 'p';
 		if (r) o << 'r';
-		o << "?!] ";
+		o << "c?!]> ";
 		i >> line;
 	} while (line.empty() && i);
 	switch (line[0]) {
@@ -356,6 +363,9 @@ do {
 	case 'r':
 	case 'R':
 		if (r) { c = SURRENDER; } break;
+	case 'c':
+	case 'C':
+		c = COUNT; break;	// show count
 	case '?':
 		c = HINT; break;
 		// caller should provide detailed hint with edges

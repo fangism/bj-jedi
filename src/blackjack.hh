@@ -105,7 +105,7 @@ public:
 	initial_card_dealer(const size_t) const;
 
 	size_t
-	deal_player(const size_t, const size_t) const;
+	deal_player(const size_t, const size_t, const bool) const;
 
 	size_t
 	hit_player(const size_t, const size_t) const;

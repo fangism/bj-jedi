@@ -17,8 +17,9 @@ enum player_choice {
 	SPLIT = 4,
 	SURRENDER = 5,
 	// for interactive mode-only
-	HINT = 6,
-	OPTIM = 7
+	COUNT = 6,	// show count
+	HINT = 7,	// analyze
+	OPTIM = 8	// auto-optimal
 };
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

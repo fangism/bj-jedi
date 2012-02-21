@@ -9,7 +9,7 @@ TAR_DIR = boc2
 ARCH_FLAGS =
 # for amusement
 # ARCH_FLAGS += -arch ppc
-# ARCH_FLAGS += -arch i386
+ARCH_FLAGS += -arch i386
 CXX = g++
 # CXX = clang++
 CXXCPPFLAGS = -I. -I/sw/include

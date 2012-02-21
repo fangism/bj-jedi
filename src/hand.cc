@@ -56,14 +56,15 @@ hand::hit_dealer(const play_map& play, const size_t p2) {
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
 	Assigns initial state based on player's first two cards.
+	\param nat true if 21 should be considered natural blackjack
  */
 void
 hand::deal_player(const play_map& play,
-		const size_t p1, const size_t p2) {
+		const size_t p1, const size_t p2, const bool nat) {
 	cards.clear();
 	cards.push_back(card_name[p1]);
 	cards.push_back(card_name[p2]);
-	state = play.deal_player(p1, p2);
+	state = play.deal_player(p1, p2, nat);
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

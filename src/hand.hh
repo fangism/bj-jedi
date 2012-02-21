@@ -46,7 +46,7 @@ struct hand {
 	initial_card_dealer(const play_map&, const size_t);
 
 	void
-	deal_player(const play_map&, const size_t, const size_t);
+	deal_player(const play_map&, const size_t, const size_t, const bool);
 
 	void
 	deal_dealer(const play_map&, const size_t, const size_t);
