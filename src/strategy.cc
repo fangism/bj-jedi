@@ -1124,6 +1124,17 @@ strategy::compute_overall_edge(void) {
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
+	\param p player's state
+	\param d dealer's reveal card
+ */
+const strategy::expectations&
+strategy::lookup_player_action_expectations(
+		const size_t p, const size_t d) const {
+	return player_actions[p][d];
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
 	Prints using the designated reveal_print_ordering for columns.
 	Is a member function to access surrender_penalty.
  */
@@ -1357,6 +1368,17 @@ strategy::expectations::best_two(
 	// else ???
 	}
 	return pair<player_choice, player_choice>(ret[0], ret[1]);
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+ostream&
+strategy::expectations::dump_choice_actions(ostream& o,
+		const edge_type& surr) const {
+	return o << "stand: " << stand
+	<< "\nhit  : " << hit
+	<< "\ndbl  : " << double_down
+	<< "\nsplit: " << split
+	<< "\nsurr.: " << surr << endl;
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

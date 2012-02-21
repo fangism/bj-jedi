@@ -157,6 +157,7 @@ private:
 	player_stand_edges_matrix		player_stand_edges;
 	player_stand_edges_matrix		player_stand_edges_post_peek;
 
+public:
 	/**
 		Each field's value is the expected outcome of the decision, 
 		with -1 being a loss, +1 being a win, etc...
@@ -217,9 +218,11 @@ private:
 		}
 
 		ostream&
-		dump_choice_actions(ostream&) const;
-	};
+		dump_choice_actions(ostream&, const edge_type&) const;
 
+	};	// end struct expectations
+
+private:
 	typedef	array<expectations, card_values>	expectations_vector;
 	typedef	array<expectations_vector, p_action_states>
 						expectations_matrix;
@@ -432,6 +435,9 @@ public:
 	ostream&
 	dump(ostream&) const;
 
+
+	const expectations&
+	lookup_player_action_expectations(const size_t, const size_t) const;
 #if 0
 	ostream&
 	dump_variation(ostream& o) const {

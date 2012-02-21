@@ -133,9 +133,11 @@ deck_state::quick_draw_uncounted(void) {
 	Gives user to choose her own card.
 	Useful for specific scenario testing.
 	\param m if true, prompt user to choose a specific card.
+	\param s if true, show result of random draw.
  */
 size_t
-deck_state::option_draw_uncounted(const bool m, istream& i, ostream& o) {
+deck_state::option_draw_uncounted(const bool m, istream& i, ostream& o,
+		const bool s) {
 if (m) {
 	string line;
 	do {
@@ -148,8 +150,13 @@ if (m) {
 		assert(cards[c]);		// count check
 		return c;
 	} else {
-		o << "drawing randomly." << endl;
-		return quick_draw_uncounted();
+		const size_t ret = quick_draw_uncounted();
+		o << "drawing randomly... ";
+		if (s) {
+			o << card_name[ret];
+		}
+		o << endl;
+		return ret;
 	}
 } else {
 	return quick_draw_uncounted();
@@ -159,7 +166,7 @@ if (m) {
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 size_t
 deck_state::option_draw(const bool m, istream& i, ostream& o) {
-	const size_t ret = option_draw_uncounted(m, i, o);
+	const size_t ret = option_draw_uncounted(m, i, o, true);
 	magic_draw(ret);
 	return ret;
 }
@@ -184,7 +191,7 @@ deck_state::draw_hole_card(void) {
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void
 deck_state::option_draw_hole_card(const bool m, istream& i, ostream& o) {
-	hole_card = option_draw_uncounted(m, i, o);
+	hole_card = option_draw_uncounted(m, i, o, false);
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

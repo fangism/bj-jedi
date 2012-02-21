@@ -167,61 +167,103 @@ if (!end) {
 		// player may resplit hands
 		bool live = true;
 		do {
-			dump_situation(o, j);
+			bool prompt = false;
+			do {
 			// these predicates can be further refined by
 			// variation/rules etc...
 			const bool d = ph.doubleable();
 			// check for double_after_split and other limitations
 			const bool p = ph.splittable() &&
 				(player_hands.size() < player_hands.capacity());
-			// check for resplit limit
+			// TODO: check for resplit limit
 			const bool r = ph.surrenderable() && !already_split();
 			// only first hand is surrenderrable, normally
-			bool prompt = false;
-			do {
+			dump_situation(o, j);
 			const player_choice pc =
 				prompt_player_action(i, o, d, p, r);
 			switch (pc) {
-			case STAND: live = false; break;
+			case STAND: live = false; prompt = false; break;
 			case DOUBLE:
 				live = false;
+				prompt = false;
 				ph.doubled_down = true;
 				// fall-through
 			case HIT:
 				ph.hit_player(play, 
 					C.option_draw(pick_cards, i, o));
+				if (ph.state == player_bust) {
+					ph.dump_player(o, play) << endl;
+					live = false;
+					prompt = false;
+				} else {
+					prompt = true;
+				}
+				// also don't bother prompt if hits 21
 				break;
-			case SPLIT:
-				ph.presplit(play);
-				player_hands.push_back(ph);
-				ph.hit_player(play, 
+			case SPLIT: {
+				const size_t split_card = ph.state - pair_offset;
+				// ph.presplit(play);
+				ph.deal_player(play, split_card,
 					C.option_draw(pick_cards, i, o));
-				player_hands.back().hit_player(play, 
+				hand nh;
+				nh.deal_player(play, split_card,
 					C.option_draw(pick_cards, i, o));
-				// check for special case of split-Aces
+				player_hands.push_back(nh);
+				dump_situation(o, j);
+				dump_situation(o, player_hands.size() -1);
+				// TODO: check for special case of split-Aces
 				// show other split hand for counting purposes
+				prompt = true;
 				break;
+			}
 			case SURRENDER: bankroll -= bet *var.surrender_penalty;
 				// recall surrender_penalty is positive
 				ph.surrendered = true;
-				live = false; break;
-			case HINT:
+				live = false;
+				prompt = false;
+				break;
+			case HINT: {
+				// basic:
+				const strategy::expectations& be(basic_strategy
+					.lookup_player_action_expectations(
+						ph.state, dealer_reveal));
+				cout << "edges per action (basic):" << endl;
+				be.dump_choice_actions(cout, -var.surrender_penalty);
+				const pair<player_choice, player_choice>
+					br(be.best_two(d, p, r));
+				cout << "basic strategy recommends: " <<
+					action_names[br.first] << endl;
+				}{
+				// dynamic: need to recompute given recently seen cards
+				// show count?
+				// TODO: track whether or not already up-to-date
+				// if so, don't re-evaluate
+				C.update_probabilities();
+				dynamic_strategy.set_card_distribution(C.get_card_probabilities());
+				dynamic_strategy.evaluate();
+				
+				const strategy::expectations& de(dynamic_strategy
+					.lookup_player_action_expectations(
+						ph.state, dealer_reveal));
+				cout << "edges per action (dynamic):" << endl;
+				de.dump_choice_actions(cout, -var.surrender_penalty);
+				const pair<player_choice, player_choice>
+					dr(de.best_two(d, p, r));
+				cout << "dynamic strategy recommends: " <<
+					action_names[dr.first] << endl;
+				prompt = true;
+				break;
+			}
 			case OPTIM:
 				prompt = true;
-				o << "Hints not yet available." << endl;
+				o << "Auto-play not yet available." << endl;
 				break;
 			default:
 				prompt = true;
 				break;
 			}
 			} while (prompt);
-			if (ph.state == player_bust) {
-				ph.dump_player(o, play) << endl;
-				// o << "Player busts." << endl;
-				live = false;
-			}
 		} while (live);
-		dump_situation(o, j);
 	}
 #if 1
 	o << "Dealer plays..." << endl;

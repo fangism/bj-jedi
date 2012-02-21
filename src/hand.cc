@@ -60,6 +60,7 @@ hand::hit_dealer(const play_map& play, const size_t p2) {
 void
 hand::deal_player(const play_map& play,
 		const size_t p1, const size_t p2) {
+	cards.clear();
 	cards.push_back(card_name[p1]);
 	cards.push_back(card_name[p2]);
 	state = play.deal_player(p1, p2);

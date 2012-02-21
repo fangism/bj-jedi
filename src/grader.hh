@@ -12,6 +12,8 @@
 #include "hand.hh"
 
 namespace blackjack {
+class variation;
+
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
 	The user enters both the dealer and player's actions and outcomes.  
@@ -20,7 +22,7 @@ namespace blackjack {
 	Input stream: history of cards seen and transactions.  
  */
 class grader {
-	variation				var;
+	const variation&			var;
 	/**
 		Game state machines.
 	 */

@@ -82,7 +82,7 @@ public:
 	quick_draw_uncounted(void);
 
 	size_t
-	option_draw_uncounted(const bool, istream&, ostream&);
+	option_draw_uncounted(const bool, istream&, ostream&, const bool);
 
 	size_t
 	option_draw(const bool, istream&, ostream&);

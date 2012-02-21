@@ -34,6 +34,20 @@ play_map::d_initial_card_map[card_values] =
 	{ dealer_push+1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// follows player_action in "enums.hh"
+const char*
+action_names[] = {
+	"nil",
+	"stand",
+	"hit",
+	"double-down",
+	"split",
+	"surrender",
+	"hint",
+	"optimal"
+};
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
 	Final states applicable to player.
 	TODO: this table should be redundant from player 
@@ -134,11 +148,17 @@ play_map::hit_dealer(const size_t state, const size_t c) const {
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
+	Should result in splittable states.
+ */
 size_t
 play_map::deal_player(const size_t p1, const size_t p2) const {
+	if (p1 == p2) {
+		return pair_offset +p1;
+	}
 	size_t state = hit_player(initial_card_player(p1), p2);
 	if (state == goal) {
-		state = player_blackjack;
+		return player_blackjack;
 	}
 	return state;
 }

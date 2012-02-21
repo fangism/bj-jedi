@@ -27,6 +27,9 @@ player_choice
 prompt_player_action(istream&, ostream&,
 	const bool d, const bool p, const bool r);
 
+extern
+const char* action_names[];
+
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
 	Based on the rules, the game state transitions for the 
