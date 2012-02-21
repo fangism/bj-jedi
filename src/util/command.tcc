@@ -1,6 +1,6 @@
 /**
 	\file "util/command.tcc"
-	$Id: command.tcc,v 1.3 2012/02/20 01:42:38 fang Exp $
+	$Id: command.tcc,v 1.4 2012/02/21 09:40:08 fang Exp $
  */
 
 #ifndef	__UTIL_COMMAND_TCC__
@@ -8,6 +8,7 @@
 
 #include <iostream>
 #include <iterator>
+#include <cassert>
 #include "util/command.hh"
 #include "util/readline.h"
 #include "util/readline_wrap.hh"

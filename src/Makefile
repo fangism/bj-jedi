@@ -9,6 +9,7 @@ TAR_DIR = boc2
 ARCH_FLAGS =
 # for amusement
 # ARCH_FLAGS += -arch ppc
+# ARCH_FLAGS += -arch i386
 CXX = g++
 # CXX = clang++
 CXXCPPFLAGS = -I. -I/sw/include
@@ -16,7 +17,7 @@ CXXFLAGS = -g -O3 -Wall -W -Wshadow -Werror -ansi -pedantic-errors $(ARCH_FLAGS)
 LINK = ld -r
 CXXLD = $(CXX)
 # LD = ld
-LDFLAGS = -L/sw/lib
+LDFLAGS = $(ARCH_FLAGS) -L/sw/lib
 LIBS = -lreadline
 TARGETS = boc2 bjswoc bjgrader
 TARBALL = boc2.tar.gz
