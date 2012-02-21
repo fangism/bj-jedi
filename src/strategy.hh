@@ -220,6 +220,11 @@ public:
 		ostream&
 		dump_choice_actions(ostream&, const edge_type&) const;
 
+		static
+		ostream&
+		dump_choice_actions_2(ostream&, const expectations&,
+			const expectations&, const edge_type&);
+
 	};	// end struct expectations
 
 private:

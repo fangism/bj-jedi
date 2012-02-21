@@ -1374,11 +1374,26 @@ strategy::expectations::best_two(
 ostream&
 strategy::expectations::dump_choice_actions(ostream& o,
 		const edge_type& surr) const {
-	return o << "stand: " << stand
+	return o << "stand: " << setprecision(4) << stand
 	<< "\nhit  : " << hit
 	<< "\ndbl  : " << double_down
 	<< "\nsplit: " << split
 	<< "\nsurr.: " << surr << endl;
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
+	Prints 2 expectation groups, side-by-side.
+ */
+ostream&
+strategy::expectations::dump_choice_actions_2(ostream& o,
+		const expectations& e1, const expectations& e2,
+		const edge_type& surr) {
+	return o << "stand: " << setprecision(4) << e1.stand << '\t' << e2.stand
+	<< "\nhit  : " << e1.hit << '\t' << e2.hit
+	<< "\ndbl  : " << e1.double_down << '\t' << e2.double_down
+	<< "\nsplit: " << e1.split << '\t' << e2.split
+	<< "\nsurr.: " << surr << '\t' << surr << endl;
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

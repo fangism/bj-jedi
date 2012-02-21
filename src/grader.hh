@@ -122,6 +122,9 @@ private:
 		return player_hands.size() >= 2;
 	}
 
+	void
+	play_out_hand(istream&, ostream&, const size_t);
+
 	ostream&
 	dump_situation(ostream& o, const size_t) const;
 
