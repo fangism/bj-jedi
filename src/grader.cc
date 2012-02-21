@@ -7,6 +7,14 @@
 #include "util/value_saver.hh"
 
 namespace blackjack {
+typedef	util::Command<grader>		GraderCommand;
+}
+namespace util {
+template class command_registry<blackjack::GraderCommand>;
+}
+namespace blackjack {
+typedef	util::command_registry<GraderCommand>		grader_command_registry;
+
 using std::cin;
 using std::cout;
 using std::cerr;
@@ -20,7 +28,6 @@ using cards::card_index;
 using util::value_saver;
 using util::Command;
 using util::CommandStatus;
-using util::command_registry;
 using util::string_list;
 using util::strings::string_to_num;
 
@@ -323,15 +330,22 @@ grader::status(ostream& o) const {
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-typedef	Command<grader>		GraderCommand;
-
+int
+grader::main(void) {
+	cout <<
+"You sit down at a blackjack table.\n"
+"Type 'help' or '?' for a list of table commands." << endl;
+	const value_saver<string>
+		tmp1(grader_command_registry::prompt, "table> ");
+	const value_saver<util::completion_function_ptr>
+		tmp(rl_attempted_completion_function,
+			&grader_command_registry::completion);
+	grader_command_registry::interpret(*this);
+	return 0;
 }
-namespace util {
-template class command_registry<blackjack::GraderCommand>;
-}
-namespace blackjack {
-typedef	command_registry<GraderCommand>		grader_command_registry;
 
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+namespace grader_commands {
 #define	DECLARE_GRADER_COMMAND_CLASS(class_name, _cmd, _brief)		\
 	DECLARE_AND_INITIALIZE_COMMAND_CLASS(grader, class_name, _cmd, _brief)
 
@@ -521,21 +535,9 @@ CardsPick::main(grader& g, const string_list&) {
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // EditDeck
-//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-int
-grader::main(void) {
-	cout <<
-"You sit down at a blackjack table.\n"
-"Type 'help' or '?' for a list of table commands." << endl;
-	const value_saver<string>
-		tmp1(grader_command_registry::prompt, "table> ");
-	const value_saver<util::completion_function_ptr>
-		tmp(rl_attempted_completion_function,
-			&grader_command_registry::completion);
-	grader_command_registry::interpret(*this);
-	return 0;
-}
 
+#undef	DECLARE_GRADER_COMMAND_CLASS
+}	// end namespace grader_commands
 //=============================================================================
 }	// end namespace blackjack
 

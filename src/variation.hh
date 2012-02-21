@@ -24,6 +24,9 @@ using std::ostream;
 	common - both variations are common
 	usual - more often than not
 	standard - almost always
+	TODO: organize variations into presets
+	TODO: spanish 21
+	TODO: european (no hole, no peek)
  */
 struct variation {
 	/// if true, dealer must hit on soft 17, else must stand (common)
@@ -134,7 +137,7 @@ struct variation {
 	dump(ostream&) const;
 
 	void
-	configure(istream& i, ostream& o);
+	configure(void);
 
 };	// end struct variation
 

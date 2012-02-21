@@ -28,7 +28,7 @@ TARBALL = boc2.tar.gz
 
 all: $(TARGETS)
 
-BLACKJACK_HEADERS = blackjack.hh card_state.hh deck.hh deck_state.hh enums.hh grader.hh hand.hh strategy.hh variation.hh
+BLACKJACK_HEADERS = blackjack.hh card_state.hh deck.hh deck_state.hh enums.hh grader.hh hand.hh lobby.hh strategy.hh variation.hh
 
 blackjack.o: $(BLACKJACK_HEADERS)
 
@@ -36,7 +36,7 @@ libutil_OBJ = util/tokenize.o util/string.o util/readline_wrap.o
 util/libutil.a: $(libutil_OBJ)
 	$(LINK) $(LDFLAGS) $(libutil_OBJ) $(LIBS) -o $@
 
-libbj_OBJ = deck.o card_state.o deck_state.o grader.o hand.o blackjack.o variation.o strategy.o
+libbj_OBJ = deck.o card_state.o deck_state.o grader.o hand.o blackjack.o lobby.o variation.o strategy.o
 libbj.a: $(libbj_OBJ)
 	$(LINK) $(LDFLAGS) $(libbj_OBJ) -o $@
 

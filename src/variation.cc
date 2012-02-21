@@ -5,10 +5,26 @@
 
 #include "util/string.tcc"	// for string_to_num
 #include "util/command.tcc"
-
+#include "util/value_saver.hh"
 
 namespace blackjack {
+typedef	util::Command<variation>	VariationCommand;
+}
+namespace util {
+template class command_registry<blackjack::VariationCommand>;
+}
+
+namespace blackjack {
+using std::string;
+using std::cout;
 using std::endl;
+using util::string_list;
+using util::Command;
+using util::CommandStatus;
+using util::value_saver;
+
+typedef	util::command_registry<VariationCommand>
+						variation_command_registry;
 
 //-----------------------------------------------------------------------------
 // class variation method definitions
@@ -53,10 +69,41 @@ variation::dump(ostream& o) const {
 	configure-all: one-by-one
  */
 void
-variation::configure(istream&, ostream& o) {
-	o << "TODO: finish variation::configure" << endl;
+variation::configure(void) {
+	cout <<
+"Configuring blackjack rule variations.\n"
+"Type 'help' or '?' for a list of commands." << endl;
+	const value_saver<string>
+		tmp1(variation_command_registry::prompt, "rules> ");
+	const value_saver<util::completion_function_ptr>
+		tmp2(rl_attempted_completion_function,
+			&variation_command_registry::completion);
+	variation_command_registry::interpret(*this);
 }
 
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+namespace variation_commands {
+
+#define DECLARE_VARIATION_COMMAND_CLASS(class_name, _cmd, _brief)	\
+        DECLARE_AND_INITIALIZE_COMMAND_CLASS(variation, class_name, _cmd, _brief)
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+DECLARE_VARIATION_COMMAND_CLASS(Help, "help", ": list all variation commands")
+int
+Help::main(variation&, const string_list&) {
+	variation_command_registry::list_commands(cout);
+	return CommandStatus::NORMAL;
+}
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+DECLARE_VARIATION_COMMAND_CLASS(Help2, "?", ": list all variation commands")
+int
+Help2::main(variation&, const string_list&) {
+	variation_command_registry::list_commands(cout);
+	return CommandStatus::NORMAL;
+}
+
+#undef	DECLARE_VARIATION_COMMAND_CLASS
+}	// end namespace variation_commands
 //=============================================================================
 }	// end namespace blackjack
 
