@@ -294,6 +294,11 @@ void
 strategy::compute_showdown_odds(const dealer_final_matrix& dfm,
 		const edge_type& bjp, 
 		outcome_matrix& stand, player_stand_edges_matrix& edges) {
+	// first, clear values back to 0
+	outcome_matrix::iterator mi(stand.begin()), me(stand.end());
+	for ( ; mi!=me; ++mi) {
+		fill(mi->begin(), mi->end(), outcome_odds());
+	}
 	// represents: <=16, 17, 18, 19, 20, 21, BJ, bust
 //	static const size_t d_bj_ind = dealer_states -3;
 	static const size_t p_bj_ind = player_states -2;
@@ -495,11 +500,16 @@ strategy::compute_action_expectations(void) {
 			== size_t(outcome_vector::Size));
 		probability_type& p(player_actions[i][j].double_down);
 		// perform inner_product, weighted expectations
+#if 0
+		p = 0.0;
 		size_t k;
 		for (k=0; k<player_states; ++k) {
 			const probability_type& edge(pse[j][k]);
 			p += fin[k] *edge;
 		}
+#else
+		p = inner_product(fin.begin(), fin.end(), pse[j].begin(), 0.0);
+#endif
 		p *= var.double_multiplier;	// because bet is doubled
 	}
 	} else {			// is terminal state, irrelevant
@@ -675,7 +685,7 @@ strategy::compute_player_split_edges(const bool d, const bool s) {
 	}	// inner product
 		expectations& sum(player_actions[p][j]);
 		sum.split = 2.0 *expected_edge;	// b/c two hands are played
-		sum.optimize(var.surrender_penalty);
+		sum.optimize(-var.surrender_penalty);
 	}	// end for each dealer reveal card
 	}	// end for each player paired card
 
@@ -688,7 +698,7 @@ strategy::compute_player_split_edges(const bool d, const bool s) {
 		const expectations& sum(player_actions[p][j]);
 		// player may decide whether or not to split
 		player_split_edges[i][j] =
-			sum.value(sum.best(d, s, false), var.surrender_penalty);
+			sum.value(sum.best(d, s, false), -var.surrender_penalty);
 	}
 	}
 #if DUMP_DURING_EVALUATE
@@ -869,14 +879,14 @@ strategy::compute_player_hit_edges(void) {
 	// hit-edges are post-peek, b/c/ using post-peek stand edges
 	__compute_player_hit_edges(player_stand_edges_post_peek, 
 		player_final_state_probability, player_actions, 
-		var.surrender_penalty, player_hit_edges);
+		-var.surrender_penalty, player_hit_edges);
 #else
 	__compute_player_hit_edges(player_stand_edges, 
 		player_final_state_probability, player_actions, 
-		var.surrender_penalty, player_hit_edges);
+		-var.surrender_penalty, player_hit_edges);
 	__compute_player_hit_edges(player_stand_edges_post_peek, 
 		player_final_state_probability, player_actions, 
-		var.surrender_penalty, player_hit_edges_post_peek);
+		-var.surrender_penalty, player_hit_edges_post_peek);
 #endif
 }
 
@@ -928,12 +938,12 @@ strategy::compute_player_initial_edges(
 	for (j=0; j<card_values; ++j) {		// for dealer-reveal card
 		expectations c(player_actions[i][j]);	// yes, copy
 		c.hit = player_hit_edges[i][j];
-		c.optimize(var.surrender_penalty);
+		c.optimize(-var.surrender_penalty);
 		// since splits are folded into non-pair states
 		const pair<player_choice, player_choice>
 //			splits are computed in a separate section of the table
 			p(c.best_two(D, S, R));
-		const edge_type e = c.value(p.first, var.surrender_penalty);
+		const edge_type e = c.value(p.first, -var.surrender_penalty);
 		player_initial_edges_post_peek[i][j] = e;
 	}
 	}
@@ -998,7 +1008,7 @@ strategy::optimize_actions(void) {
 	for (i=0; i<p_action_states; ++i) {
 	size_t j;
 	for (j=0; j<card_values; ++j) {
-		player_actions[i][j].optimize(var.surrender_penalty);
+		player_actions[i][j].optimize(-var.surrender_penalty);
 	}
 	}
 }
@@ -1171,7 +1181,7 @@ if (z.split > -2.0 *card_values) {
 	for (j=0; j<card_values; ++j) {
 		const expectations& ex(v[reveal_print_ordering[j]]);
 //		o << '\t' << EFORMAT(expectations::surrender);
-		o << '\t' << EFORMAT(var.surrender_penalty);
+		o << '\t' << EFORMAT(-var.surrender_penalty);
 		if (ex.best() == SURRENDER) o << '*';
 	}
 	o << endl;
@@ -1183,7 +1193,8 @@ if (z.split > -2.0 *card_values) {
 		o << '\t';
 		const pair<player_choice, player_choice>
 			opt(ex.best_two(true, true, true));
-		o << EFORMAT(ex.margin(opt.first, opt.second, var.surrender_penalty));
+		o << EFORMAT(ex.margin(opt.first, opt.second,
+			-var.surrender_penalty));
 	}
 	o << endl;
 #endif
@@ -1234,7 +1245,7 @@ strategy::dump_optimal_edges(const expectations_vector& v, ostream& o) const {
 		case HIT: o << EFORMAT(ex.hit); break;
 		case DOUBLE: o << EFORMAT(ex.double_down); break;
 		case SPLIT: o << EFORMAT(ex.split); break;
-		case SURRENDER: o << EFORMAT(var.surrender_penalty); break;
+		case SURRENDER: o << EFORMAT(-var.surrender_penalty); break;
 		default: break;
 		}
 	}
@@ -1246,7 +1257,8 @@ strategy::dump_optimal_edges(const expectations_vector& v, ostream& o) const {
 		o << '\t';
 		const pair<player_choice, player_choice>
 			opt(ex.best_two(true, true, true));
-		o << EFORMAT(ex.margin(opt.first, opt.second, var.surrender_penalty));
+		o << EFORMAT(ex.margin(opt.first, opt.second,
+			-var.surrender_penalty));
 	}
 	o << endl;
 #endif

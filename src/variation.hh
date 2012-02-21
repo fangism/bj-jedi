@@ -93,7 +93,12 @@ struct variation {
 	double			surrender_penalty;
 	/// doubled-down multipler (other than 2.0 is rare)
 	double			double_multiplier;
+#if 0
+	bool			player_bj_always_wins;
+	bool			dealer_bj_always_loses;
+#endif
 
+// play-time options:
 	/// affects play only, strategy uses infinite deck appx.
 	size_t			num_decks;
 	/// largest fraction of shoe/deck that can be played
@@ -122,7 +127,7 @@ struct variation {
 		push22(false),
 		bj_payoff(1.5), 
 		insurance(2.0),
-		surrender_penalty(-0.5),
+		surrender_penalty(0.5),
 		double_multiplier(2.0),
 		num_decks(6),
 		maximum_penetration(0.75) { }

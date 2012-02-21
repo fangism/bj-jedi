@@ -30,7 +30,7 @@ main(int, char*[]) {
 	variation v;
 	v.push22 = true;		// dealer pushes on 22
 	v.bj_payoff = 1.0;		// payoff 1:1
-	v.surrender_penalty = -1.0;	// no surrender
+	v.surrender_penalty = 1.0;	// no surrender
 // everything else same
 	v.H17 = true;
 //	v.H17 = false;

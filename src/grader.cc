@@ -201,8 +201,8 @@ if (!end) {
 				// check for special case of split-Aces
 				// show other split hand for counting purposes
 				break;
-			case SURRENDER: bankroll += bet *var.surrender_penalty;
-				// recall surrender_penalty is negative
+			case SURRENDER: bankroll -= bet *var.surrender_penalty;
+				// recall surrender_penalty is positive
 				ph.surrendered = true;
 				live = false; break;
 			case HINT:
@@ -259,6 +259,7 @@ for (j=0; j<player_hands.size(); ++j) {
 	status(o);
 	C.update_probabilities();
 	dynamic_strategy.set_card_distribution(C.get_card_probabilities());
+	dynamic_strategy.evaluate();	// slow?
 }	// end grader::deal_hand
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

@@ -17,11 +17,13 @@ template class command_registry<blackjack::VariationCommand>;
 namespace blackjack {
 using std::string;
 using std::cout;
+using std::cerr;
 using std::endl;
 using util::string_list;
 using util::Command;
 using util::CommandStatus;
 using util::value_saver;
+using util::strings::string_to_num;
 
 typedef	util::command_registry<VariationCommand>
 						variation_command_registry;
@@ -92,6 +94,9 @@ DECLARE_VARIATION_COMMAND_CLASS(Help, "help", ": list all variation commands")
 int
 Help::main(variation&, const string_list&) {
 	variation_command_registry::list_commands(cout);
+	cout <<
+"Note: [bool] values are entered as 0 or 1\n"
+"[int] and [real] values must be non-negative" << endl;
 	return CommandStatus::NORMAL;
 }
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -101,6 +106,158 @@ Help2::main(variation&, const string_list&) {
 	variation_command_registry::list_commands(cout);
 	return CommandStatus::NORMAL;
 }
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+DECLARE_VARIATION_COMMAND_CLASS(ShowAll, "show-all",
+	": show all rule variations")
+int
+ShowAll::main(variation& v, const string_list&) {
+	v.dump(cout);
+	return CommandStatus::NORMAL;
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+DECLARE_VARIATION_COMMAND_CLASS(Exit, "exit",
+	": finish and return")
+int
+Exit::main(variation&, const string_list&) {
+	return CommandStatus::END;
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+DECLARE_VARIATION_COMMAND_CLASS(Done, "done",
+	": finish and return")
+int
+Done::main(variation&, const string_list&) {
+	return CommandStatus::END;
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+static
+int
+configure_value(variation& v, const string_list& args,
+		const char* name, bool variation::*mem) {
+switch (args.size()) {
+case 1: cout << name << " = " << yn(v.*mem) << endl; break;
+default: {
+	if (string_to_num(args.back(), v.*mem)) {
+		cerr << "Error: invalid boolean value, expecting 0 or 1" << endl;
+		return CommandStatus::BADARG;
+	}
+}
+}
+	return CommandStatus::NORMAL;
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+static
+int
+configure_value(variation& v, const string_list& args,
+		const char* name, size_t variation::*mem) {
+switch (args.size()) {
+case 1: cout << name << " = " << v.*mem << endl; break;
+default: {
+	if (string_to_num(args.back(), v.*mem)) {
+		cerr << "Error: invalid integer value" << endl;
+		return CommandStatus::BADARG;
+	}
+}
+}
+	return CommandStatus::NORMAL;
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+static
+int
+configure_value(variation& v, const string_list& args,
+		const char* name, double variation::*mem) {
+switch (args.size()) {
+case 1: cout << name << " = " << v.*mem << endl; break;
+default: {
+	double t;
+	if (string_to_num(args.back(), t)) {
+		cerr << "Error: invalid real value." << endl;
+		return CommandStatus::BADARG;
+	}
+	if (t < 0.0) {
+		cerr << "Error: value must be >= 0.0" << endl;
+		return CommandStatus::BADARG;
+	}
+	v.*mem = t;
+}
+}
+	return CommandStatus::NORMAL;
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+#define	DEFINE_VARIATION_MEMBER_COMMAND(mem, str, desc)			\
+DECLARE_VARIATION_COMMAND_CLASS(mem, str, desc)				\
+int									\
+mem::main(variation& v, const string_list& args) {			\
+	return configure_value(v, args, name, &variation::mem);		\
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// game play
+DEFINE_VARIATION_MEMBER_COMMAND(
+	num_decks, "num-decks", "[int]: number of decks")
+DEFINE_VARIATION_MEMBER_COMMAND(maximum_penetration,
+	"max-penetration", "[real]: maximum penetration before reshuffling")
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+DEFINE_VARIATION_MEMBER_COMMAND(H17, "H17", "[bool]: dealer hits on soft-17")
+
+// surrender
+DEFINE_VARIATION_MEMBER_COMMAND(
+	surrender_early, "surrender-early",
+	"[bool]: allow early (pre-peek) surrender")
+DEFINE_VARIATION_MEMBER_COMMAND(
+	surrender_late, "surrender-late",
+	"[bool]: allow late (post-peek) surrender")
+DEFINE_VARIATION_MEMBER_COMMAND(
+	surrender_penalty, "surrender-penalty",
+	"[real]: surrender penalty")
+
+// peek
+DEFINE_VARIATION_MEMBER_COMMAND(
+	peek_on_10, "peek-10",
+	"[bool]: dealer peeks on 10 for blackjack")
+DEFINE_VARIATION_MEMBER_COMMAND(
+	peek_on_Ace, "peek-ace",
+	"[bool]: dealer peeks on Ace for blackjack")
+
+// ties
+DEFINE_VARIATION_MEMBER_COMMAND(
+	ties_lose, "ties-lose", "[bool]: player loses ties")
+DEFINE_VARIATION_MEMBER_COMMAND(
+	ties_win, "ties-win", "[bool]: player wins ties")
+DEFINE_VARIATION_MEMBER_COMMAND(
+	push22, "push-22", "[bool]: dealer pushes on 22")
+
+// double-downs
+DEFINE_VARIATION_MEMBER_COMMAND(
+	double_H9, "double-9", "[bool]: allow player double-down on 9")
+DEFINE_VARIATION_MEMBER_COMMAND(
+	double_H10, "double-10", "[bool]: allow player double-down on 10")
+DEFINE_VARIATION_MEMBER_COMMAND(
+	double_H11, "double-11", "[bool]: allow player double-down on 11")
+DEFINE_VARIATION_MEMBER_COMMAND(
+	double_after_split, "DAS", "[bool]: player double-down after split")
+DEFINE_VARIATION_MEMBER_COMMAND(
+	double_multiplier, "double-multiplier", "[real]: double-down cost")
+
+// splitting
+DEFINE_VARIATION_MEMBER_COMMAND(
+	split, "split", "[bool]: allow player split")
+DEFINE_VARIATION_MEMBER_COMMAND(
+	resplit, "resplit", "[bool]: allow player more than one split")
+DEFINE_VARIATION_MEMBER_COMMAND(
+	one_card_on_split_aces,
+	"spit-aces-one-card", "[bool]: split Aces get only one card")
+
+// payoffs and penalties
+DEFINE_VARIATION_MEMBER_COMMAND(
+	bj_payoff, "blackjack-pays", "[real]: player blackjack payout")
 
 #undef	DECLARE_VARIATION_COMMAND_CLASS
 }	// end namespace variation_commands
