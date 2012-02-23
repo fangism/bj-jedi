@@ -1,7 +1,7 @@
 /**
 	Interactive blackjack grader program.
 	Main menu.
-	$Id: lobby.cc,v 1.1 2012/02/21 00:00:32 fang Exp $
+	$Id: lobby.cc,v 1.2 2012/02/23 20:16:14 fang Exp $
  */
 
 #include <iostream>
@@ -101,7 +101,7 @@ Configure::main(lobby& L, const string_list&) {
 DECLARE_LOBBY_COMMAND_CLASS(Play, "play", ": start playing blackjack")
 int
 Play::main(lobby& L, const string_list&) {
-	blackjack::grader G(L.var);
+	blackjack::grader G(L.var, cin, cout);
 	G.main();
 	return CommandStatus::NORMAL;
 }

@@ -28,9 +28,12 @@ using cards::card_index;
 	Initializes to default.
  */
 deck_state::deck_state(const variation& v) : 
-		num_decks(v.num_decks), 
-		card_probabilities(card_values), 
-		need_update(true) {
+		num_decks(v.num_decks)
+#if DECK_PROBABILITIES
+		, card_probabilities(card_values), 
+		need_update(true)
+#endif
+		{
 	reshuffle();		// does most of the initializing
 	// default penetration before reshuffling: 75%
 	maximum_penetration = (1.0 -v.maximum_penetration) * num_decks *52;
@@ -46,8 +49,10 @@ deck_state::reshuffle(void) {
 	std::fill(used_cards.begin(), used_cards.end(), 0);
 	std::fill(cards.begin(), cards.end() -1, f);
 	cards[TEN] = f*4;	// T, J, Q, K
+#if DECK_PROBABILITIES
 	need_update = true;
 	update_probabilities();
+#endif
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -64,6 +69,7 @@ deck_state::reshuffle_auto(void) {
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+#if DECK_PROBABILITIES
 void
 deck_state::update_probabilities(void) {
 	if (need_update) {
@@ -72,6 +78,7 @@ deck_state::update_probabilities(void) {
 		need_update = false;
 	}
 }
+#endif
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 #if 0
@@ -99,7 +106,9 @@ deck_state::magic_draw(const size_t r) {
 	--cards[r];
 	++cards_spent;
 	--cards_remaining;
+#if DECK_PROBABILITIES
 	need_update = true;
+#endif
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -117,7 +126,7 @@ deck_state::quick_draw(void) {
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
 	Peeks at one card from remaining deck at random.
-	Does NOT re-compute probabilities.
+	Does NOT re-compute real-valued probabilities; just uses integers.
  */
 size_t
 deck_state::quick_draw_uncounted(void) {
@@ -178,7 +187,9 @@ deck_state::option_draw(const bool m, istream& i, ostream& o) {
 size_t
 deck_state::draw(void) {
 	const size_t ret = quick_draw();
+#if DECK_PROBABILITIES
 	update_probabilities();
+#endif
 	return ret;
 }
 
@@ -201,7 +212,6 @@ deck_state::option_draw_hole_card(const bool m, istream& i, ostream& o) {
 size_t
 deck_state::reveal_hole_card(void) {
 	magic_draw(hole_card);
-//	update_probabilities();
 	return hole_card;
 }
 

@@ -300,6 +300,12 @@ private:
 		Before sitting down at the table.  :)
 	 */
 	edge_type				_overall_edge;
+
+	/**
+		Semaphore for signaling need to re-calculate
+		after distribution has been updated.  
+	 */
+	bool					need_update;
 public:
 	explicit
 	strategy(const play_map&);

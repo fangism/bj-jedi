@@ -66,7 +66,8 @@ strategy::action_key[] = "-SHDPR";
 void
 strategy::set_card_distribution(const deck_distribution& o) {
 	card_odds = o;
-	update_player_initial_state_odds();
+	need_update = true;
+//	update_player_initial_state_odds();
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -136,11 +137,15 @@ strategy::dump_player_initial_state_odds(ostream& o) const {
  */
 void
 strategy::evaluate(void) {
+if (need_update) {
+	update_player_initial_state_odds();
 	compute_dealer_final_table();
 	compute_player_stand_odds();
 	compute_action_expectations();
 	compute_reveal_edges();
 	compute_overall_edge();
+	need_update = false;
+}
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -163,10 +168,11 @@ strategy::player_final_state_probabilities(const probability_vector& s,
 strategy::strategy(const play_map& v) : 
 	var(v.var),
 	play(v), 
-	card_odds(standard_deck_distribution) {
+	card_odds(standard_deck_distribution),
+	need_update(true) {
 	// only depends on H17:
 	// don't *have* to do this right away...
-	update_player_initial_state_odds();
+	// update_player_initial_state_odds();
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

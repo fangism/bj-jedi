@@ -22,7 +22,11 @@ class variation;
 	Input stream: history of cards seen and transactions.  
  */
 class grader {
+public:
 	const variation&			var;
+	istream&				istr;
+	ostream&				ostr;
+private:
 	/**
 		Game state machines.
 	 */
@@ -85,7 +89,7 @@ public:
 
 public:
 	explicit
-	grader(const variation&);
+	grader(const variation&, istream&, ostream&);
 
 	~grader();
 
@@ -93,7 +97,7 @@ public:
 	status(ostream&) const;
 
 	void
-	deal_hand(istream&, ostream&);
+	deal_hand(void);
 
 	const double&
 	get_bankroll(void) const { return bankroll; }
@@ -115,7 +119,13 @@ public:
 
 private:
 	bool
-	offer_insurance(istream&, ostream&, const bool) const;
+	offer_insurance(const bool) const;
+
+	size_t
+	draw_up_card(void);
+
+	size_t
+	draw_hole_card(void);
 
 	bool
 	already_split(void) const {
@@ -123,10 +133,13 @@ private:
 	}
 
 	void
-	play_out_hand(istream&, ostream&, const size_t);
+	play_out_hand(const size_t);
+
+	void
+	update_dynamic_strategy(void);
 
 	ostream&
-	dump_situation(ostream& o, const size_t) const;
+	dump_situation(const size_t) const;
 
 };	// end class grader
 

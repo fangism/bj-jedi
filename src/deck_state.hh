@@ -14,6 +14,8 @@ using cards::deck_distribution;
 using cards::deck_count_type;
 using cards::state_machine;
 
+#define	DECK_PROBABILITIES			0
+
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
 	Tracks cards remaining in deck(s).
@@ -36,11 +38,13 @@ class deck_state {
 		remaining in deck or shoe.
 	 */
 	deck_count_type				cards;
+#if DECK_PROBABILITIES
 	/**
 		This is updated everytime cards change, e.g. when
 		a single card is drawn.
 	 */
 	deck_distribution			card_probabilities;
+#endif
 	/**
 		Dealer is dealt one hole card (face-down).
 	 */
@@ -55,11 +59,13 @@ class deck_state {
 		Maximum allowed should be .90 (90%)
 	 */
 	size_t					maximum_penetration;
+#if DECK_PROBABILITIES
 	/**
 		Flag that determines whether or not card_probabilities
 		need to be updated (after cards were drawn).  
 	 */
 	bool					need_update;
+#endif
 public:
 	explicit
 	deck_state(const variation&);
@@ -67,10 +73,17 @@ public:
 //	void
 //	count(const size_t);
 
+	const deck_count_type&
+	get_card_counts(void) const {
+		return cards;		// remaining
+	}
+
+#if DECK_PROBABILITIES
 	const deck_distribution&
 	get_card_probabilities(void) const {
 		return card_probabilities;
 	}
+#endif
 
 	void
 	magic_draw(const size_t);
@@ -113,8 +126,10 @@ public:
 	ostream&
 	show_count(ostream&) const;
 
+#if DECK_PROBABILITIES
 	void
 	update_probabilities(void);
+#endif
 
 };	// end class deck_state
 

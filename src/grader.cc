@@ -15,8 +15,6 @@ template class command_registry<blackjack::GraderCommand>;
 namespace blackjack {
 typedef	util::command_registry<GraderCommand>		grader_command_registry;
 
-using std::cin;
-using std::cout;
 using std::cerr;
 using std::endl;
 using cards::ACE;
@@ -34,17 +32,20 @@ using util::strings::string_to_num;
 //=============================================================================
 // class grader method definitions
 
-grader::grader(const variation& v) :
-		var(v), play(v), basic_strategy(play), dynamic_strategy(play), 
+grader::grader(const variation& v, istream& i, ostream& o) :
+		var(v), istr(i), ostr(o), play(v),
+		basic_strategy(play), dynamic_strategy(play), 
 		C(v),
 	player_hands(), 
 	pick_cards(false),
 	bankroll(100.0), bet(1.0) {
-	player_hands.reserve(16);
-	basic_strategy.set_card_distribution(standard_deck_distribution);
-	dynamic_strategy.set_card_distribution(standard_deck_distribution);
+	player_hands.reserve(16);	// to prevent realloc
+	const deck_count_type& d(C.get_card_counts());
+	// each call does util::normalize()
+	basic_strategy.set_card_distribution(d);
+	dynamic_strategy.set_card_distribution(d);
 	basic_strategy.evaluate();
-	dynamic_strategy.evaluate();
+	dynamic_strategy.evaluate();	// not really necessary
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -52,7 +53,7 @@ grader::~grader() { }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 bool
-grader::offer_insurance(istream& i, ostream& o, const bool pbj) const {
+grader::offer_insurance(const bool pbj) const {
 	// if peek_ACE
 	const char* prompt = pbj ?  "even-money?" : "insurance?";
 	bool done = false;
@@ -60,19 +61,32 @@ grader::offer_insurance(istream& i, ostream& o, const bool pbj) const {
 	string line;
 	do {
 	do {
-		o << prompt << " [ync]: ";
-		i >> line;
-	} while (line.empty() && i);
+		ostr << prompt << " [ync]: ";
+		istr >> line;
+	} while (line.empty() && istr);
 	if (line == "n" || line == "N") {
 		done = true;
 	} else if (line == "y" || line == "Y") {
 		buy_insurance = true;
 		done = true;
 	} else if (line == "c" || line == "C") {
-		C.show_count(o);
+		C.show_count(ostr);
 	}
 	} while (!done);
 	return buy_insurance;
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+size_t
+grader::draw_up_card(void) {
+	return C.option_draw(pick_cards, istr, ostr);
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+size_t
+grader::draw_hole_card(void) {
+	C.option_draw_hole_card(pick_cards, istr, ostr);
+	return C.peek_hole_card();
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -82,54 +96,53 @@ grader::offer_insurance(istream& i, ostream& o, const bool pbj) const {
 	could all just be local variables?
  */
 void
-grader::deal_hand(istream& i, ostream& o) {
+grader::deal_hand(void) {
 	player_hands.clear();
 	player_hands.resize(1);
 	if (pick_cards) {
-		o << "choose player cards." << endl;
+		ostr << "choose player cards." << endl;
 	}
-	const size_t p1 = C.option_draw(pick_cards, i, o);
-	const size_t p2 = C.option_draw(pick_cards, i, o);
+	const size_t p1 = draw_up_card();
+	const size_t p2 = draw_up_card();
 	hand& pih(player_hands.front());
 	pih.deal_player(play, p1, p2, true);
-#if 0
-	pih.dump_player(o, play) << endl;
-#endif
 	if (pick_cards) {
-		o << "choose dealer up-card." << endl;
+		ostr << "choose dealer up-card." << endl;
 	}
-	dealer_reveal = C.option_draw(pick_cards, i, o);
+	dealer_reveal = draw_up_card();
 	dealer_hand.initial_card_dealer(play, dealer_reveal);
+	// TODO: first query whether hold card makes dealer blackjack
 	if (pick_cards) {
-		o << "choose dealer hole-card." << endl;
+		ostr << "choose dealer hole-card." << endl;
 	}
-	C.option_draw_hole_card(pick_cards, i, o);
-	const size_t hole_card = C.peek_hole_card();
-	o << "dealer: " << card_name[dealer_reveal] << endl;
+	// except for European: no hole card
+	const size_t hole_card = draw_hole_card();
+	ostr << "dealer: " << card_name[dealer_reveal] << endl;
 	// TODO: if early_surrender (rare) ...
 	// prompt for insurance
 	const bool pbj = pih.has_blackjack();
 	if (pbj) {
-		o << "Player has blackjack!" << endl;
+		ostr << "Player has blackjack!" << endl;
 	}
+	// if either player or dealer has blackjack, hand is over
 	bool end = pbj;
 	if (dealer_reveal == ACE) {
-		pih.dump_player(o, play) << endl;
+		pih.dump_player(ostr, play) << endl;
 		if (var.peek_on_Ace) {
-		const bool buy_insurance = offer_insurance(i, o, pbj);;
+		const bool buy_insurance = offer_insurance(pbj);;
 		// determine change in bankroll
 		// check for blackjack for player
-		const double half_bet = bet / 2.0;
+		const double half_bet = bet *0.5;
 		if (hole_card == TEN) {
 			end = true;
-			o << "Dealer has blackjack." << endl;
+			ostr << "Dealer has blackjack." << endl;
 			if (buy_insurance) {
 				bankroll += var.insurance *half_bet;
 			}
 			if (!pbj) {
 				bankroll -= bet;
 			} else {
-				o << "Push." << endl;
+				ostr << "Push." << endl;
 			}
 		} else {
 //			o << "No dealer blackjack." << endl;
@@ -143,15 +156,15 @@ grader::deal_hand(istream& i, ostream& o) {
 		}
 		}	// peek_on_Ace
 	} else if (dealer_reveal == TEN) {
-		pih.dump_player(o, play) << endl;
+		pih.dump_player(ostr, play) << endl;
 		if (var.peek_on_10) {
 		if (hole_card == ACE) {
 			end = true;
-			o << "Dealer has blackjack." << endl;
+			ostr << "Dealer has blackjack." << endl;
 			if (!pbj) {
 				bankroll -= bet;
 			} else {
-				o << "Push." << endl;
+				ostr << "Push." << endl;
 			}
 		} else {
 //			o << "No dealer blackjack." << endl;
@@ -159,16 +172,18 @@ grader::deal_hand(istream& i, ostream& o) {
 		}	// peek_on_10
 	} else if (pbj) {
 		// pay off player's blackjack
+		// end = true;
+		pih.dump_player(ostr, play) << endl;
 		bankroll += var.bj_payoff *bet;
 	}
 	// play ends if either dealer or player had blackjack (and was peeked)
 if (!end) {
 	size_t j = 0;
 	for ( ; j<player_hands.size(); ++j) {
-		play_out_hand(i, o, j);
+		play_out_hand(j);
 	}
 #if 1
-	o << "Dealer plays..." << endl;
+	ostr << "Dealer plays..." << endl;
 #endif
 	// dealer plays after player is done
 	// should dealer play when there are no live hands?
@@ -176,39 +191,38 @@ if (!end) {
 	C.reveal_hole_card();
 	// dealer_hand.dump_dealer(o, play);
 	while (!play.is_dealer_terminal(dealer_hand.state)) {
-		dealer_hand.hit_dealer(play, C.option_draw(pick_cards, i, o));
+		dealer_hand.hit_dealer(play, draw_up_card());
 	}
-	dealer_hand.dump_dealer(o, play) << endl;
+	dealer_hand.dump_dealer(ostr, play) << endl;
 	// suspense double-down?  nah
+	const double bet2 = var.double_multiplier *bet;
 for (j=0; j<player_hands.size(); ++j) {
-	dump_situation(o, j);
+	dump_situation(j);
 	if (!player_hands[j].surrendered) {
 		// check for surrender could/should be outside this loop
 	const outcome& wlp(play_map::outcome_matrix
 		[play_map::player_final_state_map(player_hands[j].state)]
 		[dealer_hand.state -stop]);
-	const double delta = player_hands[j].doubled_down ?
-		var.double_multiplier * bet : bet;
+	const double delta = player_hands[j].doubled_down ? bet2 : bet;
 	switch (wlp) {
-	case WIN: o << "Player wins." << endl; bankroll += delta; break;
-	case LOSE: o << "Player loses." << endl; bankroll -= delta; break;
-	case PUSH: o << "Push." << endl; break;
+	case WIN: ostr << "Player wins." << endl; bankroll += delta; break;
+	case LOSE: ostr << "Player loses." << endl; bankroll -= delta; break;
+	case PUSH: ostr << "Push." << endl; break;
 	}	// end switch
 	}
 }	// end for
 }
 	if (C.reshuffle_auto()) {
-		o << "Reshuffling..." << endl;
+		ostr << "Reshuffling..." << endl;
 	}
-	status(o);
-	C.update_probabilities();
-	dynamic_strategy.set_card_distribution(C.get_card_probabilities());
-	dynamic_strategy.evaluate();	// slow?
+	status(ostr);
+//	only update when requested
+//	update_dynamic_strategy();
 }	// end grader::deal_hand
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void
-grader::play_out_hand(istream& i, ostream& o, const size_t j) {
+grader::play_out_hand(const size_t j) {
 	hand& ph(player_hands[j]);
 	// caution, reference may dangle after a vector::push_back
 	// player may resplit hands
@@ -225,8 +239,8 @@ do {
 	// TODO: check for resplit limit
 	const bool r = ph.surrenderable() && !already_split();
 	// only first hand is surrenderrable, normally
-	dump_situation(o, j);
-	const player_choice pc = prompt_player_action(i, o, d, p, r);
+	dump_situation(j);
+	const player_choice pc = prompt_player_action(istr, ostr, d, p, r);
 	switch (pc) {
 	case STAND: live = false; prompt = false; break;
 	case DOUBLE:
@@ -235,9 +249,9 @@ do {
 		ph.doubled_down = true;
 		// fall-through
 	case HIT:
-		ph.hit_player(play, C.option_draw(pick_cards, i, o));
+		ph.hit_player(play, draw_up_card());
 		if (ph.state == player_bust) {
-			ph.dump_player(o, play) << endl;
+			ph.dump_player(ostr, play) << endl;
 			live = false;
 			prompt = false;
 		} else if (!ph.doubled_down) {
@@ -249,14 +263,12 @@ do {
 		const size_t split_card = ph.state - pair_offset;
 		// ph.presplit(play);
 		// 21 should not be considered blackjack when splitting
-		ph.deal_player(play, split_card,
-			C.option_draw(pick_cards, i, o), false);
+		ph.deal_player(play, split_card, draw_up_card(), false);
 		hand nh;
-		nh.deal_player(play, split_card,
-			C.option_draw(pick_cards, i, o), false);
+		nh.deal_player(play, split_card, draw_up_card(), false);
 		player_hands.push_back(nh);
-		dump_situation(o, j);
-		dump_situation(o, player_hands.size() -1);
+		dump_situation(j);
+		dump_situation(player_hands.size() -1);
 		// TODO: check for special case of split-Aces
 		// show other split hand for counting purposes
 		prompt = true;
@@ -269,44 +281,40 @@ do {
 		prompt = false;
 		break;
 	case COUNT:
-		C.show_count(o);
+		C.show_count(ostr);
 		prompt = true;
 		break;
 	case HINT: {
 		// basic:
 		const strategy::expectations& be(basic_strategy
 			.lookup_player_action_expectations(ph.state, dealer_reveal));
-		cout << "edges:\tbasic\tdynamic:" << endl;
-		// cout << "edges per action (basic):" << endl;
-		// be.dump_choice_actions(cout, -var.surrender_penalty);
+		ostr << "edges:\tbasic\tdynamic:" << endl;
+		// ostr << "edges per action (basic):" << endl;
+		// be.dump_choice_actions(ostr, -var.surrender_penalty);
 		const pair<player_choice, player_choice> br(be.best_two(d, p, r));
-		// cout << "basic strategy recommends: " <<
+		// ostr << "basic strategy recommends: " <<
 		//	action_names[br.first] << endl;
 		// dynamic: need to recompute given recently seen cards
 		// show count?
-		// TODO: track whether or not already up-to-date
-		// if so, don't re-evaluate
-		C.update_probabilities();
-		dynamic_strategy.set_card_distribution(C.get_card_probabilities());
-		dynamic_strategy.evaluate();
+		update_dynamic_strategy();	// evaluate when needed
 		
 		const strategy::expectations& de(dynamic_strategy
 			.lookup_player_action_expectations(ph.state, dealer_reveal));
-		// cout << "edges per action (dynamic):" << endl;
-		// de.dump_choice_actions(cout, -var.surrender_penalty);
+		// ostr << "edges per action (dynamic):" << endl;
+		// de.dump_choice_actions(ostr, -var.surrender_penalty);
 		const pair<player_choice, player_choice> dr(de.best_two(d, p, r));
-		// cout << "dynamic strategy recommends: " <<
+		// ostr << "dynamic strategy recommends: " <<
 		//	action_names[dr.first] << endl;
-		strategy::expectations::dump_choice_actions_2(cout,
+		strategy::expectations::dump_choice_actions_2(ostr,
 			be, de, -var.surrender_penalty);
-		cout << "advise:\t" << action_names[br.first]
+		ostr << "advise:\t" << action_names[br.first]
 			<< '\t' << action_names[dr.first] << endl;
 		prompt = true;
 		break;
 	}
 	case OPTIM:
 		prompt = true;
-		o << "Auto-play not yet available." << endl;
+		ostr << "Auto-play not yet available." << endl;
 		break;
 	default:
 		prompt = true;
@@ -317,18 +325,33 @@ do {
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+void
+grader::update_dynamic_strategy(void) {
+	// only now do we need to update probabilities
+	// TODO: track whether or not already up-to-date
+	// if so, don't re-evaluate
+#if DECK_PROBABILITIES
+	C.update_probabilities();
+	dynamic_strategy.set_card_distribution(C.get_card_probabilities());
+#else
+	dynamic_strategy.set_card_distribution(C.get_card_counts());
+#endif
+	dynamic_strategy.evaluate();
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ostream&
-grader::dump_situation(ostream& o, const size_t j) const {
+grader::dump_situation(const size_t j) const {
 	assert(j < player_hands.size());
-	o << '[' << j+1 << '/' << player_hands.size() << "] ";
+	ostr << '[' << j+1 << '/' << player_hands.size() << "] ";
 	if (dealer_hand.cards.size() > 1) {
-		dealer_hand.dump_dealer(o, play);
+		dealer_hand.dump_dealer(ostr, play);
 	} else {
-		o << "dealer: " << card_name[dealer_reveal];
+		ostr << "dealer: " << card_name[dealer_reveal];
 	}
-	o << ", ";
-	player_hands[j].dump_player(o, play) << endl;
-	return o;
+	ostr << ", ";
+	player_hands[j].dump_player(ostr, play) << endl;
+	return ostr;
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -390,7 +413,7 @@ grader::status(ostream& o) const {
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 int
 grader::main(void) {
-	cout <<
+	ostr <<
 "You sit down at a blackjack table.\n"
 "Type 'help' or '?' for a list of table commands." << endl;
 	const value_saver<string>
@@ -410,16 +433,16 @@ namespace grader_commands {
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 DECLARE_GRADER_COMMAND_CLASS(Help, "help", ": list all table commands")
 int
-Help::main(grader&, const string_list&) {
-	grader_command_registry::list_commands(cout);
+Help::main(grader& g, const string_list&) {
+	grader_command_registry::list_commands(g.ostr);
 	return CommandStatus::NORMAL;
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 DECLARE_GRADER_COMMAND_CLASS(Help2, "?", ": list all table commands")
 int
-Help2::main(grader&, const string_list&) {
-	grader_command_registry::list_commands(cout);
+Help2::main(grader& g, const string_list&) {
+	grader_command_registry::list_commands(g.ostr);
 	return CommandStatus::NORMAL;
 }
 
@@ -429,10 +452,10 @@ int
 Quit::main(grader& g, const string_list&) {
 	const double b = g.get_bankroll();
 	if (b > 0.0) {
-		cout << "You collect your remaining chips from the table ("
+		g.ostr << "You collect your remaining chips from the table ("
 			<< b << ") and return to the lobby." << endl;
 	} else {
-		cout << "Better luck next time!" << endl;
+		g.ostr << "Better luck next time!" << endl;
 	}
 	return CommandStatus::END;
 }
@@ -448,7 +471,7 @@ Exit::main(grader& g, const string_list& args) {
 DECLARE_GRADER_COMMAND_CLASS(Rules, "rules", ": show rule variations")
 int
 Rules::main(grader& g, const string_list&) {
-	g.get_variation().dump(cout);
+	g.get_variation().dump(g.ostr);
 	return CommandStatus::NORMAL;
 }
 // can't configure here
@@ -484,7 +507,7 @@ default:
 	cerr << "usage: " << name << ' ' << brief << endl;
 	return CommandStatus::SYNTAX;
 }
-	cout << "bet: " << g.bet << ", bankroll: " << br << endl;
+	g.ostr << "bet: " << g.bet << ", bankroll: " << br << endl;
 	return CommandStatus::NORMAL;
 }
 // can't configure here
@@ -495,9 +518,9 @@ int
 Status::main(grader& g, const string_list&) {
 #if 0
 	const double br = g.get_bankroll();
-	cout << "bankroll: " << br << ", bet: " << g.bet << endl;
+	ostr << "bankroll: " << br << ", bet: " << g.bet << endl;
 #else
-	g.status(cout);
+	g.status(g.ostr);
 #endif
 	return CommandStatus::NORMAL;
 }
@@ -506,7 +529,7 @@ Status::main(grader& g, const string_list&) {
 DECLARE_GRADER_COMMAND_CLASS(Count, "count", ": show card counts")
 int
 Count::main(grader& g, const string_list&) {
-	g.get_deck_state().show_count(cout);
+	g.get_deck_state().show_count(g.ostr);
 	return CommandStatus::NORMAL;
 }
 
@@ -514,7 +537,7 @@ Count::main(grader& g, const string_list&) {
 DECLARE_GRADER_COMMAND_CLASS(Deal, "deal", ": deal next hand")
 int
 Deal::main(grader& g, const string_list&) {
-	g.deal_hand(cin, cout);
+	g.deal_hand();
 	return CommandStatus::NORMAL;
 }
 
@@ -525,13 +548,13 @@ int
 Basic::main(grader& g, const string_list& args) {
 	const strategy& b(g.get_basic_strategy());
 switch (args.size()) {
-case 1: b.dump_optimal_actions(cout); break;
+case 1: b.dump_optimal_actions(g.ostr); break;
 case 2: {
 	const string& t(args.back());
 	if (t == "-edges") {
-		b.dump_action_expectations(cout);
+		b.dump_action_expectations(g.ostr);
 	} else if (t == "-verbose") {
-		b.dump(cout);
+		b.dump(g.ostr);
 	} else {
 		cerr << "Error: invalid option." << endl;
 		return CommandStatus::BADARG;
@@ -552,13 +575,13 @@ int
 Dynamic::main(grader& g, const string_list& args) {
 	const strategy& b(g.get_dynamic_strategy());
 switch (args.size()) {
-case 1: b.dump_optimal_actions(cout); break;
+case 1: b.dump_optimal_actions(g.ostr); break;
 case 2: {
 	const string& t(args.back());
 	if (t == "-edges") {
-		b.dump_action_expectations(cout);
+		b.dump_action_expectations(g.ostr);
 	} else if (t == "-verbose") {
-		b.dump(cout);
+		b.dump(g.ostr);
 	} else {
 		cerr << "Error: invalid option." << endl;
 		return CommandStatus::BADARG;
