@@ -17,6 +17,20 @@ using std::ostream;
 	A single player or dealer hand state.
  */
 struct hand {
+	const play_map*				play;
+	/**
+		Mutually exclusive states.
+		Can't be doubled-down and surrendered.
+		Could be doubled-down and busted though...
+		The dealer's state is only ever live (or busted).
+	 */
+	enum play_state {
+		LIVE,				// or busted
+		STANDING,
+		DOUBLED_DOWN,
+		SURRENDERED
+		// BUSTED
+	};
 	/**
 		A,2-9,T.
 	 */
@@ -24,45 +38,62 @@ struct hand {
 	player_cards				cards;
 	/**
 		Enumerated state, from the state machine.
+		Also encodes the value of the hand, the total.
 	 */
 	size_t					state;
-	/**
-		Whether or not this hand was doubled-down.
-	 */
-	bool					doubled_down;
-	/**
-		Whether or not this hand was surrendered.
-	 */
-	bool					surrendered;
+	play_state				action;
 
-	hand() : cards(), state(0),
-		doubled_down(false), surrendered(false) { }
+	hand(const play_map& p) : play(&p), cards(), state(0), action(LIVE) { }
 
 	// initial deal
 	void
-	initial_card_player(const play_map&, const size_t);
+	initial_card_player(const size_t);
 
 	void
-	initial_card_dealer(const play_map&, const size_t);
+	initial_card_dealer(const size_t);
 
 	void
-	deal_player(const play_map&, const size_t, const size_t, const bool);
+	deal_player(const size_t, const size_t, const bool);
 
 	void
-	deal_dealer(const play_map&, const size_t, const size_t);
+	deal_dealer(const size_t, const size_t);
 
 	// hit state transition -- use this for double-down too
 	void
-	hit_player(const play_map&, const size_t);
+	hit_player(const size_t);
 
 	void
-	hit_dealer(const play_map&, const size_t);
+	hit_dealer(const size_t);
+
+#if 0
+	void
+	presplit(void);
 
 	void
-	presplit(const play_map&);
+	split(const size_t);
+#endif
 
 	void
-	split(const play_map&, const size_t);
+	double_down(const size_t);
+
+	void
+	stand(void) {
+		action = STANDING;
+	}
+
+	void
+	surrender(void) {
+		action = SURRENDERED;
+	}
+
+	bool
+	surrendered(void) const {
+		return action == SURRENDERED;
+	}
+	bool
+	doubled_down(void) const {
+		return action == DOUBLED_DOWN;
+	}
 
 	bool
 	splittable(void) const;
@@ -81,11 +112,41 @@ struct hand {
 		return state == player_blackjack;
 	}
 
-	ostream&
-	dump_dealer(ostream&, const play_map&) const;
+	bool
+	player_busted(void) const {
+		return state == player_bust;
+	}
+
+	bool
+	dealer_busted(void) const {
+		return state == dealer_bust;
+	}
+
+	/**
+		A hand is considered 'live' if it 
+		has not busted (terminal), nor surrendered.
+		Doubled-down is still considered live.  
+	 */
+	bool
+	player_live(void) const {
+		return !player_busted() && !surrendered();
+	}
+
+	/**
+		Player should be prompt while alive, 
+		and not doubled down, and not surrendered.
+		Also, if 21, don't bother prompting.
+	 */
+	bool
+	player_prompt(void) const {
+		return !player_busted() && (action == LIVE) && (state != goal);
+	}
 
 	ostream&
-	dump_player(ostream&, const play_map&) const;
+	dump_dealer(ostream&) const;
+
+	ostream&
+	dump_player(ostream&) const;
 
 };	// end struct hand
 

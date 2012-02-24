@@ -1390,16 +1390,26 @@ strategy::expectations::dump_choice_actions(ostream& o,
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
 	Prints 2 expectation groups, side-by-side.
+	Only show edges for the legal moves in this context, 
+	as given by d, p, r.
  */
 ostream&
 strategy::expectations::dump_choice_actions_2(ostream& o,
 		const expectations& e1, const expectations& e2,
-		const edge_type& surr) {
-	return o << "stand: " << setprecision(4) << e1.stand << '\t' << e2.stand
-	<< "\nhit  : " << e1.hit << '\t' << e2.hit
-	<< "\ndbl  : " << e1.double_down << '\t' << e2.double_down
-	<< "\nsplit: " << e1.split << '\t' << e2.split
-	<< "\nsurr.: " << surr << '\t' << surr << endl;
+		const edge_type& surr, 
+		const bool d, const bool p, const bool r) {
+	o << "stand: " << setprecision(4) << e1.stand << '\t' << e2.stand
+	<< "\nhit  : " << e1.hit << '\t' << e2.hit;
+	if (d) {
+		o << "\ndbl  : " << e1.double_down << '\t' << e2.double_down;
+	}
+	if (p) {
+		o << "\nsplit: " << e1.split << '\t' << e2.split;
+	}
+	if (r) {
+		o << "\nsurr.: " << surr << '\t' << surr;
+	}
+	return o << endl;
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

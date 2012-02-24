@@ -44,9 +44,13 @@ private:
 	strategy				dynamic_strategy;
 	/**
 		Maintain the state of the deck, and cards used.  
+		This is state information that can be saved/restored.
+		So is bankroll.
 	 */
 	deck_state				C;
 
+	// hand information is not saved, it is only temporary
+	// should these be removed from here?
 	/**
 		Maintain a vector of hands in case of splits and re-splits.
 	 */
@@ -65,25 +69,51 @@ private:
 	size_t					dealer_hole;
 
 public:
-// options:
-	/**
-		If true, give user the option of hand-picking every card with prompt.
-	 */
-	bool					pick_cards;
-	/**
-		More computationally intense.
-		Re-calculates dynamic strategy optimization immediately
-		before prompting user for action.  
-	 */
-	bool					use_dynamic_strategy;
+	struct options {
+		/**
+			If true, give user the option of hand-picking 
+			every card with prompt.
+		 */
+		bool					pick_cards;
+		/**
+			More computationally intense.
+			Re-calculates dynamic strategy optimization 
+			immediately before prompting user for action.  
+		 */
+		bool					use_dynamic_strategy;
+		/**
+			If all player hands are busted/surrendered, 
+			don't bother playing.
+		 */
+		bool				dealer_plays_only_against_live;
+		/// size of current bet (convert from integer)
+		double					bet;
 
+		options();			// defaults
+	};	// end struct options
+	options					opt;
+
+	struct statistics {
+		double				initial_bankroll;
+		double				min_bankroll;
+		double				max_bankroll;
+		double				final_bankroll;
+		// spread of initial hands
+		// initial edges
+		// decision edges
+		// optimal edges
+		// edge margins
+		// basic vs. dynamic
+		// bet distribution
+		// expectation
+		// lucky draws
+		// bad beats
+	};	// end struct statistics
 private:
 // state:
 	/// current amount of money
 	double					bankroll;
 public:
-	/// size of current bet (convert from integer)
-	double					bet;
 
 	// other quantities for grading and statistics
 
@@ -133,6 +163,9 @@ private:
 	}
 
 	void
+	handle_player_action(const size_t, const player_choice);
+
+	void
 	play_out_hand(const size_t);
 
 	void
@@ -141,6 +174,10 @@ private:
 	ostream&
 	dump_situation(const size_t) const;
 
+	player_choice
+	assess_action(const size_t, const size_t, 
+		const bool, const bool, const bool);
+ 
 };	// end class grader
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
