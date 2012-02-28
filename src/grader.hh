@@ -73,6 +73,7 @@ public:
 		/**
 			If true, give user the option of hand-picking 
 			every card with prompt.
+			Useful for simulating scenarios.
 		 */
 		bool					pick_cards;
 		/**
@@ -84,6 +85,7 @@ public:
 		/**
 			If all player hands are busted/surrendered, 
 			don't bother playing.
+			Default: true
 		 */
 		bool				dealer_plays_only_against_live;
 		/// size of current bet (convert from integer)
@@ -98,7 +100,7 @@ public:
 		double				min_bankroll;
 		double				max_bankroll;
 		double				final_bankroll;
-		// spread of initial hands
+		// spread of initial hands vs. dealer-reveal
 		// initial edges
 		// decision edges
 		// optimal edges
@@ -165,7 +167,7 @@ private:
 	void
 	handle_player_action(const size_t, const player_choice);
 
-	void
+	bool
 	play_out_hand(const size_t);
 
 	void

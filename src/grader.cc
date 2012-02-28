@@ -1,6 +1,7 @@
 // "grader.cc"
 
 #include <iostream>
+#include <cstdio>
 #include "grader.hh"
 #include "util/string.tcc"	// for string_to_num
 #include "util/command.tcc"
@@ -205,12 +206,14 @@ grader::deal_hand(void) {
 	// play ends if either dealer or player had blackjack (and was peeked)
 if (!end) {
 	size_t j = 0;
+	bool live = false;
 	for ( ; j<player_hands.size(); ++j) {
-		play_out_hand(j);
+		if (play_out_hand(j)) {
+			live = true;
+		}
 	}
-#if 1
+if (live || !opt.dealer_plays_only_against_live) {
 	ostr << "Dealer plays..." << endl;
-#endif
 	// dealer plays after player is done
 	// should dealer play when there are no live hands?
 	dealer_hand.hit_dealer(hole_card);
@@ -219,6 +222,10 @@ if (!end) {
 	while (!play.is_dealer_terminal(dealer_hand.state)) {
 		dealer_hand.hit_dealer(draw_up_card());
 	}
+} else {
+	// hole card is never revealed and thus not counted
+	// treat as if hole card is replaced into shoe
+}
 	dealer_hand.dump_dealer(ostr) << endl;
 	// suspense double-down?  nah
 	const double bet2 = var.double_multiplier *bet;
@@ -243,6 +250,8 @@ for (j=0; j<player_hands.size(); ++j) {
 	}
 	status(ostr);
 //	only update_dynamic_strategy() when requested
+	// update bet min/max watermark
+	// update bankroll min/max watermark
 }	// end grader::deal_hand
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -292,8 +301,9 @@ switch (pc) {
 /**
 	Plays out player hand until finished.
 	\param j player hand index (in case of splits)
+	\return true if player's hand is still live.
  */
-void
+bool
 grader::play_out_hand(const size_t j) {
 	hand& ph(player_hands[j]);
 	// caution, reference may dangle after a vector::push_back
@@ -342,10 +352,12 @@ do {
 		ph.dump_player(ostr) << endl;
 	}
 } while (ph.player_prompt());
+	return ph.player_live();
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
+	Re-computes card-count-based strategy.
 	\param ps the player's state index
 	\param dlr the dealer's reveal card
 	\param d, p, r, whether or not double,split,surrender are allowed
@@ -385,6 +397,7 @@ grader::assess_action(const size_t ps, const size_t dlr,
 			<< ")";
 	}
 	ostr << endl;
+	// or return both and let caller decide?
 	return opt.use_dynamic_strategy ? dr.first : br.first;
 }
 
@@ -424,17 +437,21 @@ prompt_player_action(istream& i, ostream& o,
 		const bool d, const bool p, const bool r) {
 	player_choice c = NIL;
 do {
-	string line;
-	do {
+	int ch;
+//	string line;
+//	do {
 		// prompt for legal choices
 		o << "action? [hs";
 		if (d) o << 'd';
 		if (p) o << 'p';
 		if (r) o << 'r';
 		o << "c?!]> ";
-		i >> line;
-	} while (line.empty() && i);
-	switch (line[0]) {
+		ch = getchar();
+//		i >> line;
+//	} while (line.empty() && i);
+//	switch (line[0])
+	switch (ch)
+	{
 	case 'h':
 	case 'H':
 		c = HIT; break;
@@ -599,9 +616,20 @@ Count::main(grader& g, const string_list&) {
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
+	Also begin with 'D' to more easily disambiguate from other 
+	d-commands.
+ */
 DECLARE_GRADER_COMMAND_CLASS(Deal, "deal", ": deal next hand")
+DECLARE_GRADER_COMMAND_CLASS(Deal2, "Deal", ": deal next hand")
 int
 Deal::main(grader& g, const string_list&) {
+	g.deal_hand();
+	return CommandStatus::NORMAL;
+}
+
+int
+Deal2::main(grader& g, const string_list&) {
 	g.deal_hand();
 	return CommandStatus::NORMAL;
 }

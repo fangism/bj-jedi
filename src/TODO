@@ -1,9 +1,29 @@
 TODO list:
-bugs(?):
-	overall edge calculation
+
+compute 5-card charlie-horse variations
 
 standard analysis:
 	add variance analysis
 
 analyze Blackjack Switch
 	when to switch (tables)
+
+simulator/analyzer:
+I/O: option to read raw character w/o hitting return (ncurses UI)
+logging
+track statistics
+gameplay options
+preset options for rules
+random seed (seed48) control, initial non-det seeding
+save/restore state/accounts
+define/use API for hooking up custom strategies
+define/use API for hooking up different UIs (stdio ,ncurses)
+when hole card is not revealed, replace it into deck (don't count as drawn)
+insurance prompt: auto-respond (basic: no, dynamic: depends)
+
+options:
+show overall edge given exact count (accumulate)
+
+commands:
+deal-until-shuffle
+deal [N] hands
