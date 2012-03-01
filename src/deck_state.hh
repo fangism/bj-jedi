@@ -95,6 +95,9 @@ public:
 	quick_draw_uncounted(void);
 
 	size_t
+	quick_draw_uncounted_except(const size_t);
+
+	size_t
 	option_draw_uncounted(const bool, istream&, ostream&, const bool);
 
 	size_t

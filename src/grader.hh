@@ -80,6 +80,8 @@ public:
 			More computationally intense.
 			Re-calculates dynamic strategy optimization 
 			immediately before prompting user for action.  
+			Also applies to suggestions and notifications, 
+			and edge calculations.  
 		 */
 		bool					use_dynamic_strategy;
 		/**
@@ -88,6 +90,20 @@ public:
 			Default: true
 		 */
 		bool				dealer_plays_only_against_live;
+		/**
+			Always compute optimal decision and suggest the best.
+		 */
+		bool				always_suggest;
+		/**
+			Notify when decision is not optimal.
+		 */
+		bool				notify_when_wrong;
+		/**
+			Show mathematical edges with suggestions and 
+			wrong-move notifications.  
+		 */
+		bool				show_edges;
+
 		/// size of current bet (convert from integer)
 		double					bet;
 
@@ -158,6 +174,9 @@ private:
 
 	size_t
 	draw_hole_card(void);
+
+	void
+	reveal_hole_card(const size_t);
 
 	bool
 	already_split(void) const {

@@ -7,6 +7,7 @@
 #include "variation.hh"
 #include "util/array.tcc"
 #include "util/probability.tcc"
+#include "util/value_saver.hh"
 
 namespace blackjack {
 using std::string;
@@ -135,6 +136,20 @@ deck_state::quick_draw_uncounted(void) {
 #else
 	return util::random_draw_from_integer_pdf(cards);
 #endif
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
+	Zeros out the card indexed i, for the purposes of 
+	random drawing, knowing that the card cannot be 
+	of a particular value.  
+	This is useful after peeking for blackjack.  
+	\return index of a random card.
+ */
+size_t
+deck_state::quick_draw_uncounted_except(const size_t i) {
+	const util::value_saver<size_t> __tmp(cards[i], 0);
+	return quick_draw_uncounted();
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

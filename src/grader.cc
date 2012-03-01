@@ -110,6 +110,15 @@ grader::draw_hole_card(void) {
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+void
+grader::reveal_hole_card(const size_t hole_card) {
+	dealer_hand.hit_dealer(hole_card);
+	C.reveal_hole_card();	// only now, count the hole card
+	// optional:
+	dealer_hand.dump_dealer(ostr) << endl;
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
 	Play a hand of blackjack.
 	Player hands, dealer state, hole cards, etc...
@@ -135,10 +144,14 @@ grader::deal_hand(void) {
 	dealer_reveal = draw_up_card();
 	dealer_hand.initial_card_dealer(dealer_reveal);
 	// TODO: first query whether hold card makes dealer blackjack
+	// so prompt for this after checking, if peeking for blackjack
 	if (pick_cards) {
 		ostr << "choose dealer hole-card." << endl;
 	}
 	// except for European: no hole card
+	// TODO: option-draw hole card 2-stage prompt
+	// if peek, ask if dealer has blackjack
+	// if not, then draw among remaining non-blackjack cards
 	const size_t hole_card = draw_hole_card();
 	ostr << "dealer: " << card_name[dealer_reveal] << endl;
 	// TODO: if early_surrender (rare) ...
@@ -148,6 +161,7 @@ grader::deal_hand(void) {
 		ostr << "Player has blackjack!" << endl;
 	}
 	// if either player or dealer has blackjack, hand is over
+	// TODO: show odds pre-peak and post-peek
 	bool end = pbj;
 	if (dealer_reveal == ACE) {
 		pih.dump_player(ostr) << endl;
@@ -158,8 +172,7 @@ grader::deal_hand(void) {
 		const double half_bet = bet *0.5;
 		if (hole_card == TEN) {
 			end = true;
-			dealer_hand.hit_dealer(hole_card);
-			dealer_hand.dump_dealer(ostr) << endl;
+			reveal_hole_card(hole_card);
 			ostr << "Dealer has blackjack." << endl;
 			if (buy_insurance) {
 				bankroll += var.insurance *half_bet;
@@ -178,6 +191,7 @@ grader::deal_hand(void) {
 				bankroll += var.bj_payoff *bet;
 			}
 			// else keep playing
+			// hole card is known to be NOT a TEN
 		}
 		}	// peek_on_Ace
 	} else if (dealer_reveal == TEN) {
@@ -185,8 +199,7 @@ grader::deal_hand(void) {
 		if (var.peek_on_10) {
 		if (hole_card == ACE) {
 			end = true;
-			dealer_hand.hit_dealer(hole_card);
-			dealer_hand.dump_dealer(ostr) << endl;
+			reveal_hole_card(hole_card);
 			ostr << "Dealer has blackjack." << endl;
 			if (!pbj) {
 				bankroll -= bet;
@@ -195,6 +208,7 @@ grader::deal_hand(void) {
 			}
 		} else {
 			ostr << "No dealer blackjack." << endl;
+			// hole card is known to be NOT an ACE
 		}
 		}	// peek_on_10
 	} else if (pbj) {
@@ -216,9 +230,7 @@ if (live || !opt.dealer_plays_only_against_live) {
 	ostr << "Dealer plays..." << endl;
 	// dealer plays after player is done
 	// should dealer play when there are no live hands?
-	dealer_hand.hit_dealer(hole_card);
-	C.reveal_hole_card();	// only now, count the hole card
-	// dealer_hand.dump_dealer(o, play);
+	reveal_hole_card(hole_card);
 	while (!play.is_dealer_terminal(dealer_hand.state)) {
 		dealer_hand.hit_dealer(draw_up_card());
 	}
@@ -437,20 +449,21 @@ prompt_player_action(istream& i, ostream& o,
 		const bool d, const bool p, const bool r) {
 	player_choice c = NIL;
 do {
-	int ch;
-//	string line;
-//	do {
+//	int ch;
+	string line;
+	do {
 		// prompt for legal choices
 		o << "action? [hs";
 		if (d) o << 'd';
 		if (p) o << 'p';
 		if (r) o << 'r';
 		o << "c?!]> ";
-		ch = getchar();
-//		i >> line;
-//	} while (line.empty() && i);
-//	switch (line[0])
-	switch (ch)
+//		ch = getchar();
+		// TODO: ncurses getch();
+		i >> line;
+	} while (line.empty() && i);
+	switch (line[0])
+//	switch (ch)
 	{
 	case 'h':
 	case 'H':
@@ -709,6 +722,7 @@ CardsPick::main(grader& g, const string_list&) {
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // EditDeck
+// arbitrarily alter the distribution of cards
 
 #undef	DECLARE_GRADER_COMMAND_CLASS
 }	// end namespace grader_commands
