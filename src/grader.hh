@@ -204,11 +204,17 @@ public:
 	const deck_state&
 	get_deck_state(void) const { return C; }
 
+	deck_state&
+	get_deck_state(void) { return C; }
+
 	const strategy&
 	get_basic_strategy(void) const { return basic_strategy; }
 
 	const strategy&
 	get_dynamic_strategy(void) const { return dynamic_strategy; }
+
+	void
+	update_dynamic_strategy(void);
 
 	int
 	main(void);
@@ -236,9 +242,6 @@ private:
 
 	bool
 	play_out_hand(const size_t);
-
-	void
-	update_dynamic_strategy(void);
 
 	void
 	auto_shuffle(void);

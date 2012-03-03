@@ -9,7 +9,7 @@ TAR_DIR = boc2
 ARCH_FLAGS =
 # for amusement
 # ARCH_FLAGS += -arch ppc
-# ARCH_FLAGS += -arch i386
+ARCH_FLAGS += -arch i386
 CXX = g++
 # CXX = clang++
 CXXCPPFLAGS = -I. -I/sw/include
@@ -43,7 +43,7 @@ grader.o: $(BLACKJACK_HEADERS)
 
 libutil_OBJ = util/tokenize.o util/string.o util/readline_wrap.o
 util/libutil.a: $(libutil_OBJ)
-	$(LINK) $(LDFLAGS) $(libutil_OBJ) $(LIBS) -o $@
+	$(LINK) $(LDFLAGS) $(libutil_OBJ) -o $@
 
 libbj_OBJ = deck.o card_state.o deck_state.o grader.o hand.o blackjack.o lobby.o variation.o strategy.o
 libbj.a: $(libbj_OBJ)

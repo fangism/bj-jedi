@@ -3,17 +3,26 @@
 #include <string>
 #include <iostream>
 #include <iomanip>
+
 #include "deck_state.hh"
 #include "variation.hh"
 #include "util/array.tcc"
 #include "util/probability.tcc"
 #include "util/value_saver.hh"
+#include "util/string.tcc"		// for string_to_num
+#include "util/tokenize.hh"
 
 namespace blackjack {
 using std::string;
 using std::setw;
+using std::cerr;
 using std::endl;
+#if DECK_PROBABILITIES
 using util::normalize;
+#endif
+using util::string_list;
+using util::tokenize;
+using util::strings::string_to_num;
 using cards::ACE;
 using cards::TEN;
 using cards::card_values;
@@ -259,13 +268,16 @@ deck_state::show_count(ostream& o) const {
 		const size_t j = reveal_print_ordering[i];
 		o << setw(4) << cards[j];
 	}
+	// note: altered decks will have nonsense values
 	o << "\t" << cards_remaining << "\t(" <<
 		double(cards_remaining) *100.0 / (num_decks *52) << "%)\n";
 	// hi-lo count summary, details of true count, running count
 	int hi_lo_count = 0;
-	hi_lo_count += used_cards[1] +used_cards[2] +used_cards[3]
-		+used_cards[4] +used_cards[5];	// 2 through 6
-	hi_lo_count -= used_cards[ACE] +used_cards[TEN];
+	// more accurately, based on remaining cards, not used cards
+	// this allows meaningful counting for altered decks
+	hi_lo_count -= cards[1] +cards[2] +cards[3]
+		+cards[4] +cards[5];	// 2 through 6
+	hi_lo_count += cards[ACE] +cards[TEN];
 	double true_count = (double(hi_lo_count) * 52)
 		/ double(cards_remaining);
 	o << "hi-lo: " << hi_lo_count <<
@@ -276,6 +288,126 @@ deck_state::show_count(ostream& o) const {
 	o.precision(p);
 	return o << endl;
 }
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+bool
+deck_state::__check_edit_deck_args(const size_t c, const int n) {
+	if (c >= card_values) {
+		cerr << "error: invalid card index " << c << endl;
+		return true;
+	}
+	if (n < 0) {
+		cerr << "error: resulting quantity must be non-negative"
+			<< endl;
+		return true;
+	}
+	return false;
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
+	\param c the card index
+	\param n the number of those cards to keep in deck
+ */
+bool
+deck_state::edit_deck(const size_t c, const int n) {
+	if (__check_edit_deck_args(c, n)) {
+		return true;
+	}
+	const int d = n -int(cards[c]);
+	cards[c] = n;
+	cards_remaining += d;
+	// leave used_cards and cards_spent alone
+#if DECK_PROBABILITIES
+	need_update = true;
+#endif
+	return false;
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+bool
+deck_state::edit_deck_add(const size_t c, const int n) {
+	if (c >= card_values) {
+		cerr << "error: invalid card index " << c << endl;
+		return true;
+	}
+	return edit_deck(c, cards[c] +n);
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+bool
+deck_state::edit_deck_sub(const size_t c, const int n) {
+	if (c >= card_values) {
+		cerr << "error: invalid card index " << c << endl;
+		return true;
+	}
+	return edit_deck(c, cards[c] -n);
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
+	Interactively edit deck distribution for each card.
+	\return true if there is an error.
+ */
+bool
+deck_state::edit_deck_all(istream& i, ostream& o) {
+	o << "Enter quantity of each card.\n"
+"\t. for unchanged\n"
+"\t[+|-] value : for relative count change" << endl;
+	size_t j = 0;
+for ( ; j<card_values; ++j) {
+	const size_t k = reveal_print_ordering[j];
+	bool accept = true;
+	do {
+	o << "card: " << card_name[k] << " (" << cards[k] << "): ";
+	string line;
+	getline(i, line);
+	string_list args;
+	tokenize(line, args);
+	switch (args.size()) {
+	case 1: {
+		const string& qs(args.front());
+		int q;
+		if (qs == ".") {
+			// accepted, unchanged
+		} else if (string_to_num(qs, q)) {
+			o << "error: invalid number" << endl;
+			accept = false;
+		} else if (edit_deck(k, q)) {
+			// there was error, prompt again
+			accept = false;
+		}
+		break;
+	}
+	case 2: {
+		int q;
+		const string& sn(args.front());
+		const string& qs(args.back());
+		if (string_to_num(qs, q)) {
+			o << "error: invalid number" << endl;
+			accept = false;
+		}
+		switch (sn[0]) {
+		case '+':
+			accept = !edit_deck_add(k, q);
+			break;
+		case '-':
+			accept = !edit_deck_sub(k, q);
+			break;
+		default:
+			accept = false;
+			break;
+		}	// end switch
+		break;
+	}
+	default:
+		accept = false;
+		break;
+	}	// end switch
+	} while (i && !accept);
+}	// end for all cards
+	return !i;
+}	// end edit_deck_all
 
 //=============================================================================
 }	// end namespace blackjack

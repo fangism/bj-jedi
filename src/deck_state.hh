@@ -14,6 +14,11 @@ using cards::deck_distribution;
 using cards::deck_count_type;
 using cards::state_machine;
 
+/**
+	Continuously track real-valued probabilities as cards
+	are drawn from deck.
+	Just get rid of this, no need for it.
+ */
 #define	DECK_PROBABILITIES			0
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -135,6 +140,23 @@ public:
 	void
 	update_probabilities(void);
 #endif
+
+	bool
+	edit_deck(const size_t, const int);
+
+	bool
+	edit_deck_add(const size_t, const int);
+
+	bool
+	edit_deck_sub(const size_t, const int);
+
+	bool
+	edit_deck_all(istream&, ostream&);
+
+private:
+	static
+	bool
+	__check_edit_deck_args(const size_t, const int);
 
 };	// end class deck_state
 

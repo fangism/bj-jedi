@@ -767,6 +767,7 @@ DECLARE_GRADER_COMMAND_CLASS(Dynamic, "dynamic-strategy",
 	"[-edge|-verbose]: show dynamic strategy")
 int
 Dynamic::main(grader& g, const string_list& args) {
+	g.update_dynamic_strategy();
 	const strategy& b(g.get_dynamic_strategy());
 switch (args.size()) {
 case 1: b.dump_optimal_actions(g.ostr); break;
@@ -791,6 +792,7 @@ default:
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // TODO: group these into options
+// rename: random mode? draw-mode? replay-mode?
 DECLARE_GRADER_COMMAND_CLASS(CardsRandom, "cards-random",
 	": randomly draw cards")
 int
@@ -809,8 +811,81 @@ CardsPick::main(grader& g, const string_list&) {
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-// EditDeck
-// arbitrarily alter the distribution of cards
+DECLARE_GRADER_COMMAND_CLASS(EditDeck, "edit-deck",
+	"[all | card [+|-] N] : alter card distribution")
+int
+EditDeck::main(grader& g, const string_list& args) {
+	deck_state& C(g.get_deck_state());
+switch (args.size()) {
+case 1: Count::main(g, args);	// just show count
+	g.ostr << "usage: " << name << " " << brief << endl;
+	break;
+case 2: {
+	// interactively edit all quantities
+	Count::main(g, args);		// first show all
+	if (args.back() == "all") {
+		C.edit_deck_all(g.istr, g.ostr);	// exit status?
+		Count::main(g, args);	// show all once again
+	} else {
+		g.ostr << "usage: " << name << " " << brief << endl;
+		return CommandStatus::BADARG;
+	}
+	break;
+}
+case 3: {
+	// set number
+	string_list::const_iterator i(++args.begin());
+	const string& cn(*i++);		// card name [2-9AT]
+	const string& qs(*i);		// quantity
+	const size_t ci = card_index(cn[0]);
+	int q;
+	if (string_to_num(qs, q)) {
+		g.ostr << "error: invalid quantity" << endl;
+		return CommandStatus::BADARG;
+	}
+	if (C.edit_deck(ci, q)) {
+		return CommandStatus::BADARG;
+	}
+}
+case 4: {
+	// add or subtract
+	string_list::const_iterator i(++args.begin());
+	const string& cn(*i++);		// card name [2-9AT]
+	const string& sn(*i++);		// [+-=]
+	const string& qs(*i);		// quantity
+	const size_t ci = card_index(cn[0]);
+	int q;
+	if (string_to_num(qs, q)) {
+		g.ostr << "error: invalid quantity" << endl;
+		return CommandStatus::BADARG;
+	}
+	switch (sn[0]) {
+	case '+':
+		if (C.edit_deck_add(ci, q)) {
+			return CommandStatus::BADARG;
+		}
+		break;
+	case '-':
+		if (C.edit_deck_sub(ci, q)) {
+			return CommandStatus::BADARG;
+		}
+		break;
+	case '=':
+		if (C.edit_deck(ci, q)) {
+			return CommandStatus::BADARG;
+		}
+		break;
+	default:
+		cerr << "error: invalid operator, expecting [+-=]" << endl;
+		return CommandStatus::BADARG;
+		break;
+	}
+}
+default: cerr << "usage: " << name << " " << brief << endl;
+	return CommandStatus::SYNTAX;
+}	// end switch
+	return CommandStatus::NORMAL;
+}
 
 #undef	DECLARE_GRADER_COMMAND_CLASS
 }	// end namespace grader_commands
