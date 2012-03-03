@@ -14,7 +14,7 @@ CXX = g++
 # CXX = clang++
 CXXCPPFLAGS = -I. -I/sw/include
 # CXXCPPFLAGS = -I. -I/sw64/include
-CXXFLAGS = -g -O3 -Wall -W -Wshadow -Werror -ansi -pedantic-errors $(ARCH_FLAGS)
+CXXFLAGS = -g -O3 -Wall -W -Wshadow -Werror -Wno-unused -ansi -pedantic-errors $(ARCH_FLAGS)
 LINK = ld -r
 CXXLD = $(CXX)
 # LD = ld
@@ -33,7 +33,13 @@ all: $(TARGETS)
 
 BLACKJACK_HEADERS = blackjack.hh card_state.hh deck.hh deck_state.hh enums.hh grader.hh hand.hh lobby.hh strategy.hh variation.hh
 
+# for now, all objects depend on all headers
+# eventually automake will take care of this
 blackjack.o: $(BLACKJACK_HEADERS)
+strategy.o: $(BLACKJACK_HEADERS)
+variation.o: $(BLACKJACK_HEADERS)
+grader.o: $(BLACKJACK_HEADERS)
+# others don't change as oftem
 
 libutil_OBJ = util/tokenize.o util/string.o util/readline_wrap.o
 util/libutil.a: $(libutil_OBJ)

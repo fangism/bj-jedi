@@ -6,6 +6,7 @@
 
 #include <vector>
 #include <string>
+#include <utility>			// for std::pair
 #include "strategy.hh"
 #include "blackjack.hh"
 #include "deck_state.hh"
@@ -71,11 +72,17 @@ private:
 public:
 	struct options {
 		/**
+			If true, reshuffle after every hand.
+			In this case number of decks matters less
+			or not at all.
+		 */
+		bool				continuous_shuffle;
+		/**
 			If true, give user the option of hand-picking 
 			every card with prompt.
 			Useful for simulating scenarios.
 		 */
-		bool					pick_cards;
+		bool				pick_cards;
 		/**
 			More computationally intense.
 			Re-calculates dynamic strategy optimization 
@@ -83,13 +90,21 @@ public:
 			Also applies to suggestions and notifications, 
 			and edge calculations.  
 		 */
-		bool					use_dynamic_strategy;
+		bool				use_dynamic_strategy;
 		/**
 			If all player hands are busted/surrendered, 
 			don't bother playing.
 			Default: true
 		 */
 		bool				dealer_plays_only_against_live;
+		/**
+			Always show count when prompted for action.
+		 */
+		bool				always_show_count_at_action;
+		/**
+			Always show count at the start of each hand.
+		 */
+		bool				always_show_count_at_hand;
 		/**
 			Always compute optimal decision and suggest the best.
 		 */
@@ -105,7 +120,7 @@ public:
 		bool				show_edges;
 
 		/// size of current bet (convert from integer)
-		double					bet;
+		double				bet;
 
 		options();			// defaults
 	};	// end struct options
@@ -116,13 +131,15 @@ public:
 		double				min_bankroll;
 		double				max_bankroll;
 		double				final_bankroll;
-		// spread of initial hands vs. dealer-reveal
+		double				total_bets;
+		size_t				hands_played;
+		// spread of initial hands vs. dealer-reveal (matrix)
 		// initial edges
 		// decision edges
 		// optimal edges
 		// edge margins
 		// basic vs. dynamic
-		// bet distribution
+		// bet distribution (map)
 		// expectation
 		// lucky draws
 		// bad beats
@@ -192,10 +209,13 @@ private:
 	void
 	update_dynamic_strategy(void);
 
+	void
+	auto_shuffle(void);
+
 	ostream&
 	dump_situation(const size_t) const;
 
-	player_choice
+	pair<player_choice, player_choice>
 	assess_action(const size_t, const size_t, 
 		const bool, const bool, const bool);
  

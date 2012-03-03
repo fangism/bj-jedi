@@ -84,6 +84,8 @@ public:
 		return card_probabilities;
 	}
 #endif
+	double
+	draw_ten_probability(void) const;
 
 	void
 	magic_draw(const size_t);

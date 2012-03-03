@@ -70,6 +70,12 @@ deck_state::reshuffle_auto(void) {
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+double
+deck_state::draw_ten_probability(void) const {
+	return double(cards[TEN])/double(cards_remaining);
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 #if DECK_PROBABILITIES
 void
 deck_state::update_probabilities(void) {
