@@ -144,6 +144,12 @@ struct variation {
 	void
 	configure(void);
 
+	void
+	save(ostream&) const;
+
+	void
+	load(istream&);
+
 };	// end struct variation
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

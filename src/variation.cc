@@ -1,9 +1,12 @@
 // "variation.cc"
 
 #include <iostream>
+#include <fstream>
+#include <map>
 #include "variation.hh"
 
 #include "util/string.tcc"	// for string_to_num
+#include "util/tokenize.hh"
 #include "util/command.tcc"
 #include "util/value_saver.hh"
 
@@ -19,11 +22,16 @@ using std::string;
 using std::cout;
 using std::cerr;
 using std::endl;
+using std::map;
+using std::ofstream;
+using std::ifstream;
+using std::getline;
 using util::string_list;
 using util::Command;
 using util::CommandStatus;
 using util::value_saver;
 using util::strings::string_to_num;
+using util::tokenize;
 
 typedef	util::command_registry<VariationCommand>
 						variation_command_registry;
@@ -37,6 +45,9 @@ yn(const bool y) {
 	return y ? "yes" : "no";
 }
 
+/**
+	Human-readable summary of options.
+ */
 ostream&
 variation::dump(ostream& o) const {
 	o << "number of decks: " << num_decks << endl;
@@ -125,6 +136,55 @@ Exit::main(variation&, const string_list&) {
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+DECLARE_VARIATION_COMMAND_CLASS(Save, "save",
+	"file : save rule variation to file")
+int
+Save::main(variation& v, const string_list& args) {
+if (args.size() != 2) {
+	cerr << "usage: " << name << " filename" << endl;
+	return CommandStatus::SYNTAX;
+} else {
+	ofstream ofs(args.back().c_str());
+	if (ofs) {
+		v.save(ofs);
+	} else {
+		cerr << "error: couldn't open file for writing" << endl;
+		return CommandStatus::BADARG;
+	}
+	return CommandStatus::NORMAL;
+}
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+DECLARE_VARIATION_COMMAND_CLASS(Load, "load",
+	"file : load rule variations from file")
+int
+Load::main(variation& v, const string_list& args) {
+if (args.size() != 2) {
+	cerr << "usage: " << name << " filename" << endl;
+	return CommandStatus::SYNTAX;
+} else {
+	ifstream ifs(args.back().c_str());
+	if (ifs) {
+		string hdr;
+		getline(ifs, hdr);
+		if (hdr == "BEGIN-variation") {
+			v.load(ifs);
+		} else {
+			cerr <<
+			"error: bad-file, expecting \"BEGIN-variation\""
+				<< endl;
+			return CommandStatus::BADARG;
+		}
+	} else {
+		cerr << "error: couldn't open file for reading" << endl;
+		return CommandStatus::BADARG;
+	}
+	return CommandStatus::NORMAL;
+}
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 DECLARE_VARIATION_COMMAND_CLASS(Done, "done",
 	": finish and return")
 int
@@ -190,12 +250,32 @@ default: {
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+typedef void (*printer_fun_ptr)(ostream&, const variation&);
+
+static
+map<string, printer_fun_ptr>
+member_var_names;
+
+static
+int
+add_var_name(const string& s, const printer_fun_ptr p) {
+	member_var_names[s] = p;
+	return member_var_names.size();
+}
+
 #define	DEFINE_VARIATION_MEMBER_COMMAND(mem, str, desc)			\
 DECLARE_VARIATION_COMMAND_CLASS(mem, str, desc)				\
 int									\
 mem::main(variation& v, const string_list& args) {			\
 	return configure_value(v, args, name, &variation::mem);		\
-}
+}									\
+static void								\
+__printer_ ## mem (ostream& o, const variation& v) {			\
+	o << v.mem;							\
+}									\
+static									\
+int __init_name_ ## mem = add_var_name(str, & __printer_ ## mem );
+// __ATTRIBUTE_UNUSED__
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // game play
@@ -261,6 +341,46 @@ DEFINE_VARIATION_MEMBER_COMMAND(
 
 #undef	DECLARE_VARIATION_COMMAND_CLASS
 }	// end namespace variation_commands
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+void
+variation::save(ostream& o) const {
+	o << "BEGIN-variation" << endl;
+	map<string, variation_commands::printer_fun_ptr>::const_iterator
+		i(variation_commands::member_var_names.begin()),
+		e(variation_commands::member_var_names.end());
+	for ( ; i!=e; ++i) {
+		o << i->first << " ";
+		(*i->second)(o, *this);
+		o << endl;
+	}
+	o << "END-variation" << endl;
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+void
+variation::load(istream& i) {
+//	variation_command_registry::source(i);
+	// already read in a line that says "BEGIN-variation"
+	string line;
+	while (i) {
+		getline(i, line);
+		if (i) {
+			if (line == "END-variation") {
+				break;
+			} else {
+				string_list cmd;
+				tokenize(line, cmd);
+				variation_command_registry::execute(*this, cmd);
+			}
+		}
+	}
+	if (i.bad()) {
+		cerr << "error: EOF reached before seeing \"END-variation\""
+			<< endl;
+	}
+}
+
 //=============================================================================
 }	// end namespace blackjack
 
