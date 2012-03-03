@@ -46,6 +46,44 @@ grader::options::options() :
 	bet(1.0) {
 }
 
+// TODO: dump, save, load
+
+//=============================================================================
+// clas grader::statistics method declarations
+
+grader::statistics::statistics() :
+	initial_bankroll(0.0),
+	min_bankroll(0.0),
+	max_bankroll(0.0),
+	bankroll(0.0),
+	initial_bets(0.0),
+	total_bets(0.0),
+	hands_played(0) {
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+void
+grader::statistics::initialize_bankroll(const double b) {
+	initial_bankroll = b;
+	min_bankroll = b;
+	max_bankroll = b;
+	bankroll = b;
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
+	Update bankroll watermarks.
+ */
+void
+grader::statistics::compare_bankroll(void) {
+	if (bankroll < min_bankroll)
+		min_bankroll = bankroll;
+	else if (bankroll > max_bankroll)
+		max_bankroll = bankroll;
+}
+
+// TODO: dump, save, load
+
 //=============================================================================
 // class grader method definitions
 
@@ -54,7 +92,7 @@ grader::grader(const variation& v, istream& i, ostream& o) :
 		basic_strategy(play), dynamic_strategy(play), 
 		C(v),
 		player_hands(), dealer_hand(play), 
-		bankroll(100.0) {
+		opt(), stats() {
 	player_hands.reserve(16);	// to prevent realloc
 	const deck_count_type& d(C.get_card_counts());
 	// each call does util::normalize()
@@ -62,6 +100,7 @@ grader::grader(const variation& v, istream& i, ostream& o) :
 	dynamic_strategy.set_card_distribution(d);
 	basic_strategy.evaluate();
 	dynamic_strategy.evaluate();	// not really necessary
+	stats.initialize_bankroll(100.0);	// default bankroll
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -143,6 +182,7 @@ grader::deal_hand(void) {
 		C.show_count(ostr);
 	}
 	const double& bet(opt.bet);
+	double& bankroll(stats.bankroll);
 	const bool pick_cards = opt.pick_cards;
 	if (pick_cards) {
 		ostr << "choose player cards." << endl;
@@ -276,6 +316,8 @@ for (j=0; j<player_hands.size(); ++j) {
 	}	// already paid surrender penalty
 }	// end for
 }
+	++stats.hands_played;
+	stats.compare_bankroll();
 	auto_shuffle();
 	status(ostr);
 //	only update_dynamic_strategy() when needed or requested
@@ -334,7 +376,7 @@ switch (pc) {
 	}
 	case SURRENDER:
 		// recall surrender_penalty is positive
-		bankroll -= opt.bet *var.surrender_penalty;
+		stats.bankroll -= opt.bet *var.surrender_penalty;
 		ph.surrender();
 		break;
 	default: break;
@@ -400,7 +442,7 @@ do {
 } while (ph.player_prompt());
 	if (ph.player_busted()) {
 		// show final state
-		bankroll -= opt.bet;
+		stats.bankroll -= opt.bet;
 		ph.dump_player(ostr) << endl;
 	}
 	return ph.player_live();
@@ -539,7 +581,7 @@ do {
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ostream&
 grader::status(ostream& o) const {
-	o << "bankroll: " << bankroll <<
+	o << "bankroll: " << stats.bankroll <<
 		", bet: " << opt.bet << endl;
 	// deck remaning (%)
 	return o;

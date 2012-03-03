@@ -123,19 +123,31 @@ public:
 		double				bet;
 
 		options();			// defaults
+
+		void
+		save(ostream&) const;
+
+		void
+		load(istream&);
+
 	};	// end struct options
 	options					opt;
 
+	// should privatize/protect some members...
 	struct statistics {
 		double				initial_bankroll;
 		double				min_bankroll;
 		double				max_bankroll;
-		double				final_bankroll;
+		double				bankroll;
+		/// total amount of money risked on initial hands
+		double				initial_bets;
+		/// total amount of money risked, including splits/doubles
 		double				total_bets;
+		/// total count of initial deals (not counting splits)
 		size_t				hands_played;
 		// spread of initial hands vs. dealer-reveal (matrix)
-		// initial edges
-		// decision edges
+		// initial edges -- computed on first deal (pre-peek)
+		// decision edges -- updated every decision
 		// optimal edges
 		// edge margins
 		// basic vs. dynamic
@@ -143,11 +155,30 @@ public:
 		// expectation
 		// lucky draws
 		// bad beats
+
+		statistics();			// initial value
+
+		void
+		initialize_bankroll(const double);
+
+		void
+		compare_bankroll(void);
+
+		void
+		register_bet(const double);
+
+		ostream&
+		dump(ostream&) const;
+
+		void
+		save(ostream&) const;
+
+		void
+		load(istream&);
+
 	};	// end struct statistics
-private:
-// state:
-	/// current amount of money
-	double					bankroll;
+	statistics				stats;
+	// random seed?
 public:
 
 	// other quantities for grading and statistics
@@ -165,7 +196,7 @@ public:
 	deal_hand(void);
 
 	const double&
-	get_bankroll(void) const { return bankroll; }
+	get_bankroll(void) const { return stats.bankroll; }
 
 	const variation&
 	get_variation(void) const { return var; }
