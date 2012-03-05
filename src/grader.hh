@@ -124,6 +124,12 @@ public:
 
 		options();			// defaults
 
+		bool
+		always_update_dynamic(void) const {
+			return use_dynamic_strategy &&
+				(always_suggest || notify_when_wrong);
+		}
+
 		void
 		save(ostream&) const;
 
@@ -250,7 +256,7 @@ private:
 	dump_situation(const size_t) const;
 
 	pair<player_choice, player_choice>
-	assess_action(const size_t, const size_t, 
+	assess_action(const size_t, const size_t, ostream&, 
 		const bool, const bool, const bool);
  
 };	// end class grader

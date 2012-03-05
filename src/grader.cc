@@ -1,6 +1,7 @@
 // "grader.cc"
 
 #include <iostream>
+#include <sstream>
 #include <cstdio>
 #include "grader.hh"
 #include "util/string.tcc"	// for string_to_num
@@ -18,6 +19,7 @@ typedef	util::command_registry<GraderCommand>		grader_command_registry;
 
 using std::cerr;
 using std::endl;
+using std::ostringstream;
 using cards::ACE;
 using cards::TEN;
 using cards::card_name;
@@ -411,6 +413,16 @@ do {
 	if (opt.always_show_count_at_action) {
 		C.show_count(ostr);
 	}
+	ostringstream oss;
+	const pair<player_choice, player_choice>
+		acp(assess_action(ph.state, dealer_reveal, oss, d, p, r));
+	const player_choice ac =
+		opt.use_dynamic_strategy ? acp.second : acp.first;
+	const player_choice ac2 =
+		opt.use_dynamic_strategy ? acp.first : acp.second;
+	if (opt.always_suggest) {
+		ostr << oss.str() << endl;
+	}
 	pc = prompt_player_action(istr, ostr, d, p, r);
 	switch (pc) {
 		// all fall-through to handle_player_action()
@@ -420,18 +432,25 @@ do {
 	case SPLIT: 
 	case SURRENDER:
 		handle_player_action(j, pc);
+		if (opt.notify_when_wrong) {
+		if (pc != ac) {
+			ostr << "optimal choice was: " <<
+				action_names[ac] << endl;
+			if (pc == ac2) {
+				ostr << "but " << action_names[ac2]
+					<< " is also acceptable." << endl;
+			}
+		}
+		}
 		break;
 	case COUNT:
 		C.show_count(ostr);
 		break;
 	case HINT:
-		assess_action(ph.state, dealer_reveal, d, p, r);
+		ostr << oss.str() << endl;
 		break;
 	case OPTIM: {
-		const pair<player_choice, player_choice>
-			acp(assess_action(ph.state, dealer_reveal, d, p, r));
-		const player_choice& ac = 
-			opt.use_dynamic_strategy ? acp.second : acp.first;
+		ostr << oss.str() << endl;	// optional?
 		ostr << "auto: " << action_names[ac] << endl;
 		handle_player_action(j, ac);
 		break;
@@ -458,7 +477,7 @@ do {
 		and dynamic strategy (second)
  */
 pair<player_choice, player_choice>
-grader::assess_action(const size_t ps, const size_t dlr, 
+grader::assess_action(const size_t ps, const size_t dlr, ostream& o,
 		const bool d, const bool p, const bool r) {
 	// basic:
 	const strategy::expectations& be(basic_strategy
@@ -480,19 +499,19 @@ grader::assess_action(const size_t ps, const size_t dlr,
 	// ostr << "dynamic strategy recommends: " <<
 	//	action_names[dr.first] << endl;
 if (opt.show_edges) {
-	ostr << "edges:\tbasic\tdynamic" << endl;
-	strategy::expectations::dump_choice_actions_2(ostr,
+	o << "edges:\tbasic\tdynamic" << endl;
+	strategy::expectations::dump_choice_actions_2(o,
 		be, de, -var.surrender_penalty, d, p, r);
 }
-	ostr << "advise:\t" << action_names[br.first]
+	o << "advise:\t" << action_names[br.first]
 		<< '\t' << action_names[dr.first];
 	if (br.first != dr.first) {
 		// alert when dynamic strategy is different from basic
-		ostr << "\t(different! using " <<
+		o << "\t(different! using " <<
 			(opt.use_dynamic_strategy ? "dynamic" : "basic")
 			<< ")";
 	}
-	ostr << endl;
+//	o << endl;
 	return std::make_pair(br.first, dr.first);
 }
 
