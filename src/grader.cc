@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <sstream>
+#include <algorithm>
 #include <cstdio>
 #include "grader.hh"
 #include "util/string.tcc"	// for string_to_num
@@ -9,22 +10,27 @@
 #include "util/value_saver.hh"
 
 namespace blackjack {
-typedef	util::Command<grader>		GraderCommand;
+typedef	util::Command<grader>			GraderCommand;
+typedef	util::Command<grader::options>		OptionsCommand;
 }
 namespace util {
 template class command_registry<blackjack::GraderCommand>;
+template class command_registry<blackjack::OptionsCommand>;
 }
 namespace blackjack {
 typedef	util::command_registry<GraderCommand>		grader_command_registry;
+typedef	util::command_registry<OptionsCommand>		option_command_registry;
 
 using std::cerr;
 using std::endl;
 using std::ostringstream;
+using std::fill;
 using cards::ACE;
 using cards::TEN;
 using cards::card_name;
 using cards::standard_deck_distribution;
 using cards::card_index;
+using cards::reveal_print_ordering;
 
 using util::value_saver;
 using util::Command;
@@ -49,6 +55,7 @@ grader::options::options() :
 }
 
 // TODO: dump, save, load
+// option commands
 
 //=============================================================================
 // clas grader::statistics method declarations
@@ -61,6 +68,12 @@ grader::statistics::statistics() :
 	initial_bets(0.0),
 	total_bets(0.0),
 	hands_played(0) {
+	initial_state_histogram_type::iterator
+		i(initial_state_histogram.begin()),
+		e(initial_state_histogram.end());
+	for ( ; i!=e; ++i) {
+		fill(i->begin(), i->end(), 0);
+	}
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -84,7 +97,43 @@ grader::statistics::compare_bankroll(void) {
 		max_bankroll = bankroll;
 }
 
-// TODO: dump, save, load
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
+	Print all statistics.
+ */
+ostream&
+grader::statistics::dump(ostream& o, const play_map& play) const {
+	o << "initial bankroll: " << initial_bankroll << endl;
+	o << "min bankroll: " << min_bankroll << endl;
+	o << "max bankroll: " << max_bankroll << endl;
+	o << "current bankroll: " << bankroll << endl;
+	o << "hands played: " << hands_played << endl;
+	o << "initial bets: " << initial_bets << endl;
+	o << "total bets: " << total_bets << endl;
+{
+	o << "initial deal histogram: {" << endl;
+	o << "\tP\\D";
+	size_t j = 0;
+	for ( ; j<card_values; ++j) {
+		const size_t k = reveal_print_ordering[j];
+		o << '\t' << card_name[k];
+	}
+	o << endl;
+	for (j=0; j<p_action_states; ++j) {
+		o << '\t' << play.player_hit[j].name;
+		size_t i = 0;
+		for ( ; i<card_values; ++i) {
+			const size_t k = reveal_print_ordering[i];
+			o << '\t' << initial_state_histogram[j][k];
+		}
+		o << endl;
+	}
+	o << '}' << endl;
+}
+	return o;
+}
+
+// TODO: save, load
 
 //=============================================================================
 // class grader method definitions
@@ -185,6 +234,8 @@ grader::deal_hand(void) {
 	}
 	const double& bet(opt.bet);
 	double& bankroll(stats.bankroll);
+	stats.initial_bets += bet;
+	stats.total_bets += bet;
 	const bool pick_cards = opt.pick_cards;
 	if (pick_cards) {
 		ostr << "choose player cards." << endl;
@@ -205,6 +256,7 @@ grader::deal_hand(void) {
 	if (pick_cards) {
 		ostr << "choose dealer hole-card." << endl;
 	}
+	++stats.initial_state_histogram[pih.state][dealer_hand.state];
 	// except for European: no hole card
 	// TODO: option-draw hole card 2-stage prompt
 	// if peek, ask if dealer has blackjack
@@ -301,10 +353,15 @@ if (live || !opt.dealer_plays_only_against_live) {
 	// treat as if hole card is replaced into shoe
 }
 	// suspense double-down?  nah
-	const double bet2 = var.double_multiplier *bet;
+	const double bet2 = var.double_multiplier *bet;	// winning
+	stats.total_bets -= bet;
 for (j=0; j<player_hands.size(); ++j) {
 	dump_situation(j);
+	stats.total_bets += bet;
 	if (player_hands[j].player_live()) {
+	if (player_hands[j].doubled_down()) {
+		stats.total_bets += bet;
+	}
 		// check for surrender could/should be outside this loop
 	const outcome& wlp(play_map::outcome_matrix
 		[play_map::player_final_state_map(player_hands[j].state)]
@@ -806,6 +863,15 @@ default:
 	cerr << "Error: command expects at most 1 option." << endl;
 	return CommandStatus::SYNTAX;
 }
+	return CommandStatus::NORMAL;
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+DECLARE_GRADER_COMMAND_CLASS(Statistics, "stats",
+	": show game play statistics")
+int
+Statistics::main(grader& g, const string_list&) {
+	g.stats.dump(g.ostr, g.get_play_map());
 	return CommandStatus::NORMAL;
 }
 

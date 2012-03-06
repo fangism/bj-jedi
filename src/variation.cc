@@ -95,6 +95,12 @@ variation::configure(void) {
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+int
+variation::command(const string_list& cmd) {
+	return variation_command_registry::execute(*this, cmd);
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 namespace variation_commands {
 
 #define DECLARE_VARIATION_COMMAND_CLASS(class_name, _cmd, _brief)	\

@@ -1,7 +1,7 @@
 /**
 	Interactive blackjack grader program.
 	Main menu.
-	$Id: lobby.cc,v 1.2 2012/02/23 20:16:14 fang Exp $
+	$Id: lobby.cc,v 1.3 2012/03/06 10:12:08 fang Exp $
  */
 
 #include <iostream>
@@ -90,11 +90,18 @@ Rules::main(lobby& L, const string_list&) {
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-DECLARE_LOBBY_COMMAND_CLASS(Configure, "configure", ": set rule variations")
+DECLARE_LOBBY_COMMAND_CLASS(Configure, "configure",
+	"[cmd] : set rule variations")
 int
-Configure::main(lobby& L, const string_list&) {
+Configure::main(lobby& L, const string_list& args) {
+if (args.size() <= 1) {
 	L.var.configure();
 	return CommandStatus::NORMAL;
+} else {
+	// execute a single configure command
+	const string_list rem(++args.begin(), args.end());
+	return L.var.command(rem);
+}
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

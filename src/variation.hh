@@ -4,6 +4,7 @@
 #define	__BOC2_VARIATION_HH__
 
 #include <iosfwd>
+#include "util/tokenize.hh"
 
 /**
 	Define to 1 to implement Blackjack Switch's push-on-22 rule.
@@ -15,6 +16,7 @@
 namespace blackjack {
 using std::istream;
 using std::ostream;
+using util::string_list;
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
@@ -143,6 +145,9 @@ struct variation {
 
 	void
 	configure(void);
+
+	int
+	command(const string_list&);
 
 	void
 	save(ostream&) const;

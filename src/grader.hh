@@ -29,7 +29,7 @@ public:
 	ostream&				ostr;
 private:
 	/**
-		Game state machines.
+		Game state machines, as player and dealer hit.
 	 */
 	play_map				play;
 	/**
@@ -70,6 +70,14 @@ private:
 	size_t					dealer_hole;
 
 public:
+	/**
+		Collection of general game-play options, 
+		feedback and display settings.  
+		Options that affect the mathematics should belong in
+		the variation struct.
+		Any options that don't affect the mathematical outcomes
+		may go in here.  
+	 */
 	struct options {
 		/**
 			If true, reshuffle after every hand.
@@ -130,6 +138,9 @@ public:
 				(always_suggest || notify_when_wrong);
 		}
 
+		ostream&
+		dump(ostream&) const;
+
 		void
 		save(ostream&) const;
 
@@ -153,6 +164,11 @@ public:
 		size_t				hands_played;
 		// spread of initial hands vs. dealer-reveal (matrix)
 		// initial edges -- computed on first deal (pre-peek)
+		typedef array<size_t, card_values>	
+						dealer_reveal_histogram_type;
+		typedef	array<dealer_reveal_histogram_type, p_action_states>
+						initial_state_histogram_type;
+		initial_state_histogram_type	initial_state_histogram;
 		// decision edges -- updated every decision
 		// optimal edges
 		// edge margins
@@ -161,6 +177,7 @@ public:
 		// expectation
 		// lucky draws
 		// bad beats
+		// min true count, max true count
 
 		statistics();			// initial value
 
@@ -174,7 +191,7 @@ public:
 		register_bet(const double);
 
 		ostream&
-		dump(ostream&) const;
+		dump(ostream&, const play_map&) const;
 
 		void
 		save(ostream&) const;
@@ -185,6 +202,12 @@ public:
 	};	// end struct statistics
 	statistics				stats;
 	// random seed?
+	/**
+		Hand-by-hand record of trends to plot.
+		e.g. true count vs. bet
+	 */
+	struct history {
+	};	//
 public:
 
 	// other quantities for grading and statistics
@@ -206,6 +229,9 @@ public:
 
 	const variation&
 	get_variation(void) const { return var; }
+
+	const play_map&
+	get_play_map(void) const { return play; }
 
 	const deck_state&
 	get_deck_state(void) const { return C; }

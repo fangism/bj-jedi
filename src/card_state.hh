@@ -78,6 +78,9 @@ public:
 	void
 	resize(const size_t);
 
+	size_t
+	size(void) const { return states.size(); }
+
 	const node&
 	operator [] (const size_t i) const { return states[i]; }
 
