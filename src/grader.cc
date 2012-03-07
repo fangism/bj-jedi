@@ -3,7 +3,10 @@
 #include <iostream>
 #include <sstream>
 #include <algorithm>
+#include <iomanip>
+#include <numeric>		// for std::accumulate
 #include <cstdio>
+#include <cstdlib>
 #include "grader.hh"
 #include "util/string.tcc"	// for string_to_num
 #include "util/command.tcc"
@@ -25,6 +28,8 @@ using std::cerr;
 using std::endl;
 using std::ostringstream;
 using std::fill;
+using std::setw;
+using std::accumulate;
 using cards::ACE;
 using cards::TEN;
 using cards::card_name;
@@ -46,6 +51,7 @@ grader::options::options() :
 	pick_cards(false),
 	use_dynamic_strategy(true), 
 	dealer_plays_only_against_live(true),
+	always_show_status(true),
 	always_show_count_at_action(false),
 	always_show_count_at_hand(false),
 	always_suggest(false),
@@ -111,23 +117,35 @@ grader::statistics::dump(ostream& o, const play_map& play) const {
 	o << "initial bets: " << initial_bets << endl;
 	o << "total bets: " << total_bets << endl;
 {
+	dealer_reveal_histogram_type vtotals;
+	fill(vtotals.begin(), vtotals.end(), 0);
 	o << "initial deal histogram: {" << endl;
-	o << "\tP\\D";
+	o << "\tP\\D\t";
 	size_t j = 0;
 	for ( ; j<card_values; ++j) {
 		const size_t k = reveal_print_ordering[j];
-		o << '\t' << card_name[k];
+		o << "   " << card_name[k];
+//		o << '(' << k << ')';
 	}
-	o << endl;
+	o << "\ttotal" << endl;
 	for (j=0; j<p_action_states; ++j) {
-		o << '\t' << play.player_hit[j].name;
+		o << '\t' << play.player_hit[j].name << '\t';
+		const dealer_reveal_histogram_type&
+			row(initial_state_histogram[j]);
 		size_t i = 0;
 		for ( ; i<card_values; ++i) {
 			const size_t k = reveal_print_ordering[i];
-			o << '\t' << initial_state_histogram[j][k];
+			o << setw(4) << row[k];
+			vtotals[i] += row[k];
 		}
-		o << endl;
+		o << '\t' << accumulate(row.begin(), row.end(), 0) << endl;
 	}
+	o << "\n\ttotal\t";
+	for (j=0; j<card_values; ++j) {
+		const size_t k = reveal_print_ordering[j];
+		o << setw(4) << vtotals[j];
+	}
+	o << '\t' << accumulate(vtotals.begin(), vtotals.end(), 0) << endl;
 	o << '}' << endl;
 }
 	return o;
@@ -378,7 +396,9 @@ for (j=0; j<player_hands.size(); ++j) {
 	++stats.hands_played;
 	stats.compare_bankroll();
 	auto_shuffle();
-	status(ostr);
+	if (opt.always_show_status) {
+		status(ostr);
+	}
 //	only update_dynamic_strategy() when needed or requested
 	// update bet min/max watermark
 	// update bankroll min/max watermark
@@ -812,6 +832,7 @@ Deal2::main(grader& g, const string_list&) {
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// TODO: introduce a bunch of in-strategy commands
 DECLARE_GRADER_COMMAND_CLASS(Basic, "basic-strategy",
 	"[-edge|-verbose]: show basic strategy")
 int
@@ -861,6 +882,67 @@ case 2: {
 }
 default:
 	cerr << "Error: command expects at most 1 option." << endl;
+	return CommandStatus::SYNTAX;
+}
+	return CommandStatus::NORMAL;
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
+	This generic command should be available from several contexts.
+ */
+DECLARE_GRADER_COMMAND_CLASS(Seed, "seed",
+	"[time|int int int] : show/set random seed")
+int
+Seed::main(grader& g, const string_list& args) {
+	typedef	unsigned short		ushort;
+const size_t sz = args.size();
+switch (sz) {
+case 1: {
+	ushort sd[3] = {0, 0, 0};
+	// grab seed (destructive)
+	const ushort* tmp = seed48(sd);
+	sd[0] = tmp[0];
+	sd[1] = tmp[1];
+	sd[2] = tmp[2];
+	g.ostr << "seed48 = " << sd[0] << ' ' << sd[1] << ' ' << sd[2] << endl;
+	// restore it
+	seed48(sd);
+	break;
+}
+case 2: {
+	if (args.back() == "time") {
+		const time_t tm = std::time(NULL);	// Epoch time
+		ushort sd[3] = {0, 0, 0};
+		sd[0] = tm & ushort(-1);
+		sd[1] = (tm >> 16) & ushort(-1);
+		// if (sizeof(time_t) > 4) {
+		// sd[2] = (tm >> 32) & ushort(-1);
+		sd[2] = (tm >> 8) & ushort(-1);
+		// }
+		g.ostr << "seed48 = " << sd[0] << ' ' << sd[1] << ' ' << sd[2] << endl;
+		seed48(sd);
+	} else {
+		cerr << "usage: " << name << " " << brief << endl;
+		return CommandStatus::BADARG;
+	}
+	break;
+}
+case 4: {
+	ushort sd[3];
+	string_list::const_iterator i(args.begin());
+	// pre-increment to skip first command token
+	if (string_to_num(*++i, sd[0]) ||
+		string_to_num(*++i, sd[1]) ||
+		string_to_num(*++i, sd[2])) {
+		cerr << "usage: " << name << " " << brief << endl;
+		return CommandStatus::BADARG;
+	}
+	seed48(sd);
+	break;
+}
+default:
+	cerr << "usage: " << name << " " << brief << endl;
 	return CommandStatus::SYNTAX;
 }
 	return CommandStatus::NORMAL;
@@ -971,6 +1053,10 @@ default: cerr << "usage: " << name << " " << brief << endl;
 }	// end switch
 	return CommandStatus::NORMAL;
 }
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// TODO: auto-play a whole hand, or N hands, or until some condition...
+// TODO: auto-bet amount based on some criteria
 
 #undef	DECLARE_GRADER_COMMAND_CLASS
 }	// end namespace grader_commands

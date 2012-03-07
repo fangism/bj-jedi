@@ -106,6 +106,11 @@ public:
 		 */
 		bool				dealer_plays_only_against_live;
 		/**
+			If true, show bankroll and current bet after
+			every hand.
+		 */
+		bool				always_show_status;
+		/**
 			Always show count when prompted for action.
 		 */
 		bool				always_show_count_at_action;
