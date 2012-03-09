@@ -8,7 +8,8 @@
 // namespace? global namespace?
 namespace cards {
 
-typedef	double		probability_type;
+typedef	double			probability_type;
+typedef	probability_type	edge_type;
 
 enum {
 	ACE = 0,		// index of Ace (card_odds)

@@ -8,7 +8,6 @@
 #include <iostream>
 #include <iterator>
 #include <iomanip>
-// #include <map>
 #include <cmath>		// for fabs
 #include "strategy.hh"
 #include "variation.hh"
@@ -1133,7 +1132,7 @@ strategy::compute_overall_edge(void) {
 	\param p player's state
 	\param d dealer's reveal card
  */
-const strategy::expectations&
+const expectations&
 strategy::lookup_player_action_expectations(
 		const size_t p, const size_t d) const {
 	return player_actions[p][d];
@@ -1281,135 +1280,6 @@ strategy::dump_optimal_edges(const expectations_vector& v, ostream& o) const {
 #endif
 #undef	EFORMAT
 	return o;
-}
-
-//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const edge_type&
-strategy::expectations::value(const player_choice c, 
-		const edge_type& surrender) const {
-	switch (c) {
-	case STAND:	return stand;
-	case HIT:	return hit;
-	case DOUBLE:	return double_down;
-	case SPLIT:	return split;
-	case SURRENDER:	return surrender;
-	default:	cerr << "Invalid player choice." << endl; assert(0);
-	}
-	return stand;
-}
-
-//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/**
-	Assumes all choices (double, split, surrender) available.
-	It is up to the best() method to filter out invalid choices.  
- */
-void
-strategy::expectations::optimize(const edge_type& surrender) {
-	typedef	std::multimap<edge_type, player_choice>	sort_type;
-	sort_type s;
-	s.insert(make_pair(stand, STAND));
-	s.insert(make_pair(hit, HIT));
-	s.insert(make_pair(double_down, DOUBLE));
-	s.insert(make_pair(split, SPLIT));
-	s.insert(make_pair(surrender, SURRENDER));
-	sort_type::const_iterator i(s.begin()), e(s.end());
-	// sort by order of preference
-	++i;	actions[3] = i->second;
-	++i;	actions[2] = i->second;
-	++i;	actions[1] = i->second;
-	++i;	actions[0] = i->second;	// best choice
-}
-
-//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/**
-	\return the best two player choices (first better than second), 
-	given constraints:
-	\param d whether double-down is a valid option
-	\param s whether split is a valid option
-	\param r whether surrender is a valid option
-	Invalid options are skipped in the response.  
- */
-pair<player_choice, player_choice>
-strategy::expectations::best_two(
-	const bool d, const bool s, const bool r) const {
-	player_choice ret[2];
-	const player_choice* i(&actions[0]), *e(&actions[4]);
-	player_choice* p = ret;
-	player_choice* const pe = &ret[2];
-	for ( ; i!=e && p!=pe; ++i) {
-	switch (*i) {
-	case STAND:
-	case HIT:
-		// hit and stand are always allowed
-		*p = *i;
-		++p;
-		break;
-	case DOUBLE:
-		if (d) {
-			*p = *i;
-			++p;
-		}
-		break;
-	case SPLIT:
-		if (s) {
-			*p = *i;
-			++p;
-		}
-		break;
-	case SURRENDER:
-		if (r) {
-			*p = *i;
-			++p;
-		}
-		break;
-	default: break;
-	}
-	}
-	if (p != pe) {
-	if (ret[0] == HIT) {
-		ret[1] = STAND;
-	} else if (p[1] == STAND) {
-		ret[1] = HIT;
-	}
-	// else ???
-	}
-	return pair<player_choice, player_choice>(ret[0], ret[1]);
-}
-
-//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-ostream&
-strategy::expectations::dump_choice_actions(ostream& o,
-		const edge_type& surr) const {
-	return o << "stand: " << setprecision(4) << stand
-	<< "\nhit  : " << hit
-	<< "\ndbl  : " << double_down
-	<< "\nsplit: " << split
-	<< "\nsurr.: " << surr << endl;
-}
-
-//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/**
-	Prints 2 expectation groups, side-by-side.
-	Only show edges for the legal moves in this context, 
-	as given by d, p, r.
- */
-ostream&
-strategy::expectations::dump_choice_actions_2(ostream& o,
-		const expectations& e1, const expectations& e2,
-		const edge_type& surr, 
-		const bool d, const bool p, const bool r) {
-	o << "stand: " << setprecision(4) << e1.stand << '\t' << e2.stand
-	<< "\nhit  : " << e1.hit << '\t' << e2.hit;
-	if (d) {
-		o << "\ndbl  : " << e1.double_down << '\t' << e2.double_down;
-	}
-	if (p) {
-		o << "\nsplit: " << e1.split << '\t' << e2.split;
-	}
-	if (r) {
-		o << "\nsurr.: " << surr << '\t' << surr;
-	}
-	return o << endl;
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

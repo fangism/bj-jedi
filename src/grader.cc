@@ -171,7 +171,8 @@ grader::offer_insurance(const bool pbj) const {
 	do {
 	do {
 		ostr << prompt << " [ync?!]: ";
-		istr >> line;
+		// istr >> line;
+		getline(istr, line);
 	} while (line.empty() && istr);
 	if (line == "n" || line == "N") {
 		done = true;
@@ -515,9 +516,9 @@ do {
 	} while (ph.player_prompt());
 } while (ph.player_prompt());
 	if (ph.player_busted()) {
-		// show final state
-		stats.bankroll -= opt.bet;
-		ph.dump_player(ostr) << endl;
+		// just in case player doubles-down and busts!
+		stats.bankroll -= ph.doubled_down() ? opt.bet *2.0 : opt.bet;
+		ph.dump_player(ostr) << endl;	// show final state
 	}
 	return ph.player_live();
 }
@@ -535,7 +536,7 @@ pair<player_choice, player_choice>
 grader::assess_action(const size_t ps, const size_t dlr, ostream& o,
 		const bool d, const bool p, const bool r) {
 	// basic:
-	const strategy::expectations& be(basic_strategy
+	const expectations& be(basic_strategy
 		.lookup_player_action_expectations(ps, dlr));
 	// ostr << "edges per action (basic):" << endl;
 	// be.dump_choice_actions(ostr, -var.surrender_penalty);
@@ -546,7 +547,7 @@ grader::assess_action(const size_t ps, const size_t dlr, ostream& o,
 	// show count?
 	update_dynamic_strategy();	// evaluate when needed
 	
-	const strategy::expectations& de(dynamic_strategy
+	const expectations& de(dynamic_strategy
 		.lookup_player_action_expectations(ps, dlr));
 	// ostr << "edges per action (dynamic):" << endl;
 	// de.dump_choice_actions(ostr, -var.surrender_penalty);
@@ -555,7 +556,7 @@ grader::assess_action(const size_t ps, const size_t dlr, ostream& o,
 	//	action_names[dr.first] << endl;
 if (opt.show_edges) {
 	o << "edges:\tbasic\tdynamic" << endl;
-	strategy::expectations::dump_choice_actions_2(o,
+	expectations::dump_choice_actions_2(o,
 		be, de, -var.surrender_penalty, d, p, r);
 }
 	o << "advise:\t" << action_names[br.first]
@@ -617,7 +618,8 @@ do {
 		o << "c?!]> ";
 //		ch = getchar();
 		// TODO: ncurses getch();
-		i >> line;
+		// i >> line;
+		getline(i, line);
 	} while (line.empty() && i);
 	switch (line[0])
 //	switch (ch)
@@ -734,11 +736,11 @@ if (args.size() > 1) {
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 DECLARE_GRADER_COMMAND_CLASS(PlayOptions, "options",
-	": show/set game play options")
+	": (menu) show/set game play options")
 int
 PlayOptions::main(grader& g, const string_list& args) {
 if (args.size() <= 1) {
-	g.opt.configure();
+	g.opt.configure();	// enter menu
 	return CommandStatus::NORMAL;
 } else {
 	// execute a single play_option command

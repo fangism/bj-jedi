@@ -1,7 +1,7 @@
 /**
 	Interactive blackjack grader program.
 	Main menu.
-	$Id: lobby.cc,v 1.4 2012/03/09 04:42:58 fang Exp $
+	$Id: lobby.cc,v 1.5 2012/03/09 09:27:17 fang Exp $
  */
 
 #include <iostream>
@@ -56,6 +56,10 @@ DECLARE_LOBBY_COMMAND_CLASS(Help, "help", ": list all lobby commands")
 int
 Help::main(lobby&, const string_list&) {
 	lobby_command_registry::list_commands(cout);
+	cout <<
+"Menu commands run without arguments will enter the meu.\n"
+"Anything that follows a menu command will be issued as a command to the\n"
+"menu without entering the menu." << endl;
 	return CommandStatus::NORMAL;
 }
 
@@ -82,19 +86,22 @@ Exit::main(lobby&, const string_list&) {
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+#if 0
 DECLARE_LOBBY_COMMAND_CLASS(Rules, "rules", ": show rule variations")
 int
 Rules::main(lobby& L, const string_list&) {
 	L.var.dump(cout);
 	return CommandStatus::NORMAL;
 }
+#endif
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 DECLARE_LOBBY_COMMAND_CLASS(Variation, "variation",
-	"[cmd] : set rule variations")
+	"[cmd] : (menu) rule variations")
 int
 Variation::main(lobby& L, const string_list& args) {
 if (args.size() <= 1) {
+	// enter menu
 	L.var.configure();
 	return CommandStatus::NORMAL;
 } else {
@@ -106,10 +113,11 @@ if (args.size() <= 1) {
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 DECLARE_LOBBY_COMMAND_CLASS(PlayOption, "options",
-	"[cmd] : set game-play options")
+	"[cmd] : (menu) game-play options")
 int
 PlayOption::main(lobby& L, const string_list& args) {
 if (args.size() <= 1) {
+	// enter menu
 	L.opt.configure();
 	return CommandStatus::NORMAL;
 } else {

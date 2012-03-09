@@ -79,7 +79,7 @@ variation::configure(void) {
 "Configuring blackjack rule variations.\n"
 "Type 'help' or '?' for a list of commands." << endl;
 	const value_saver<string>
-		tmp1(variation_command_registry::prompt, "rules> ");
+		tmp1(variation_command_registry::prompt, "variation> ");
 	const value_saver<util::completion_function_ptr>
 		tmp2(rl_attempted_completion_function,
 			&variation_command_registry::completion);

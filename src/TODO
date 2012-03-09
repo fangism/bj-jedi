@@ -16,15 +16,28 @@ gameplay options
 preset options for rules
 save/restore state/accounts
 define/use API for hooking up custom strategies
-define/use API for hooking up different UIs (stdio ,ncurses)
+define/use API for hooking up different UIs (stdio, ncurses)
 when hole card is not revealed, replace it into deck (don't count as drawn)
 
 test suite!
 
+basic/dynamic-strategy various dump commands
+
 options:
 show overall edge given exact count (accumulate)
 
+struct history {
+to track every situation and decision?
+}
+
 commands:
-deal-until-shuffle
+deal-until-reshuffle
 deal [N] hands
-echo
+echo (other class-independent command could be factored out)
+deposit (more money into bankroll)
+play-option::TMI: too much information
+variation/option::reset
+table::shuffle
+
+simulation:
+add robot players
