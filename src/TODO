@@ -1,6 +1,6 @@
 TODO list:
 
-compute 5-card charlie-horse variations
+compute 5-card charlie variations
 
 standard analysis:
 	add variance analysis
@@ -14,12 +14,12 @@ logging
 track statistics
 gameplay options
 preset options for rules
-random seed (seed48) control, initial non-det seeding
 save/restore state/accounts
 define/use API for hooking up custom strategies
 define/use API for hooking up different UIs (stdio ,ncurses)
 when hole card is not revealed, replace it into deck (don't count as drawn)
-insurance prompt: auto-respond (basic: no, dynamic: depends)
+
+test suite!
 
 options:
 show overall edge given exact count (accumulate)
@@ -27,3 +27,4 @@ show overall edge given exact count (accumulate)
 commands:
 deal-until-shuffle
 deal [N] hands
+echo

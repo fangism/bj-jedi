@@ -14,6 +14,7 @@
 
 namespace blackjack {
 class variation;
+struct play_options;
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
@@ -24,7 +25,16 @@ class variation;
  */
 class grader {
 public:
+	/**
+		For a particular grader session, the rule variations 
+		may not change.
+	 */
 	const variation&			var;
+	/**
+		These in-play options are allowed to be modified, 
+		and will persist after a grader session.
+	 */
+	play_options&				opt;
 	istream&				istr;
 	ostream&				ostr;
 private:
@@ -78,82 +88,6 @@ public:
 		Any options that don't affect the mathematical outcomes
 		may go in here.  
 	 */
-	struct options {
-		/**
-			If true, reshuffle after every hand.
-			In this case number of decks matters less
-			or not at all.
-		 */
-		bool				continuous_shuffle;
-		/**
-			If true, give user the option of hand-picking 
-			every card with prompt.
-			Useful for simulating scenarios.
-		 */
-		bool				pick_cards;
-		/**
-			More computationally intense.
-			Re-calculates dynamic strategy optimization 
-			immediately before prompting user for action.  
-			Also applies to suggestions and notifications, 
-			and edge calculations.  
-		 */
-		bool				use_dynamic_strategy;
-		/**
-			If all player hands are busted/surrendered, 
-			don't bother playing.
-			Default: true
-		 */
-		bool				dealer_plays_only_against_live;
-		/**
-			If true, show bankroll and current bet after
-			every hand.
-		 */
-		bool				always_show_status;
-		/**
-			Always show count when prompted for action.
-		 */
-		bool				always_show_count_at_action;
-		/**
-			Always show count at the start of each hand.
-		 */
-		bool				always_show_count_at_hand;
-		/**
-			Always compute optimal decision and suggest the best.
-		 */
-		bool				always_suggest;
-		/**
-			Notify when decision is not optimal.
-		 */
-		bool				notify_when_wrong;
-		/**
-			Show mathematical edges with suggestions and 
-			wrong-move notifications.  
-		 */
-		bool				show_edges;
-
-		/// size of current bet (convert from integer)
-		double				bet;
-
-		options();			// defaults
-
-		bool
-		always_update_dynamic(void) const {
-			return use_dynamic_strategy &&
-				(always_suggest || notify_when_wrong);
-		}
-
-		ostream&
-		dump(ostream&) const;
-
-		void
-		save(ostream&) const;
-
-		void
-		load(istream&);
-
-	};	// end struct options
-	options					opt;
 
 	// should privatize/protect some members...
 	struct statistics {
@@ -219,7 +153,7 @@ public:
 
 public:
 	explicit
-	grader(const variation&, istream&, ostream&);
+	grader(const variation&, play_options&, istream&, ostream&);
 
 	~grader();
 

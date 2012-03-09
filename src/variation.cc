@@ -2,11 +2,9 @@
 
 #include <iostream>
 #include <fstream>
-#include <map>
 #include "variation.hh"
 
-#include "util/string.tcc"	// for string_to_num
-#include "util/tokenize.hh"
+#include "util/configure_option.hh"
 #include "util/command.tcc"
 #include "util/value_saver.hh"
 
@@ -30,20 +28,14 @@ using util::string_list;
 using util::Command;
 using util::CommandStatus;
 using util::value_saver;
-using util::strings::string_to_num;
 using util::tokenize;
+using util::yn;
 
 typedef	util::command_registry<VariationCommand>
 						variation_command_registry;
 
 //-----------------------------------------------------------------------------
 // class variation method definitions
-
-static
-const char*
-yn(const bool y) {
-	return y ? "yes" : "no";
-}
 
 /**
 	Human-readable summary of options.
@@ -142,6 +134,22 @@ Exit::main(variation&, const string_list&) {
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+DECLARE_VARIATION_COMMAND_CLASS(Done, "done",
+	": finish and return")
+int
+Done::main(variation&, const string_list&) {
+	return CommandStatus::END;
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+DECLARE_VARIATION_COMMAND_CLASS(Done2, "quit",
+	": finish and return")
+int
+Done2::main(variation&, const string_list&) {
+	return CommandStatus::END;
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 DECLARE_VARIATION_COMMAND_CLASS(Save, "save",
 	"file : save rule variation to file")
 int
@@ -191,97 +199,10 @@ if (args.size() != 2) {
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-DECLARE_VARIATION_COMMAND_CLASS(Done, "done",
-	": finish and return")
-int
-Done::main(variation&, const string_list&) {
-	return CommandStatus::END;
-}
-
-//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-static
-int
-configure_value(variation& v, const string_list& args,
-		const char* name, bool variation::*mem) {
-switch (args.size()) {
-case 1: cout << name << " = " << yn(v.*mem) << endl; break;
-default: {
-	if (string_to_num(args.back(), v.*mem)) {
-		cerr << "Error: invalid boolean value, expecting 0 or 1" << endl;
-		return CommandStatus::BADARG;
-	}
-}
-}
-	return CommandStatus::NORMAL;
-}
-
-//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-static
-int
-configure_value(variation& v, const string_list& args,
-		const char* name, size_t variation::*mem) {
-switch (args.size()) {
-case 1: cout << name << " = " << v.*mem << endl; break;
-default: {
-	if (string_to_num(args.back(), v.*mem)) {
-		cerr << "Error: invalid integer value" << endl;
-		return CommandStatus::BADARG;
-	}
-}
-}
-	return CommandStatus::NORMAL;
-}
-
-//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-static
-int
-configure_value(variation& v, const string_list& args,
-		const char* name, double variation::*mem) {
-switch (args.size()) {
-case 1: cout << name << " = " << v.*mem << endl; break;
-default: {
-	double t;
-	if (string_to_num(args.back(), t)) {
-		cerr << "Error: invalid real value." << endl;
-		return CommandStatus::BADARG;
-	}
-	if (t < 0.0) {
-		cerr << "Error: value must be >= 0.0" << endl;
-		return CommandStatus::BADARG;
-	}
-	v.*mem = t;
-}
-}
-	return CommandStatus::NORMAL;
-}
-
-//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-typedef void (*printer_fun_ptr)(ostream&, const variation&);
-
-static
-map<string, printer_fun_ptr>
-member_var_names;
-
-static
-int
-add_var_name(const string& s, const printer_fun_ptr p) {
-	member_var_names[s] = p;
-	return member_var_names.size();
-}
+DECLARE_PRINTER_MAP(variation)
 
 #define	DEFINE_VARIATION_MEMBER_COMMAND(mem, str, desc)			\
-DECLARE_VARIATION_COMMAND_CLASS(mem, str, desc)				\
-int									\
-mem::main(variation& v, const string_list& args) {			\
-	return configure_value(v, args, name, &variation::mem);		\
-}									\
-static void								\
-__printer_ ## mem (ostream& o, const variation& v) {			\
-	o << v.mem;							\
-}									\
-static									\
-int __init_name_ ## mem = add_var_name(str, & __printer_ ## mem );
-// __ATTRIBUTE_UNUSED__
+	DEFINE_GENERIC_OPTION_MEMBER_COMMAND(variation, mem, str, desc)
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // game play
@@ -352,9 +273,9 @@ DEFINE_VARIATION_MEMBER_COMMAND(
 void
 variation::save(ostream& o) const {
 	o << "BEGIN-variation" << endl;
-	map<string, variation_commands::printer_fun_ptr>::const_iterator
-		i(variation_commands::member_var_names.begin()),
-		e(variation_commands::member_var_names.end());
+	variation_commands::variation_printer_map_type::const_iterator
+		i(variation_commands::variation_member_var_names.begin()),
+		e(variation_commands::variation_member_var_names.end());
 	for ( ; i!=e; ++i) {
 		o << i->first << " ";
 		(*i->second)(o, *this);

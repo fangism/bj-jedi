@@ -1,7 +1,7 @@
 /**
 	Interactive blackjack grader program.
 	Main menu.
-	$Id: lobby.cc,v 1.3 2012/03/06 10:12:08 fang Exp $
+	$Id: lobby.cc,v 1.4 2012/03/09 04:42:58 fang Exp $
  */
 
 #include <iostream>
@@ -90,17 +90,32 @@ Rules::main(lobby& L, const string_list&) {
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-DECLARE_LOBBY_COMMAND_CLASS(Configure, "configure",
+DECLARE_LOBBY_COMMAND_CLASS(Variation, "variation",
 	"[cmd] : set rule variations")
 int
-Configure::main(lobby& L, const string_list& args) {
+Variation::main(lobby& L, const string_list& args) {
 if (args.size() <= 1) {
 	L.var.configure();
 	return CommandStatus::NORMAL;
 } else {
-	// execute a single configure command
+	// execute a single variation command
 	const string_list rem(++args.begin(), args.end());
 	return L.var.command(rem);
+}
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+DECLARE_LOBBY_COMMAND_CLASS(PlayOption, "options",
+	"[cmd] : set game-play options")
+int
+PlayOption::main(lobby& L, const string_list& args) {
+if (args.size() <= 1) {
+	L.opt.configure();
+	return CommandStatus::NORMAL;
+} else {
+	// execute a single play_option command
+	const string_list rem(++args.begin(), args.end());
+	return L.opt.command(rem);
 }
 }
 
@@ -108,7 +123,7 @@ if (args.size() <= 1) {
 DECLARE_LOBBY_COMMAND_CLASS(Play, "play", ": start playing blackjack")
 int
 Play::main(lobby& L, const string_list&) {
-	blackjack::grader G(L.var, cin, cout);
+	grader G(L.var, L.opt, cin, cout);
 	G.main();
 	return CommandStatus::NORMAL;
 }

@@ -31,21 +31,22 @@ TARBALL = boc2.tar.gz
 
 all: $(TARGETS)
 
-BLACKJACK_HEADERS = blackjack.hh card_state.hh deck.hh deck_state.hh enums.hh grader.hh hand.hh lobby.hh strategy.hh variation.hh
+BLACKJACK_HEADERS = blackjack.hh card_state.hh deck.hh deck_state.hh enums.hh grader.hh hand.hh lobby.hh play_options.hh strategy.hh variation.hh
 
 # for now, all objects depend on all headers
 # eventually automake will take care of this
 blackjack.o: $(BLACKJACK_HEADERS)
 strategy.o: $(BLACKJACK_HEADERS)
-variation.o: $(BLACKJACK_HEADERS)
+variation.o: $(BLACKJACK_HEADERS) util/configure_option.hh
 grader.o: $(BLACKJACK_HEADERS)
+play_options.o: $(BLACKJACK_HEADERS) util/configure_option.hh
 # others don't change as oftem
 
 libutil_OBJ = util/tokenize.o util/string.o util/readline_wrap.o
 util/libutil.a: $(libutil_OBJ)
 	$(LINK) $(LDFLAGS) $(libutil_OBJ) -o $@
 
-libbj_OBJ = deck.o card_state.o deck_state.o grader.o hand.o blackjack.o lobby.o variation.o strategy.o
+libbj_OBJ = deck.o card_state.o deck_state.o grader.o hand.o blackjack.o lobby.o play_options.o variation.o strategy.o
 libbj.a: $(libbj_OBJ)
 	$(LINK) $(LDFLAGS) $(libbj_OBJ) -o $@
 

@@ -8,21 +8,19 @@
 #include <cstdio>
 #include <cstdlib>
 #include "grader.hh"
+#include "play_options.hh"
 #include "util/string.tcc"	// for string_to_num
 #include "util/command.tcc"
 #include "util/value_saver.hh"
 
 namespace blackjack {
 typedef	util::Command<grader>			GraderCommand;
-typedef	util::Command<grader::options>		OptionsCommand;
 }
 namespace util {
 template class command_registry<blackjack::GraderCommand>;
-template class command_registry<blackjack::OptionsCommand>;
 }
 namespace blackjack {
 typedef	util::command_registry<GraderCommand>		grader_command_registry;
-typedef	util::command_registry<OptionsCommand>		option_command_registry;
 
 using std::cerr;
 using std::endl;
@@ -42,26 +40,6 @@ using util::Command;
 using util::CommandStatus;
 using util::string_list;
 using util::strings::string_to_num;
-
-//=============================================================================
-// class grader::options method definitions
-
-grader::options::options() :
-	continuous_shuffle(false),
-	pick_cards(false),
-	use_dynamic_strategy(true), 
-	dealer_plays_only_against_live(true),
-	always_show_status(true),
-	always_show_count_at_action(false),
-	always_show_count_at_hand(false),
-	always_suggest(false),
-	notify_when_wrong(false),
-	show_edges(true),
-	bet(1.0) {
-}
-
-// TODO: dump, save, load
-// option commands
 
 //=============================================================================
 // clas grader::statistics method declarations
@@ -156,12 +134,12 @@ grader::statistics::dump(ostream& o, const play_map& play) const {
 //=============================================================================
 // class grader method definitions
 
-grader::grader(const variation& v, istream& i, ostream& o) :
-		var(v), istr(i), ostr(o), play(v),
+grader::grader(const variation& v, play_options& p, istream& i, ostream& o) :
+		var(v), opt(p), istr(i), ostr(o), play(v),
 		basic_strategy(play), dynamic_strategy(play), 
 		C(v),
 		player_hands(), dealer_hand(play), 
-		opt(), stats() {
+		stats() {
 	player_hands.reserve(16);	// to prevent realloc
 	const deck_count_type& d(C.get_card_counts());
 	// each call does util::normalize()
@@ -741,13 +719,33 @@ Exit::main(grader& g, const string_list& args) {
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-DECLARE_GRADER_COMMAND_CLASS(Rules, "rules", ": show rule variations")
+DECLARE_GRADER_COMMAND_CLASS(Variation, "variation", ": show rule variations")
 int
-Rules::main(grader& g, const string_list&) {
-	g.get_variation().dump(g.ostr);
+Variation::main(grader& g, const string_list& args) {
+if (args.size() > 1) {
+	g.ostr << "error: cannot change rules at the table." << endl;
+	return CommandStatus::BADARG;
+} else {
+	// can't modify/configure here
+	g.var.dump(g.ostr);
 	return CommandStatus::NORMAL;
 }
-// can't configure here
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+DECLARE_GRADER_COMMAND_CLASS(PlayOptions, "options",
+	": show/set game play options")
+int
+PlayOptions::main(grader& g, const string_list& args) {
+if (args.size() <= 1) {
+	g.opt.configure();
+	return CommandStatus::NORMAL;
+} else {
+	// execute a single play_option command
+	const string_list rem(++args.begin(), args.end());
+	return g.opt.command(rem);
+}
+}
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 DECLARE_GRADER_COMMAND_CLASS(Bet, "bet", "[amt] : change/show bet amount")
