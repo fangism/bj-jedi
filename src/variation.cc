@@ -150,6 +150,16 @@ Done2::main(variation&, const string_list&) {
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+DECLARE_VARIATION_COMMAND_CLASS(Reset, "reset",
+	": reset to default rule variation")
+int
+Reset::main(variation& v, const string_list&) {
+	static const variation default_variation;
+	v = default_variation;
+	return CommandStatus::NORMAL;
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 DECLARE_VARIATION_COMMAND_CLASS(Save, "save",
 	"file : save rule variation to file")
 int

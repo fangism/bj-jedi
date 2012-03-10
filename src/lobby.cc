@@ -1,13 +1,13 @@
 /**
 	Interactive blackjack grader program.
-	Main menu.
-	$Id: lobby.cc,v 1.5 2012/03/09 09:27:17 fang Exp $
+	Main menu in the 'lobby'.
+	$Id: lobby.cc,v 1.6 2012/03/10 23:26:36 fang Exp $
  */
 
 #include <iostream>
+#include <iterator>
 #include "lobby.hh"
 #include "grader.hh"
-#include "util/readline.h"
 #include "util/command.tcc"
 #include "util/value_saver.hh"
 
@@ -29,6 +29,7 @@ using std::string;
 using std::cin;
 using std::istream;
 using std::ostream;
+using std::ostream_iterator;
 using std::cout;
 using std::endl;
 
@@ -57,7 +58,7 @@ int
 Help::main(lobby&, const string_list&) {
 	lobby_command_registry::list_commands(cout);
 	cout <<
-"Menu commands run without arguments will enter the meu.\n"
+"Menu commands run without arguments will enter the menu.\n"
 "Anything that follows a menu command will be issued as a command to the\n"
 "menu without entering the menu." << endl;
 	return CommandStatus::NORMAL;
@@ -66,9 +67,8 @@ Help::main(lobby&, const string_list&) {
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 DECLARE_LOBBY_COMMAND_CLASS(Help2, "?", ": list all lobby commands")
 int
-Help2::main(lobby&, const string_list&) {
-	lobby_command_registry::list_commands(cout);
-	return CommandStatus::NORMAL;
+Help2::main(lobby& l, const string_list& args) {
+	return Help::main(l, args);
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -83,6 +83,15 @@ DECLARE_LOBBY_COMMAND_CLASS(Exit, "exit", ": exit program")
 int
 Exit::main(lobby&, const string_list&) {
 	return CommandStatus::END;
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+DECLARE_LOBBY_COMMAND_CLASS(Echo, "echo", ": print arguments")
+int
+Echo::main(lobby&, const string_list& args) {
+	copy(++args.begin(), args.end(), ostream_iterator<string>(cout, " "));
+	cout << endl;
+	return CommandStatus::NORMAL;
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

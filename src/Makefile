@@ -33,7 +33,7 @@ all: $(TARGETS)
 
 BLACKJACK_HEADERS = blackjack.hh card_state.hh deck.hh deck_state.hh enums.hh \
 	expectations.hh grader.hh hand.hh lobby.hh play_options.hh \
-	strategy.hh variation.hh
+	statistics.hh strategy.hh variation.hh
 
 # for now, all objects depend on all headers
 # eventually automake will take care of this
@@ -49,7 +49,8 @@ util/libutil.a: $(libutil_OBJ)
 	$(LINK) $(LDFLAGS) $(libutil_OBJ) -o $@
 
 libbj_OBJ = deck.o card_state.o deck_state.o grader.o hand.o blackjack.o \
-	expectations.o lobby.o play_options.o variation.o strategy.o
+	expectations.o lobby.o play_options.o variation.o strategy.o \
+	statistics.o
 libbj.a: $(libbj_OBJ)
 	$(LINK) $(LDFLAGS) $(libbj_OBJ) -o $@
 

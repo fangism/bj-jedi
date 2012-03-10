@@ -4,6 +4,7 @@
 #include <sstream>
 #include <algorithm>
 #include <iomanip>
+#include <iterator>
 #include <numeric>		// for std::accumulate
 #include <cstdio>
 #include <cstdlib>
@@ -25,6 +26,7 @@ typedef	util::command_registry<GraderCommand>		grader_command_registry;
 using std::cerr;
 using std::endl;
 using std::ostringstream;
+using std::ostream_iterator;
 using std::fill;
 using std::setw;
 using std::accumulate;
@@ -40,96 +42,6 @@ using util::Command;
 using util::CommandStatus;
 using util::string_list;
 using util::strings::string_to_num;
-
-//=============================================================================
-// clas grader::statistics method declarations
-
-grader::statistics::statistics() :
-	initial_bankroll(0.0),
-	min_bankroll(0.0),
-	max_bankroll(0.0),
-	bankroll(0.0),
-	initial_bets(0.0),
-	total_bets(0.0),
-	hands_played(0) {
-	initial_state_histogram_type::iterator
-		i(initial_state_histogram.begin()),
-		e(initial_state_histogram.end());
-	for ( ; i!=e; ++i) {
-		fill(i->begin(), i->end(), 0);
-	}
-}
-
-//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-void
-grader::statistics::initialize_bankroll(const double b) {
-	initial_bankroll = b;
-	min_bankroll = b;
-	max_bankroll = b;
-	bankroll = b;
-}
-
-//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/**
-	Update bankroll watermarks.
- */
-void
-grader::statistics::compare_bankroll(void) {
-	if (bankroll < min_bankroll)
-		min_bankroll = bankroll;
-	else if (bankroll > max_bankroll)
-		max_bankroll = bankroll;
-}
-
-//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/**
-	Print all statistics.
- */
-ostream&
-grader::statistics::dump(ostream& o, const play_map& play) const {
-	o << "initial bankroll: " << initial_bankroll << endl;
-	o << "min bankroll: " << min_bankroll << endl;
-	o << "max bankroll: " << max_bankroll << endl;
-	o << "current bankroll: " << bankroll << endl;
-	o << "hands played: " << hands_played << endl;
-	o << "initial bets: " << initial_bets << endl;
-	o << "total bets: " << total_bets << endl;
-{
-	dealer_reveal_histogram_type vtotals;
-	fill(vtotals.begin(), vtotals.end(), 0);
-	o << "initial deal histogram: {" << endl;
-	o << "\tP\\D\t";
-	size_t j = 0;
-	for ( ; j<card_values; ++j) {
-		const size_t k = reveal_print_ordering[j];
-		o << "   " << card_name[k];
-//		o << '(' << k << ')';
-	}
-	o << "\ttotal" << endl;
-	for (j=0; j<p_action_states; ++j) {
-		o << '\t' << play.player_hit[j].name << '\t';
-		const dealer_reveal_histogram_type&
-			row(initial_state_histogram[j]);
-		size_t i = 0;
-		for ( ; i<card_values; ++i) {
-			const size_t k = reveal_print_ordering[i];
-			o << setw(4) << row[k];
-			vtotals[i] += row[k];
-		}
-		o << '\t' << accumulate(row.begin(), row.end(), 0) << endl;
-	}
-	o << "\n\ttotal\t";
-	for (j=0; j<card_values; ++j) {
-		const size_t k = reveal_print_ordering[j];
-		o << setw(4) << vtotals[j];
-	}
-	o << '\t' << accumulate(vtotals.begin(), vtotals.end(), 0) << endl;
-	o << '}' << endl;
-}
-	return o;
-}
-
-// TODO: save, load
 
 //=============================================================================
 // class grader method definitions
@@ -721,6 +633,15 @@ Exit::main(grader& g, const string_list& args) {
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+DECLARE_GRADER_COMMAND_CLASS(Echo, "echo", ": print arguments")
+int
+Echo::main(grader& g, const string_list& args) {
+	copy(++args.begin(), args.end(), ostream_iterator<string>(g.ostr, " "));
+	g.ostr << endl;
+	return CommandStatus::NORMAL;
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 DECLARE_GRADER_COMMAND_CLASS(Variation, "variation", ": show rule variations")
 int
 Variation::main(grader& g, const string_list& args) {
@@ -787,21 +708,42 @@ default:
 // can't configure here
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+DECLARE_GRADER_COMMAND_CLASS(Deposit, "deposit",
+		"[amount] : add money to bankroll")
+int
+Deposit::main(grader& g, const string_list& args) {
+switch (args.size()) {
+case 2: {
+	double diff;
+	if (string_to_num(args.back(), diff)) {
+		g.ostr << "Error: invalid real value." << endl;
+		return CommandStatus::BADARG;
+	}
+	if (diff < 0.0) {
+		cerr << "Error: value must be >= 0.0" << endl;
+		return CommandStatus::BADARG;
+	}
+	g.stats.deposit(diff);
+	break;
+}
+default:
+	g.ostr << "usage: " << name << ' ' << brief << endl;
+	return CommandStatus::SYNTAX;
+}
+	return CommandStatus::NORMAL;
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 DECLARE_GRADER_COMMAND_CLASS(Status, "status", ": show bankroll and bet amount")
 int
 Status::main(grader& g, const string_list&) {
-#if 0
-	const double br = g.get_bankroll();
-	ostr << "bankroll: " << br << ", bet: " << g.bet << endl;
-#else
 	g.status(g.ostr);
-#endif
 	return CommandStatus::NORMAL;
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 DECLARE_GRADER_COMMAND_CLASS(Count, "count", ": show card counts")
-DECLARE_GRADER_COMMAND_CLASS(Count2, "C", ": show card counts")
+DECLARE_GRADER_COMMAND_CLASS(Count2, "Count", ": show card counts")
 int
 Count::main(grader& g, const string_list&) {
 	g.get_deck_state().show_count(g.ostr);
@@ -810,6 +752,14 @@ Count::main(grader& g, const string_list&) {
 int
 Count2::main(grader& g, const string_list& a) {
 	return Count::main(g, a);
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+DECLARE_GRADER_COMMAND_CLASS(Shuffle, "shuffle", ": shuffle deck")
+int
+Shuffle::main(grader& g, const string_list&) {
+	g.shuffle();
+	return CommandStatus::NORMAL;
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

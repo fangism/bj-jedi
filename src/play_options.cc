@@ -136,6 +136,16 @@ Done::main(play_options&, const string_list&) {
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+DECLARE_OPTION_COMMAND_CLASS(Reset, "reset",
+	": reset to default play options")
+int
+Reset::main(play_options& p, const string_list&) {
+	static const play_options default_options;
+	p = default_options;
+	return CommandStatus::NORMAL;
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 DECLARE_OPTION_COMMAND_CLASS(Done2, "quit",
 	": finish and return")
 int

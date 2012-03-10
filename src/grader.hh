@@ -10,6 +10,7 @@
 #include "strategy.hh"
 #include "blackjack.hh"
 #include "deck_state.hh"
+#include "statistics.hh"
 #include "hand.hh"
 
 namespace blackjack {
@@ -80,65 +81,6 @@ private:
 	size_t					dealer_hole;
 
 public:
-	/**
-		Collection of general game-play options, 
-		feedback and display settings.  
-		Options that affect the mathematics should belong in
-		the variation struct.
-		Any options that don't affect the mathematical outcomes
-		may go in here.  
-	 */
-
-	// should privatize/protect some members...
-	struct statistics {
-		double				initial_bankroll;
-		double				min_bankroll;
-		double				max_bankroll;
-		double				bankroll;
-		/// total amount of money risked on initial hands
-		double				initial_bets;
-		/// total amount of money risked, including splits/doubles
-		double				total_bets;
-		/// total count of initial deals (not counting splits)
-		size_t				hands_played;
-		// spread of initial hands vs. dealer-reveal (matrix)
-		// initial edges -- computed on first deal (pre-peek)
-		typedef array<size_t, card_values>	
-						dealer_reveal_histogram_type;
-		typedef	array<dealer_reveal_histogram_type, p_action_states>
-						initial_state_histogram_type;
-		initial_state_histogram_type	initial_state_histogram;
-		// decision edges -- updated every decision
-		// optimal edges
-		// edge margins
-		// basic vs. dynamic
-		// bet distribution (map)
-		// expectation
-		// lucky draws
-		// bad beats
-		// min true count, max true count
-
-		statistics();			// initial value
-
-		void
-		initialize_bankroll(const double);
-
-		void
-		compare_bankroll(void);
-
-		void
-		register_bet(const double);
-
-		ostream&
-		dump(ostream&, const play_map&) const;
-
-		void
-		save(ostream&) const;
-
-		void
-		load(istream&);
-
-	};	// end struct statistics
 	statistics				stats;
 	// random seed?
 	/**
@@ -146,7 +88,7 @@ public:
 		e.g. true count vs. bet
 	 */
 	struct history {
-	};	//
+	};	// end struct history
 public:
 
 	// other quantities for grading and statistics
@@ -183,6 +125,9 @@ public:
 
 	const strategy&
 	get_dynamic_strategy(void) const { return dynamic_strategy; }
+
+	void
+	shuffle(void) { C.reshuffle(); }
 
 	void
 	update_dynamic_strategy(void);
