@@ -73,6 +73,10 @@ struct play_options {
 		wrong-move notifications.  
 	 */
 	bool				show_edges;
+	/**
+		Let computer automatically play optimally.
+	 */
+	bool				auto_play;
 
 	/// size of current bet (convert from integer)
 	double				bet;

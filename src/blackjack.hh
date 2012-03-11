@@ -22,10 +22,11 @@ using cards::deck_distribution;
 using cards::deck_count_type;
 using cards::state_machine;
 
+// defined in grader.hh
 extern
 player_choice
 prompt_player_action(istream&, ostream&,
-	const bool d, const bool p, const bool r);
+	const bool d, const bool p, const bool r, const bool a = false);
 
 extern
 const char* action_names[];

@@ -165,7 +165,7 @@ private:
 	ostream&
 	dump_situation(const size_t) const;
 
-	pair<player_choice, player_choice>
+	pair<expectations, expectations>
 	assess_action(const size_t, const size_t, ostream&, 
 		const bool, const bool, const bool);
  

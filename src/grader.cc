@@ -84,7 +84,12 @@ grader::offer_insurance(const bool pbj) const {
 	do {
 		ostr << prompt << " [ync?!]: ";
 		// istr >> line;
-		getline(istr, line);
+		if (opt.auto_play) {
+			ostr << '!' << endl;
+			line = "!";
+		} else {
+			getline(istr, line);
+		}
 	} while (line.empty() && istr);
 	if (line == "n" || line == "N") {
 		done = true;
@@ -100,6 +105,8 @@ grader::offer_insurance(const bool pbj) const {
 		ostr << "advise: " << (advise ? "yes" : "no") << endl;
 		if (line == "!") {
 			buy_insurance = advise;
+			ostr << (buy_insurance ? "Accepted" : "Declined")
+				<< " insurance." << endl;
 			done = true;
 		}
 	}
@@ -386,8 +393,10 @@ do {
 		C.show_count(ostr);
 	}
 	ostringstream oss;
+	const pair<expectations, expectations>
+		ace(assess_action(ph.state, dealer_reveal, oss, d, p, r));
 	const pair<player_choice, player_choice>
-		acp(assess_action(ph.state, dealer_reveal, oss, d, p, r));
+		acp(ace.first.best(d, p, r), ace.second.best(d, p, r));
 	const player_choice ac =
 		opt.use_dynamic_strategy ? acp.second : acp.first;
 	const player_choice ac2 =
@@ -395,7 +404,7 @@ do {
 	if (opt.always_suggest) {
 		ostr << oss.str() << endl;
 	}
-	pc = prompt_player_action(istr, ostr, d, p, r);
+	pc = prompt_player_action(istr, ostr, d, p, r, opt.auto_play);
 	switch (pc) {
 		// all fall-through to handle_player_action()
 	case STAND:
@@ -412,6 +421,7 @@ do {
 				ostr << "but " << action_names[ac2]
 					<< " is also acceptable." << endl;
 			}
+			// TODO: show edges
 		}
 		}
 		break;
@@ -448,7 +458,7 @@ do {
 	\return best choice based on basic (first)
 		and dynamic strategy (second)
  */
-pair<player_choice, player_choice>
+pair<expectations, expectations>
 grader::assess_action(const size_t ps, const size_t dlr, ostream& o,
 		const bool d, const bool p, const bool r) {
 	// basic:
@@ -484,7 +494,7 @@ if (opt.show_edges) {
 			<< ")";
 	}
 //	o << endl;
-	return std::make_pair(br.first, dr.first);
+	return std::make_pair(be, de);
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -518,9 +528,15 @@ grader::dump_situation(const size_t j) const {
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
+	\param d if double-down is permitted.
+	\param p is splitting is permitted.
+	\param r if surrendering is permitted.
+	\param a if should just automatically play (OPTIM)
+ */
 player_choice
 prompt_player_action(istream& i, ostream& o, 
-		const bool d, const bool p, const bool r) {
+		const bool d, const bool p, const bool r, const bool a) {
 	player_choice c = NIL;
 do {
 //	int ch;
@@ -532,11 +548,17 @@ do {
 		if (p) o << 'p';
 		if (r) o << 'r';
 		o << "c?!]> ";
+		if (!a) {
 //		ch = getchar();
 		// TODO: ncurses getch();
 		// i >> line;
 		getline(i, line);
-	} while (line.empty() && i);
+		}
+	} while (line.empty() && i && !a);
+	if (a) {
+		o << '!' << endl;
+		return OPTIM;
+	}
 	switch (line[0])
 //	switch (ch)
 	{
@@ -806,6 +828,24 @@ int
 DealUntilShuffle::main(grader& g, const string_list&) {
 	while (!g.deal_hand()) { }
 	return CommandStatus::NORMAL;
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+DECLARE_GRADER_COMMAND_CLASS(AutoPlay, "auto-play", 
+	"[N] : automatically play optimally N hands")
+int
+AutoPlay::main(grader& g, const string_list& args) {
+	const value_saver<bool> __tmp__(g.opt.auto_play, true);
+	return Deal::main(g, args);
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+DECLARE_GRADER_COMMAND_CLASS(AutoPlayUntilShuffle, "auto-play-until-shuffle", 
+	"[N] : automatically play until next reshuffle")
+int
+AutoPlayUntilShuffle::main(grader& g, const string_list& args) {
+	const value_saver<bool> __tmp__(g.opt.auto_play, true);
+	return DealUntilShuffle::main(g, args);
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

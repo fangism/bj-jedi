@@ -44,8 +44,9 @@ play_options::play_options() :
 	always_show_count_at_action(false),
 	always_show_count_at_hand(false),
 	always_suggest(false),
-	notify_when_wrong(false),
+	notify_when_wrong(true),
 	show_edges(true),
+	auto_play(false),
 	bet(1.0) {
 }
 
@@ -63,6 +64,7 @@ play_options::dump(ostream& o) const {
 	o << "always suggest best action: " << yn(always_suggest) << endl;
 	o << "notify when wrong: " << yn(notify_when_wrong) << endl;
 	o << "show edge values with analysis: " << yn(show_edges) << endl;
+	o << "automatically play optimally: " << yn(auto_play) << endl;
 	o << "current bet: " << bet << endl;
 	return o;
 }
@@ -247,6 +249,10 @@ DEFINE_OPTION_MEMBER_COMMAND(
 DEFINE_OPTION_MEMBER_COMMAND(
 	show_edges, "show-edges",
 	"[bool]: show mathematical edges with analysis")
+
+DEFINE_OPTION_MEMBER_COMMAND(
+	auto_play, "auto-play",
+	"[bool]: automatically play optimally")
 
 #undef	DECLARE_OPTION_COMMAND_CLASS
 }	// end namespace option_commands
