@@ -102,7 +102,7 @@ public:
 	ostream&
 	status(ostream&) const;
 
-	void
+	bool
 	deal_hand(void);
 
 	const double&
@@ -159,7 +159,7 @@ private:
 	bool
 	play_out_hand(const size_t);
 
-	void
+	bool
 	auto_shuffle(void);
 
 	ostream&

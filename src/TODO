@@ -31,8 +31,7 @@ to track every situation and decision?
 }
 
 commands:
-deal-until-reshuffle
-deal [N] hands
+auto-play [N]
 play-option::TMI: too much information
 
 simulation:

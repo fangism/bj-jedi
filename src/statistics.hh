@@ -27,6 +27,9 @@ struct statistics {
 	double				total_bets;
 	/// total count of initial deals (not counting splits)
 	size_t				hands_played;
+
+	// won hands, lost hands, won doubles, lost doubles
+
 	// spread of initial hands vs. dealer-reveal (matrix)
 	// initial edges -- computed on first deal (pre-peek)
 	typedef array<size_t, card_values>	
@@ -34,6 +37,8 @@ struct statistics {
 	typedef	array<dealer_reveal_histogram_type, p_action_states>
 					initial_state_histogram_type;
 	initial_state_histogram_type	initial_state_histogram;
+	// TODO: histogram of won/lost/pushed hands, situations?
+
 	// decision edges -- updated every decision
 	// optimal edges
 	// edge margins
@@ -51,6 +56,11 @@ struct statistics {
 
 	void
 	compare_bankroll(void);
+
+	bool
+	broke(void) const {
+		return bankroll <= 0.0;
+	}
 
 	void
 	deposit(const double);

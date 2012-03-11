@@ -134,9 +134,11 @@ grader::reveal_hole_card(const size_t hole_card) {
 	Play a hand of blackjack.
 	Player hands, dealer state, hole cards, etc...
 	could all just be local variables?
+	\return true if reshuffled.
  */
-void
+bool
 grader::deal_hand(void) {
+	ostr << "---------------- new hand ----------------" << endl;
 	player_hands.clear();
 	if (opt.always_show_count_at_hand) {
 		C.show_count(ostr);
@@ -286,29 +288,31 @@ for (j=0; j<player_hands.size(); ++j) {
 }
 	++stats.hands_played;
 	stats.compare_bankroll();
-	auto_shuffle();
+	const bool ret = auto_shuffle();
 	if (opt.always_show_status) {
 		status(ostr);
 	}
 //	only update_dynamic_strategy() when needed or requested
 	// update bet min/max watermark
-	// update bankroll min/max watermark
+	return ret;
 }	// end grader::deal_hand
 
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-void
+bool
 grader::auto_shuffle(void) {
 	bool b = false;
 	if (opt.continuous_shuffle) {
 		C.reshuffle();
 		b = true;
-	} else if (C.reshuffle_auto()) {
-		b = true;
+	} else {
+		b = C.reshuffle_auto();
 	}
 	if (b) {
-		ostr << "*** Reshuffling... ***" << endl;
+		ostr << "**************** Reshuffling... ****************"
+			<< endl;
 	}
+	return b;
 }
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
@@ -616,7 +620,7 @@ DECLARE_GRADER_COMMAND_CLASS(Quit, "quit", ": leave table, return to lobby")
 int
 Quit::main(grader& g, const string_list&) {
 	const double b = g.get_bankroll();
-	if (b > 0.0) {
+	if (!g.stats.broke()) {
 		g.ostr << "You collect your remaining chips from the table ("
 			<< b << ") and return to the lobby." << endl;
 	} else {
@@ -767,17 +771,40 @@ Shuffle::main(grader& g, const string_list&) {
 	Also begin with 'D' to more easily disambiguate from other 
 	d-commands.
  */
-DECLARE_GRADER_COMMAND_CLASS(Deal, "deal", ": deal next hand")
-DECLARE_GRADER_COMMAND_CLASS(Deal2, "Deal", ": deal next hand")
+DECLARE_GRADER_COMMAND_CLASS(Deal, "deal", "[N]: deal next hand(s)")
+DECLARE_GRADER_COMMAND_CLASS(Deal2, "Deal", "[N]: deal next hand(s)")
 int
-Deal::main(grader& g, const string_list&) {
-	g.deal_hand();
+Deal::main(grader& g, const string_list& args) {
+	size_t N = 1;
+if (args.size() > 1) {
+	if (string_to_num(args.back(), N)) {
+		g.ostr << "Error: invalid count." << endl;
+		return CommandStatus::BADARG;
+	}
+}
+	size_t i = 0;
+	for ( ; i<N; ++i) {
+		g.deal_hand();
+		// if broke, exit early
+		if (g.stats.broke()) {
+			g.ostr << "Out of cash after " << i+1 << " hands!"
+				<< endl;
+		}
+	}
 	return CommandStatus::NORMAL;
 }
 
 int
-Deal2::main(grader& g, const string_list&) {
-	g.deal_hand();
+Deal2::main(grader& g, const string_list& args) {
+	return Deal::main(g, args);
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+DECLARE_GRADER_COMMAND_CLASS(DealUntilShuffle, "deal-until-shuffle",
+	": keep dealing hands until deck is reshuffled")
+int
+DealUntilShuffle::main(grader& g, const string_list&) {
+	while (!g.deal_hand()) { }
 	return CommandStatus::NORMAL;
 }
 
