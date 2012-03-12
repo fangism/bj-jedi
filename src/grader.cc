@@ -174,7 +174,7 @@ grader::deal_hand(void) {
 	if (pick_cards) {
 		ostr << "choose dealer hole-card." << endl;
 	}
-	++stats.initial_state_histogram[pih.state][dealer_hand.state];
+	++stats.initial_state_histogram[pih.state][dealer_reveal];
 	// except for European: no hole card
 	// TODO: option-draw hole card 2-stage prompt
 	// if peek, ask if dealer has blackjack
@@ -415,10 +415,10 @@ do {
 		handle_player_action(j, pc);
 		if (opt.notify_when_wrong) {
 		if (pc != ac) {
-			ostr << "optimal choice was: " <<
+			ostr << "*** optimal choice was: " <<
 				action_names[ac] << endl;
 			if (pc == ac2) {
-				ostr << "but " << action_names[ac2]
+				ostr << "*** but " << action_names[ac2]
 					<< " is also acceptable." << endl;
 			}
 			// TODO: show edges
