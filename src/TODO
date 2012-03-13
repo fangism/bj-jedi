@@ -8,18 +8,23 @@ standard analysis:
 analyze Blackjack Switch
 	when to switch (tables)
 
+BUGS: (run out of cards?)
+Dealer plays...
+deck_state.cc:120: failed assertion `cards[r]'
+Abort
+
 simulator/analyzer:
 I/O: option to read raw character w/o hitting return (ncurses UI)
 logging
 track statistics
-gameplay options
 preset options for rules
 save/restore state/accounts
 define/use API for hooking up custom strategies
 define/use API for hooking up different UIs (stdio, ncurses)
-when hole card is not revealed, replace it into deck (don't count as drawn)
 
 test suite!
+
+full-deck, distinguishing TJQK
 
 basic/dynamic-strategy various dump commands
 
@@ -28,11 +33,14 @@ show overall edge given exact count (accumulate)
 
 struct history {
 to track every situation and decision?
+situations to review? bookmark as a player-choice option
+auto-save "wrong" decisions
 }
 
 commands:
-auto-play [N]
 play-option::TMI: too much information
+
+quiz count: after every hand, or at reshuffle time
 
 simulation:
 add robot players

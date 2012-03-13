@@ -8,6 +8,7 @@
 #include <numeric>		// for std::accumulate
 #include <cstdio>
 #include <cstdlib>
+#include <ctime>
 #include "grader.hh"
 #include "play_options.hh"
 #include "util/string.tcc"	// for string_to_num
@@ -419,9 +420,17 @@ do {
 				action_names[ac] << endl;
 			if (pc == ac2) {
 				ostr << "*** but " << action_names[ac2]
-					<< " is also acceptable." << endl;
+					<< " is also acceptable from " <<
+					(opt.use_dynamic_strategy ? "basic" : "dynamic")
+					<< " strategy." << endl;
+				// TODO: show count?
 			}
-			// TODO: show edges
+			if (opt.show_edges) {
+				ostr << "\tedges:\tbasic\tdynamic" << endl;
+				expectations::dump_choice_actions_2(ostr,
+					ace.first, ace.second,
+					-var.surrender_penalty, d, p, r, "\t");
+			}
 		}
 		}
 		break;
@@ -481,9 +490,9 @@ grader::assess_action(const size_t ps, const size_t dlr, ostream& o,
 	// ostr << "dynamic strategy recommends: " <<
 	//	action_names[dr.first] << endl;
 if (opt.show_edges) {
-	o << "edges:\tbasic\tdynamic" << endl;
+	o << "\tedges:\tbasic\tdynamic" << endl;
 	expectations::dump_choice_actions_2(o,
-		be, de, -var.surrender_penalty, d, p, r);
+		be, de, -var.surrender_penalty, d, p, r, "\t");
 }
 	o << "advise:\t" << action_names[br.first]
 		<< '\t' << action_names[dr.first];

@@ -117,6 +117,10 @@ deck_state::count(const size_t c) {
 void
 deck_state::magic_draw(const size_t r) {
 	// TODO: safe-guard against drawing non-existent
+	if (!cards[r]) {
+		show_count(cerr);
+		cerr << "FATAL: attempt to draw card " << card_name[r] << endl;
+	}
 	assert(cards[r]);
 	++used_cards[r];
 	--cards[r];

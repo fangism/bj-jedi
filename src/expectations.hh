@@ -82,7 +82,7 @@ struct expectations {
 	ostream&
 	dump_choice_actions_2(ostream&, const expectations&,
 		const expectations&, const edge_type&, 
-		const bool, const bool, const bool);
+		const bool, const bool, const bool, const char* = NULL);
 
 };	// end struct expectations
 

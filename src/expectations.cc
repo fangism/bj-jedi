@@ -133,17 +133,19 @@ ostream&
 expectations::dump_choice_actions_2(ostream& o,
 		const expectations& e1, const expectations& e2,
 		const edge_type& surr, 
-		const bool d, const bool p, const bool r) {
-	o << "stand: " << setprecision(4) << e1.stand << '\t' << e2.stand
-	<< "\nhit  : " << e1.hit << '\t' << e2.hit;
+		const bool d, const bool p, const bool r, 
+		const char* _indent) {
+	const char* indent = _indent ? _indent : "";
+	o << indent << "stand: " << setprecision(4) << e1.stand << '\t' << e2.stand
+		<< '\n' << indent << "hit  : " << e1.hit << '\t' << e2.hit;
 	if (d) {
-		o << "\ndbl  : " << e1.double_down << '\t' << e2.double_down;
+		o << '\n' << indent << "dbl  : " << e1.double_down << '\t' << e2.double_down;
 	}
 	if (p) {
-		o << "\nsplit: " << e1.split << '\t' << e2.split;
+		o << '\n' << indent << "split: " << e1.split << '\t' << e2.split;
 	}
 	if (r) {
-		o << "\nsurr.: " << surr << '\t' << surr;
+		o << '\n' << indent << "surr.: " << surr << '\t' << surr;
 	}
 	return o << endl;
 }

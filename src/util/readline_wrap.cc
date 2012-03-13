@@ -1,7 +1,7 @@
 /**
 	\file "util/readline_wrap.cc"
 	Simplified wrapper implementation for readline.  
-	$Id: readline_wrap.cc,v 1.1 2012/02/18 21:13:39 fang Exp $
+	$Id: readline_wrap.cc,v 1.2 2012/03/13 00:13:55 fang Exp $
 	TODO: for editline/histedit, set H_SETUNIQUE flag.
  */
 
@@ -10,6 +10,7 @@
 
 #include <iostream>
 #include <cstdio>			// for stdin, feof
+#include <cstdlib>			// for free()
 #include "util/readline_wrap.hh"
 #include "util/readline.h"
 #include "util/string.hh"
