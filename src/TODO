@@ -24,8 +24,6 @@ define/use API for hooking up different UIs (stdio, ncurses)
 
 test suite!
 
-full-deck, distinguishing TJQK
-
 basic/dynamic-strategy various dump commands
 
 options:
@@ -45,3 +43,9 @@ quiz count: after every hand, or at reshuffle time
 
 simulation:
 add robot players
+option for infinite deck (replace every card)
+	almost the same as continuous shuffle
+
+paper:
+write an academic paper on results
+	second-order covariant sensitivity analysis
