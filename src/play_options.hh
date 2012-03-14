@@ -77,7 +77,16 @@ struct play_options {
 		Let computer automatically play optimally.
 	 */
 	bool				auto_play;
-
+	/**
+		If true, show face cards by symbol, not always just 'T' for 10.
+		Adds a little bit more realism.
+	 */
+	bool				face_cards;
+	/**
+		If true, show separate counts for face cards and 10s.
+		Not particularly useful.
+	 */
+	bool				count_face_cards;
 	/// size of current bet (convert from integer)
 	double				bet;
 

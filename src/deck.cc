@@ -6,26 +6,30 @@
 namespace cards {
 //-----------------------------------------------------------------------------
 // enumeration-dependent interface
-const char card_name[] = "A23456789T";
+const char card_name[card_symbols+1] = "A23456789TJQK";
 
 // really should just be a public function
 size_t
 card_index(const char c) {
 	if (std::isalpha(c)) {
-		if (c == 'A' || c == 'a') {
-			return ACE;
-		} else if (c == 'T' || c == 't'
-			|| c == 'J' || c == 'j'
-			|| c == 'Q' || c == 'q'
-			|| c == 'K' || c == 'k'
-			) {
-			return TEN;
+		switch (std::toupper(c)) {
+		case 'A': return ACE;
+		case 'T': return TEN;
+		case 'J': return JACK;
+		case 'Q': return QUEEN;
+		case 'K': return KING;
+		default: break;
 		}
 	} else if (c >= '2' && c <= '9') {
 		return c -'1';
 	}
 	return size_t(-1);
 }
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// maps JACK-KING to TEN
+const size_t
+card_value_map[card_symbols] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 9, 9, 9 };
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
@@ -38,6 +42,10 @@ card_index(const char c) {
 const size_t
 reveal_print_ordering[card_values] =
 	{ 1, 2, 3, 4, 5, 6, 7, 8, TEN, ACE};
+
+const size_t
+extended_reveal_print_ordering[card_symbols] =
+	{ 1, 2, 3, 4, 5, 6, 7, 8, TEN, JACK, QUEEN, KING, ACE};
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 static const size_t __standard_deck_count_reduced[card_values] = {

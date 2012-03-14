@@ -132,6 +132,9 @@ public:
 	void
 	update_dynamic_strategy(void);
 
+	void
+	show_count(void) const;
+
 	int
 	main(void);
 

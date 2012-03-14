@@ -37,6 +37,7 @@ using cards::card_name;
 using cards::standard_deck_distribution;
 using cards::card_index;
 using cards::reveal_print_ordering;
+using cards::card_value_map;
 
 using util::value_saver;
 using util::Command;
@@ -54,7 +55,11 @@ grader::grader(const variation& v, play_options& p, istream& i, ostream& o) :
 		player_hands(), dealer_hand(play), 
 		stats() {
 	player_hands.reserve(16);	// to prevent realloc
+#if FACE_CARDS
+	const extended_deck_count_type& d(C.get_card_counts());
+#else
 	const deck_count_type& d(C.get_card_counts());
+#endif
 	// each call does util::normalize()
 	basic_strategy.set_card_distribution(d);
 	dynamic_strategy.set_card_distribution(d);
@@ -68,8 +73,8 @@ grader::~grader() { }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
-	TODO: automatic dynamic strategy decision, to account for count.
 	Should be based on fraction of 10s vs. insurance payoff.
+	TODO: notify when wrong, based on count!
  */
 bool
 grader::offer_insurance(const bool pbj) const {
@@ -98,7 +103,7 @@ grader::offer_insurance(const bool pbj) const {
 		buy_insurance = true;
 		done = true;
 	} else if (line == "c" || line == "C") {
-		C.show_count(ostr);
+		show_count();
 		ostr << "odds: " << o << " : 1" << endl;
 	} else if (line == "?" || line == "!") {
 		ostr << "odds: " << o << " : 1" << endl;
@@ -113,6 +118,12 @@ grader::offer_insurance(const bool pbj) const {
 	}
 	} while (!done);
 	return buy_insurance;
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+void
+grader::show_count(void) const {
+	C.show_count(ostr, opt.count_face_cards);
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -146,10 +157,14 @@ grader::reveal_hole_card(const size_t hole_card) {
  */
 bool
 grader::deal_hand(void) {
+	if (stats.broke()) {
+		ostr << "Out of cash!  Deposit more money or restart." << endl;
+		return false;
+	}
 	ostr << "---------------- new hand ----------------" << endl;
 	player_hands.clear();
 	if (opt.always_show_count_at_hand) {
-		C.show_count(ostr);
+		show_count();
 	}
 	const double& bet(opt.bet);
 	double& bankroll(stats.bankroll);
@@ -169,18 +184,20 @@ grader::deal_hand(void) {
 		ostr << "choose dealer up-card." << endl;
 	}
 	dealer_reveal = draw_up_card();
+	const size_t dealer_reveal_value = card_value_map[dealer_reveal];
 	dealer_hand.initial_card_dealer(dealer_reveal);
 	// TODO: first query whether hold card makes dealer blackjack
 	// so prompt for this after checking, if peeking for blackjack
 	if (pick_cards) {
 		ostr << "choose dealer hole-card." << endl;
 	}
-	++stats.initial_state_histogram[pih.state][dealer_reveal];
+	++stats.initial_state_histogram[pih.state][dealer_reveal_value];
 	// except for European: no hole card
 	// TODO: option-draw hole card 2-stage prompt
 	// if peek, ask if dealer has blackjack
 	// if not, then draw among remaining non-blackjack cards
 	const size_t hole_card = draw_hole_card();
+	const size_t hole_card_value = card_value_map[hole_card];
 	ostr << "dealer: " << card_name[dealer_reveal] << endl;
 	// TODO: if early_surrender (rare) ...
 	// prompt for insurance
@@ -198,7 +215,7 @@ grader::deal_hand(void) {
 		// determine change in bankroll
 		// check for blackjack for player
 		const double half_bet = bet *0.5;
-		if (hole_card == TEN) {
+		if (hole_card_value == TEN) {
 			end = true;
 			reveal_hole_card(hole_card);
 			ostr << "Dealer has blackjack." << endl;
@@ -222,7 +239,7 @@ grader::deal_hand(void) {
 			// hole card is known to be NOT a TEN
 		}
 		}	// peek_on_Ace
-	} else if (dealer_reveal == TEN) {
+	} else if (dealer_reveal_value == TEN) {
 		pih.dump_player(ostr) << endl;
 		if (var.peek_on_10) {
 		if (hole_card == ACE) {
@@ -391,11 +408,12 @@ do {
 	// only first hand is surrenderrable, normally
 	dump_situation(j);
 	if (opt.always_show_count_at_action) {
-		C.show_count(ostr);
+		show_count();
 	}
 	ostringstream oss;
 	const pair<expectations, expectations>
-		ace(assess_action(ph.state, dealer_reveal, oss, d, p, r));
+		ace(assess_action(ph.state, card_value_map[dealer_reveal],
+			oss, d, p, r));
 	const pair<player_choice, player_choice>
 		acp(ace.first.best(d, p, r), ace.second.best(d, p, r));
 	const player_choice ac =
@@ -435,7 +453,7 @@ do {
 		}
 		break;
 	case COUNT:
-		C.show_count(ostr);
+		show_count();
 		break;
 	case HINT:
 		ostr << oss.str() << endl;
@@ -494,7 +512,7 @@ if (opt.show_edges) {
 	expectations::dump_choice_actions_2(o,
 		be, de, -var.surrender_penalty, d, p, r, "\t");
 }
-	o << "advise:\t" << action_names[br.first]
+	o << "\tadvise:\t" << action_names[br.first]
 		<< '\t' << action_names[dr.first];
 	if (br.first != dr.first) {
 		// alert when dynamic strategy is different from basic
@@ -781,7 +799,7 @@ DECLARE_GRADER_COMMAND_CLASS(Count, "count", ": show card counts")
 DECLARE_GRADER_COMMAND_CLASS(Count2, "Count", ": show card counts")
 int
 Count::main(grader& g, const string_list&) {
-	g.get_deck_state().show_count(g.ostr);
+	g.show_count();
 	return CommandStatus::NORMAL;
 }
 int
@@ -818,8 +836,11 @@ if (args.size() > 1) {
 		g.deal_hand();
 		// if broke, exit early
 		if (g.stats.broke()) {
-			g.ostr << "Out of cash after " << i+1 << " hands!"
-				<< endl;
+			g.ostr << "Out of cash";
+			if (N > 1) {
+				g.ostr << " after " << i+1 << " hands";
+			}
+			g.ostr << '!' << endl;
 		}
 	}
 	return CommandStatus::NORMAL;

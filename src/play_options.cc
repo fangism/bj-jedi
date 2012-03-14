@@ -47,12 +47,16 @@ play_options::play_options() :
 	notify_when_wrong(true),
 	show_edges(true),
 	auto_play(false),
+	face_cards(true),
+	count_face_cards(false),
 	bet(1.0) {
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ostream&
 play_options::dump(ostream& o) const {
+	o << "face cards: " << yn(face_cards) << endl;
+	o << "count face cards separately: " << yn(count_face_cards) << endl;
 	o << "continuous shuffle: " << yn(continuous_shuffle) << endl;
 	o << "user picks cards: " << yn(pick_cards) << endl;
 	o << "use dynamic strategy: " << yn(use_dynamic_strategy) << endl;
@@ -211,6 +215,12 @@ DECLARE_PRINTER_MAP(play_options)
         DEFINE_GENERIC_OPTION_MEMBER_COMMAND(play_options, mem, str, desc)
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+DEFINE_OPTION_MEMBER_COMMAND(
+	face_cards, "face-cards", "[bool]: show face cards symbols (not just 'T')")
+
+DEFINE_OPTION_MEMBER_COMMAND(
+	count_face_cards, "count-face-cards", "[bool]: count face cards separately")
+
 DEFINE_OPTION_MEMBER_COMMAND(
 	pick_cards, "cards-pick", "[bool]: user chooses card or randomly draw")
 

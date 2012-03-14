@@ -10,8 +10,8 @@ ARCH_FLAGS =
 # for amusement
 # ARCH_FLAGS += -arch ppc
 # ARCH_FLAGS += -arch i386
-CXX = g++-fsf-4.7
-# CXX = g++
+# CXX = g++-fsf-4.7
+CXX = g++
 # CXX = clang++
 CXXCPPFLAGS = -I. -I/sw/include
 # CXXCPPFLAGS = -I. -I/sw64/include

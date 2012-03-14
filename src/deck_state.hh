@@ -10,8 +10,13 @@ class variation;
 using std::istream;
 using std::ostream;
 using cards::probability_vector;
+#if FACE_CARDS
+using cards::extended_deck_distribution;
+using cards::extended_deck_count_type;
+#else
 using cards::deck_distribution;
 using cards::deck_count_type;
+#endif
 using cards::state_machine;
 
 /**
@@ -31,24 +36,37 @@ using cards::state_machine;
 	because the value is unknown.
 	When it is the dealer's turn to play, the hole card is
 	then revealed and the count is updated.
+	TODO: with_replacement mode to simulate infinite deck.
  */
 class deck_state {
+public:
+#if FACE_CARDS
+	typedef	extended_deck_count_type	_deck_count_type;
+	typedef	extended_deck_distribution	_deck_distribution;
+#else
+	typedef	deck_count_type			_deck_count_type;
+	typedef	deck_distribution		_deck_distribution;
+#endif
+private:
+	/**
+		This is needed to replenish deck when reshuffling.
+	 */
 	size_t					num_decks;
 	/**
 		Already seen cards (discarded)
 	 */
-	deck_count_type				used_cards;
+	_deck_count_type			used_cards;
 	/**
 		Sequence of integers representing count of cards 
 		remaining in deck or shoe.
 	 */
-	deck_count_type				cards;
+	_deck_count_type			cards;
 #if DECK_PROBABILITIES
 	/**
 		This is updated everytime cards change, e.g. when
 		a single card is drawn.
 	 */
-	deck_distribution			card_probabilities;
+	_deck_distribution			card_probabilities;
 #endif
 	/**
 		Dealer is dealt one hole card (face-down).
@@ -78,13 +96,13 @@ public:
 //	void
 //	count(const size_t);
 
-	const deck_count_type&
+	const _deck_count_type&
 	get_card_counts(void) const {
 		return cards;		// remaining
 	}
 
 #if DECK_PROBABILITIES
-	const deck_distribution&
+	const _deck_distribution&
 	get_card_probabilities(void) const {
 		return card_probabilities;
 	}
@@ -134,7 +152,17 @@ public:
 	reshuffle_auto(void);
 
 	ostream&
-	show_count(ostream&) const;
+	show_count(ostream&, const bool) const;
+
+	ostream&
+	show_simple_count(ostream& o) const {
+		return show_count(o, false);
+	}
+
+	ostream&
+	show_extended_count(ostream& o) const {
+		return show_count(o, true);
+	}
 
 #if DECK_PROBABILITIES
 	void

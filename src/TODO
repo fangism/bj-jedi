@@ -30,6 +30,7 @@ basic/dynamic-strategy various dump commands
 
 options:
 show overall edge given exact count (accumulate)
+support different counting schemes
 
 struct history {
 to track every situation and decision?

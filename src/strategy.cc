@@ -79,6 +79,17 @@ strategy::set_card_distribution(const deck_count_type& o) {
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+#if FACE_CARDS
+void
+strategy::set_card_distribution(const extended_deck_count_type& o) {
+	deck_count_type t;
+	copy(o.begin(), o.begin() +t.size(), t.begin());	// convert int to real
+	t[TEN] += o[cards::JACK] +o[cards::QUEEN] +o[cards::KING];
+	set_card_distribution(t);
+}
+#endif
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
 	Compute the initial spread of player states.  
 	Exclude the player's initial "blackjack" state because
