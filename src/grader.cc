@@ -233,6 +233,7 @@ grader::deal_hand(void) {
 				bankroll -= half_bet;
 			}
 			if (pbj) {
+				reveal_hole_card(hole_card);
 				bankroll += var.bj_payoff *bet;
 			}
 			// else keep playing
@@ -254,12 +255,16 @@ grader::deal_hand(void) {
 		} else {
 			ostr << "No dealer blackjack." << endl;
 			// hole card is known to be NOT an ACE
+			if (pbj) {
+				reveal_hole_card(hole_card);
+				bankroll += var.bj_payoff *bet;
+			}
 		}
 		}	// peek_on_10
 	} else if (pbj) {
 		// pay off player's blackjack
-		// end = true;
 		pih.dump_player(ostr) << endl;
+		reveal_hole_card(hole_card);	// calls dump_dealer
 		bankroll += var.bj_payoff *bet;
 	}
 	// play ends if either dealer or player had blackjack (and was peeked)
@@ -856,7 +861,7 @@ DECLARE_GRADER_COMMAND_CLASS(DealUntilShuffle, "deal-until-shuffle",
 	": keep dealing hands until deck is reshuffled")
 int
 DealUntilShuffle::main(grader& g, const string_list&) {
-	while (!g.deal_hand()) { }
+	while (!g.deal_hand() && !g.stats.broke()) { }
 	return CommandStatus::NORMAL;
 }
 
