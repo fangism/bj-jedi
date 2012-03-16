@@ -1,0 +1,58 @@
+Welcome to The BlackJack Trainer!
+You walk into in the lobby a casino.
+Type 'help' or '?' for a list of lobby commands.
+lobby> help
+Available commands: 
+? : list all lobby commands
+echo : print arguments
+exit : exit program
+help : list all lobby commands
+options [cmd] : (menu) game-play options
+play : start playing blackjack
+quit : exit program
+variation [cmd] : (menu) rule variations
+Menu commands run without arguments will enter the menu.
+Anything that follows a menu command will be issued as a command to the
+menu without entering the menu.
+lobby> var show-all
+uniquely-matched: variation
+number of decks: 6
+maximum penetration: 0.75
+dealer soft 17: hits
+player early surrender: no
+player late surrender: yes
+dealer peek on 10: yes
+dealer peek on A: yes
+player loses ties: no
+player wins ties: no
+player may double-down on 9: yes
+player may double-down on 10: yes
+player may double-down on 11: yes
+player may double-down on other: yes
+player double after split: yes
+player may split: yes
+player may re-split: no
+player receives only one card on each split ace: yes
+dealer 22 pushes against player: no
+blackjack pays: 1.5
+insurance pays: 2
+surrender penalty: 0.5
+double-down multiplier: 2
+lobby> opt show-all
+uniquely-matched: options
+face cards: yes
+count face cards separately: no
+continuous shuffle: no
+user picks cards: no
+use dynamic strategy: yes
+dealer plays only vs. live player: yes
+always show bankroll and bet: yes
+always show count before hand: no
+always show count at action: no
+always suggest best action: no
+notify when wrong: yes
+show edge values with analysis: yes
+automatically play optimally: no
+current bet: 1
+lobby> 
+Thanks for playing!

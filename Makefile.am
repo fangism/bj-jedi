@@ -8,8 +8,7 @@
 
 AUTOMAKE_OPTIONS = 1.9 gnu subdir-objects dist-bzip2
 
-SUBDIRS = . src
-# test
+SUBDIRS = . src test
 
 # When to update the libtool script:
 libtool: $(LIBTOOL_DEPS)
@@ -40,7 +39,7 @@ distcheck.log: force
 	-$(MAKE) DISTCHECK_CONFIGURE_FLAGS="$(DISTCHECK_CONFIGURE_FLAGS)" distcheck >> $@.tmp 2>&1
 	-$(MV) $@.tmp $@
 	@$(ECHO) "Tests finished `date`" >> $@
-	tail -n 6 $@
+	$(TAIL) -n 6 $@
 
 # don't include git directories in distribution
 dist-hook:

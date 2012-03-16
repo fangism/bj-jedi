@@ -1,0 +1,4 @@
+*.bj-out
+*.bj-diff
+*.bj-test
+*.autodepend

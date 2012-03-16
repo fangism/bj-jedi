@@ -21,16 +21,19 @@ AC_CANONICAL_HOST
 
 AC_CHECK_PROG([SH], sh, sh)
 AC_PATH_PROG(SH_PATH, sh)
+AC_CHECK_PROG([CHMOD], chmod, chmod)
+AC_CHECK_PROG([DIFF], diff, diff)
+AC_CHECK_PROG([FIND], find, find)
 dnl AC_CHECK_PROG([GREP], grep, grep)
 dnl AC_CHECK_PROG([PRINTF], printf, printf)
 dnl AC_CHECK_PROG([SORT], sort, sort)
 dnl AC_CHECK_PROG([CUT], cut, cut)
 dnl AC_CHECK_PROG([PASTE], paste, paste)
 dnl AC_CHECK_PROG([HEAD], head, head)
-dnl AC_CHECK_PROG([TAIL], tail, tail)
+AC_CHECK_PROG([TAIL], tail, tail)
 dnl AC_CHECK_PROG([TEE], tee, tee)
 dnl AC_CHECK_PROG([TR], tr, tr)
-dnl AC_CHECK_PROG([SED], sed, sed)
+AC_CHECK_PROG([SED], sed, sed)
 dnl AC_CHECK_PROG([TOUCH], touch, touch)
 
 # documentation support, macros efined in "config/documentation.m4"
@@ -346,6 +349,7 @@ ACEOF
 AC_CONFIG_FILES([
 	Makefile
 	src/Makefile
+	test/Makefile
 ])
 dnl AC_CONFIG_FILES([pre-inst-env], [chmod +x pre-inst-env])
 dnl AC_CONFIG_FILES([install_transform.sh], [chmod +x install_transform.sh])
