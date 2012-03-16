@@ -1,6 +1,9 @@
 # "ChangeLog"
 
 2012-03-15	David Fang		<fangism@users.sourceforge.net>
+	Added regression test infrastructure.
+
+2012-03-15	David Fang		<fangism@users.sourceforge.net>
 	Build is autotoolized (autoconf, automake, libtool).
 
 2012-03-14	David Fang		<fangism@users.sourceforge.net>
