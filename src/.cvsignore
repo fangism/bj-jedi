@@ -1,5 +1,13 @@
 *.o
 *.a
+*.lo
+*.la
+.deps
+.libs
+.dirstamp
 boc2
 bjswoc
 bjgrader
+__config__.h
+__config__.h.in
+stamp-h1

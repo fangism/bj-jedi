@@ -1,0 +1,10 @@
+# "ChangeLog"
+
+2012-03-15	David Fang		<fangism@users.sourceforge.net>
+	Build is autotoolized (autoconf, automake, libtool).
+
+2012-03-14	David Fang		<fangism@users.sourceforge.net>
+	Project relocated to github.  Add .gitignore.
+	Current state of project: there exists an interactive simulator
+	capable of analyzing count-sensitive edges and optimal actions.
+

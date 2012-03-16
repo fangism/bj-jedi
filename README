@@ -1,0 +1,10 @@
+"README"
+ bj-jedi (Blackjack Jedi)
+
+bj-jedi is a blackjack simulator, trainer, and analyzer.
+
+programs:
+boc2: simple standard blackjack odds calculator, +card sensitivity analysis
+bjgrader: interactive blackjack trainer and analyzer (stdio UI)
+bjswoc: blackjack switch odds calculator
+

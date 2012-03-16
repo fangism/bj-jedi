@@ -1,0 +1,10 @@
+ignore
+Makefile.in
+Makefile
+configure
+config.log
+config.cache
+config.status
+libtool
+aclocal.m4
+autom4te.cache
