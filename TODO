@@ -38,7 +38,6 @@ auto-save "wrong" decisions
 
 commands:
 play-option::TMI: too much information
-help [cmd]: help for specific command
 compare basic vs. dynamic strategy
 auto-play-until-count (falls below, based on true-count)
 

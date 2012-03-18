@@ -99,21 +99,37 @@ namespace option_commands {
 #define	DECLARE_OPTION_COMMAND_CLASS(class_name, _cmd, _brief)       \
 	DECLARE_AND_INITIALIZE_COMMAND_CLASS(play_options, class_name, _cmd, _brief)
 
-DECLARE_OPTION_COMMAND_CLASS(Help, "help", ": list all option commands")
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+DECLARE_OPTION_COMMAND_CLASS(Help, "help",
+	"[cmd] : list option command(s)")
 int
-Help::main(play_options&, const string_list&) {
+Help::main(play_options&, const string_list& args) {
+switch (args.size()) {
+case 1:
 	option_command_registry::list_commands(cout);
 	cout <<
 "Note: [bool] values are entered as 0 or 1\n"
 "[int] and [real] values must be non-negative" << endl;
+	break;
+default: {
+	string_list::const_iterator i(++args.begin()), e(args.end());
+	for ( ; i!=e; ++i) {
+		if (!option_command_registry::help_command(cout, *i)) {
+			cout << "Command not found: " << *i << endl;
+		} else {
+			cout << endl;
+		}
+	}
+}
+}
 	return CommandStatus::NORMAL;
 }
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-DECLARE_OPTION_COMMAND_CLASS(Help2, "?", ": list all option commands")
+DECLARE_OPTION_COMMAND_CLASS(Help2, "?",
+	"[cmd] : list option command(s)")
 int
-Help2::main(play_options&, const string_list&) {
-	option_command_registry::list_commands(cout);
-	return CommandStatus::NORMAL;
+Help2::main(play_options& v, const string_list& args) {
+	return Help::main(v, args);
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

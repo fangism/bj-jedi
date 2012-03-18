@@ -99,21 +99,36 @@ namespace variation_commands {
         DECLARE_AND_INITIALIZE_COMMAND_CLASS(variation, class_name, _cmd, _brief)
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-DECLARE_VARIATION_COMMAND_CLASS(Help, "help", ": list all variation commands")
+DECLARE_VARIATION_COMMAND_CLASS(Help, "help",
+	"[cmd] : list variation command(s)")
 int
-Help::main(variation&, const string_list&) {
+Help::main(variation&, const string_list& args) {
+switch (args.size()) {
+case 1:
 	variation_command_registry::list_commands(cout);
 	cout <<
 "Note: [bool] values are entered as 0 or 1\n"
 "[int] and [real] values must be non-negative" << endl;
+	break;
+default: {
+	string_list::const_iterator i(++args.begin()), e(args.end());
+	for ( ; i!=e; ++i) {
+		if (!variation_command_registry::help_command(cout, *i)) {
+			cout << "Command not found: " << *i << endl;
+		} else {
+			cout << endl;
+		}
+	}
+}
+}
 	return CommandStatus::NORMAL;
 }
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-DECLARE_VARIATION_COMMAND_CLASS(Help2, "?", ": list all variation commands")
+DECLARE_VARIATION_COMMAND_CLASS(Help2, "?",
+	"[cmd] : list variation command(s)")
 int
-Help2::main(variation&, const string_list&) {
-	variation_command_registry::list_commands(cout);
-	return CommandStatus::NORMAL;
+Help2::main(variation& v, const string_list& args) {
+	return Help::main(v, args);
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

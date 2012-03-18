@@ -1405,19 +1405,33 @@ namespace strategy_commands {
 	DECLARE_AND_INITIALIZE_COMMAND_CLASS(const strategy, class_name, _cmd, _brief)
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-DECLARE_STRATEGY_COMMAND_CLASS(Help, "help", ": list all strategy commands")
+DECLARE_STRATEGY_COMMAND_CLASS(Help, "help",
+	"[cmd] : list strategy command(s)")
 int
-Help::main(const strategy& g, const string_list&) {
+Help::main(const strategy& g, const string_list& args) {
+switch (args.size()) {
+case 1:
 	strategy_command_registry::list_commands(cout);
+	break;
+default: {
+	string_list::const_iterator i(++args.begin()), e(args.end());
+	for ( ; i!=e; ++i) {
+		if (!strategy_command_registry::help_command(cout, *i)) {
+			cout << "Command not found: " << *i << endl;
+		} else {
+			cout << endl;
+		}
+	}
+}
+}
 	return CommandStatus::NORMAL;
 }
-
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-DECLARE_STRATEGY_COMMAND_CLASS(Help2, "?", ": list all strategy commands")
+DECLARE_STRATEGY_COMMAND_CLASS(Help2, "?",
+	"[cmd] : list strategy command(s)")
 int
-Help2::main(const strategy& g, const string_list&) {
-	strategy_command_registry::list_commands(cout);
-	return CommandStatus::NORMAL;
+Help2::main(const strategy& v, const string_list& args) {
+	return Help::main(v, args);
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

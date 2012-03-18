@@ -53,22 +53,37 @@ namespace lobby_commands {
 	DECLARE_AND_INITIALIZE_COMMAND_CLASS(lobby, class_name, _cmd, _brief)
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-DECLARE_LOBBY_COMMAND_CLASS(Help, "help", ": list all lobby commands")
+DECLARE_LOBBY_COMMAND_CLASS(Help, "help",
+	"[cmd] : list lobby command(s)")
 int
-Help::main(lobby&, const string_list&) {
+Help::main(lobby& g, const string_list& args) {
+switch (args.size()) {
+case 1:
 	lobby_command_registry::list_commands(cout);
 	cout <<
 "Menu commands run without arguments will enter the menu.\n"
 "Anything that follows a menu command will be issued as a command to the\n"
 "menu without entering the menu." << endl;
+	break;
+default: {
+	string_list::const_iterator i(++args.begin()), e(args.end());
+	for ( ; i!=e; ++i) {
+		if (!lobby_command_registry::help_command(cout, *i)) {
+			cout << "Command not found: " << *i << endl;
+		} else {
+			cout << endl;
+		}
+	}
+}
+}
 	return CommandStatus::NORMAL;
 }
-
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-DECLARE_LOBBY_COMMAND_CLASS(Help2, "?", ": list all lobby commands")
+DECLARE_LOBBY_COMMAND_CLASS(Help2, "?",
+	"[cmd] : list lobby command(s)")
 int
-Help2::main(lobby& l, const string_list& args) {
-	return Help::main(l, args);
+Help2::main(lobby& v, const string_list& args) {
+	return Help::main(v, args);
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
