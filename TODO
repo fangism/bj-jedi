@@ -28,7 +28,7 @@ basic/dynamic-strategy various dump commands
 
 options:
 show overall edge given exact count (accumulate)
-support different counting schemes
+support different counting schemes besides hi-lo
 
 struct history {
 to track every situation and decision?
@@ -38,13 +38,19 @@ auto-save "wrong" decisions
 
 commands:
 play-option::TMI: too much information
+help [cmd]: help for specific command
+compare basic vs. dynamic strategy
+auto-play-until-count (falls below, based on true-count)
 
-quiz count: after every hand, or at reshuffle time
+quiz count: after every hand, or at reshuffle time, or periodically
 
 simulation:
-add robot players
+add robot players: play styles [perfect, basic, near-perfect, n00b]
 option for infinite deck (replace every card)
 	almost the same as continuous shuffle
+
+command-line options:
+paths to search for config/save/load files?
 
 paper:
 write an academic paper on results

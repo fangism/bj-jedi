@@ -1,5 +1,8 @@
 # "ChangeLog"
 
+2012-03-18	David Fang		<fangism@users.sourceforge.net>
+	Added strategy menu commands for dumping computation information.
+
 2012-03-15	David Fang		<fangism@users.sourceforge.net>
 	Added regression test infrastructure.
 

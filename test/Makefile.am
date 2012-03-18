@@ -28,7 +28,7 @@ SHELL_INTERPRETER = "\#!$(SHELL)"
 	$(CHMOD) +x $@
 
 
-TEST_CASES = defaults
+TEST_CASES = defaults basic-strategy-all
 
 TESTS = $(TEST_CASES:=.bj-test)
 

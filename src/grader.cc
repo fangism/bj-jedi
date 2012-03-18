@@ -891,22 +891,10 @@ int
 Basic::main(grader& g, const string_list& args) {
 	const strategy& b(g.get_basic_strategy());
 switch (args.size()) {
-case 1: b.dump_optimal_actions(g.ostr); break;
-case 2: {
-	const string& t(args.back());
-	if (t == "-edges") {
-		b.dump_action_expectations(g.ostr);
-	} else if (t == "-verbose") {
-		b.dump(g.ostr);
-	} else {
-		cerr << "Error: invalid option." << endl;
-		return CommandStatus::BADARG;
-	}
-	break;
-}
+case 1: return b.main("basic> "); break;
 default:
-	cerr << "Error: command expects at most 1 option." << endl;
-	return CommandStatus::SYNTAX;
+	const string_list a(++args.begin(), args.end());
+	return b.command(a);
 }
 	return CommandStatus::NORMAL;
 }
@@ -919,22 +907,10 @@ Dynamic::main(grader& g, const string_list& args) {
 	g.update_dynamic_strategy();
 	const strategy& b(g.get_dynamic_strategy());
 switch (args.size()) {
-case 1: b.dump_optimal_actions(g.ostr); break;
-case 2: {
-	const string& t(args.back());
-	if (t == "-edges") {
-		b.dump_action_expectations(g.ostr);
-	} else if (t == "-verbose") {
-		b.dump(g.ostr);
-	} else {
-		cerr << "Error: invalid option." << endl;
-		return CommandStatus::BADARG;
-	}
-	break;
-}
+case 1: return b.main("dynamic> "); break;
 default:
-	cerr << "Error: command expects at most 1 option." << endl;
-	return CommandStatus::SYNTAX;
+	const string_list a(++args.begin(), args.end());
+	return b.command(a);
 }
 	return CommandStatus::NORMAL;
 }
@@ -1006,26 +982,6 @@ DECLARE_GRADER_COMMAND_CLASS(Statistics, "stats",
 int
 Statistics::main(grader& g, const string_list&) {
 	g.stats.dump(g.ostr, g.get_play_map());
-	return CommandStatus::NORMAL;
-}
-
-//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-// TODO: group these into options
-// rename: random mode? draw-mode? replay-mode?
-DECLARE_GRADER_COMMAND_CLASS(CardsRandom, "cards-random",
-	": randomly draw cards")
-int
-CardsRandom::main(grader& g, const string_list&) {
-	g.opt.pick_cards = false;
-	return CommandStatus::NORMAL;
-}
-
-//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-DECLARE_GRADER_COMMAND_CLASS(CardsPick, "cards-pick",
-	": draw user-chosen cards")
-int
-CardsPick::main(grader& g, const string_list&) {
-	g.opt.pick_cards = true;
 	return CommandStatus::NORMAL;
 }
 

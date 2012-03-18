@@ -7,6 +7,7 @@
 #include "card_state.hh"
 #include "expectations.hh"
 #include "enums.hh"
+#include "util/tokenize.hh"
 
 namespace blackjack {
 class variation;
@@ -15,6 +16,7 @@ using std::pair;
 using std::istream;
 using std::ostream;
 using util::array;
+using util::string_list;
 using cards::card_values;
 using cards::probability_type;
 using cards::probability_vector;
@@ -389,6 +391,12 @@ public:
 		return var.dump(o);
 	}
 #endif
+	int
+	command(const string_list&) const;
+
+	// interactive menu commands
+	int
+	main(const char*) const;
 
 };	// end class strategy
 

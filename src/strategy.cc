@@ -14,13 +14,24 @@
 #include "blackjack.hh"
 #include "util/array.tcc"
 #include "util/probability.tcc"
+// for commands
+#include "util/string.tcc"
+#include "util/command.tcc"
+#include "util/value_saver.hh"
 
 /**
 	Debug switch: print tables as they are computed.
  */
 #define		DUMP_DURING_EVALUATE		0
+namespace blackjack {
+typedef	util::Command<const strategy>		StrategyCommand;
+}
+namespace util {
+template class command_registry<blackjack::StrategyCommand>;
+}
 
 namespace blackjack {
+typedef	util::command_registry<StrategyCommand>		strategy_command_registry;
 using std::vector;
 using std::fill;
 using std::copy;
@@ -45,6 +56,12 @@ using cards::card_name;
 using cards::standard_deck_distribution;
 using cards::reveal_print_ordering;
 using cards::card_index;
+
+using util::value_saver;
+using util::Command;
+using util::CommandStatus;
+using util::string_list;
+using util::strings::string_to_num;
 
 //=============================================================================
 // Blackjack specific routines
@@ -1360,6 +1377,199 @@ strategy::dump(ostream& o) const {
 		" (" << e*100.0 << "%)" << endl;
 	return o;
 }
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+int
+strategy::command(const string_list& cmd) const {
+	return strategy_command_registry::execute(*this, cmd);
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+int
+strategy::main(const char* prompt) const {
+	cout <<
+"Strategy menu.\n"
+"Type 'help' or '?' for a list of information commands." << endl;
+	const value_saver<string>
+		tmp1(strategy_command_registry::prompt, prompt);
+	const value_saver<util::completion_function_ptr>
+		tmp(rl_attempted_completion_function,
+			&strategy_command_registry::completion);
+	strategy_command_registry::interpret(*this);
+	return 0;
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+namespace strategy_commands {
+#define DECLARE_STRATEGY_COMMAND_CLASS(class_name, _cmd, _brief)	\
+	DECLARE_AND_INITIALIZE_COMMAND_CLASS(const strategy, class_name, _cmd, _brief)
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+DECLARE_STRATEGY_COMMAND_CLASS(Help, "help", ": list all strategy commands")
+int
+Help::main(const strategy& g, const string_list&) {
+	strategy_command_registry::list_commands(cout);
+	return CommandStatus::NORMAL;
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+DECLARE_STRATEGY_COMMAND_CLASS(Help2, "?", ": list all strategy commands")
+int
+Help2::main(const strategy& g, const string_list&) {
+	strategy_command_registry::list_commands(cout);
+	return CommandStatus::NORMAL;
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+DECLARE_STRATEGY_COMMAND_CLASS(Quit, "quit", ": exit strategy menu")
+int
+Quit::main(const strategy& g, const string_list&) {
+	return CommandStatus::END;
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+DECLARE_STRATEGY_COMMAND_CLASS(Exit, "exit", ": exit strategy menu")
+int
+Exit::main(const strategy& g, const string_list& args) {
+	return Quit::main(g, args);
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+DECLARE_STRATEGY_COMMAND_CLASS(Echo, "echo", ": print arguments")
+int
+Echo::main(const strategy& g, const string_list& args) {
+	copy(++args.begin(), args.end(), ostream_iterator<string>(cout, " "));
+	cout << endl;
+	return CommandStatus::NORMAL;
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+DECLARE_STRATEGY_COMMAND_CLASS(Variation, "variation", ": show rule variations")
+int
+Variation::main(const strategy& g, const string_list& args) {
+if (args.size() > 1) {
+	cout << "error: cannot change rules variations here." << endl;
+	return CommandStatus::BADARG;
+} else {
+	// can't modify/configure here
+	g.var.dump(cout);
+	return CommandStatus::NORMAL;
+}
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// information dump commands
+DECLARE_STRATEGY_COMMAND_CLASS(StandEdges, "stand-edges",
+	": show all standing edges")
+int
+StandEdges::main(const strategy& g, const string_list& args) {
+	g.dump_player_stand_odds(cout);
+	return CommandStatus::NORMAL;
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+DECLARE_STRATEGY_COMMAND_CLASS(InitialOdds, "initial-odds",
+	": show prob. dist. of all initial hands")
+int
+InitialOdds::main(const strategy& g, const string_list& args) {
+	g.dump_player_initial_state_odds(cout);
+	return CommandStatus::NORMAL;
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+DECLARE_STRATEGY_COMMAND_CLASS(InitialEdges, "initial-edges",
+	": show all edges of initial hands")
+int
+InitialEdges::main(const strategy& g, const string_list& args) {
+	g.dump_player_initial_edges(cout);
+	return CommandStatus::NORMAL;
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+DECLARE_STRATEGY_COMMAND_CLASS(HitEdges, "hit-edges",
+	": show all hitting edges")
+int
+HitEdges::main(const strategy& g, const string_list& args) {
+	g.dump_player_hit_edges(cout);
+	return CommandStatus::NORMAL;
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+DECLARE_STRATEGY_COMMAND_CLASS(HitStrategy, "hit-strategy",
+	": show optimal hit strategy vs. dealer")
+int
+HitStrategy::main(const strategy& g, const string_list& args) {
+// TODO: optional arg, given reveal
+	g.dump_player_hit_tables(cout);
+	return CommandStatus::NORMAL;
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+DECLARE_STRATEGY_COMMAND_CLASS(SplitEdges, "split-edges",
+	": show all splitting edges")
+int
+SplitEdges::main(const strategy& g, const string_list& args) {
+	g.dump_player_split_edges(cout);
+	return CommandStatus::NORMAL;
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+DECLARE_STRATEGY_COMMAND_CLASS(PlayerFinalOdds, "player-final-state-odds",
+	": show prob. dist. of player's final state vs. dealer")
+int
+PlayerFinalOdds::main(const strategy& g, const string_list& args) {
+// TODO: optional arg, given reveal
+	g.dump_player_final_state_probabilities(cout);
+	return CommandStatus::NORMAL;
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+DECLARE_STRATEGY_COMMAND_CLASS(RevealEdges, "reveal-edges",
+	": show initial edges pre/post-peek")
+int
+RevealEdges::main(const strategy& g, const string_list& args) {
+	g.dump_reveal_edges(cout);
+	return CommandStatus::NORMAL;
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+DECLARE_STRATEGY_COMMAND_CLASS(OverallEdge, "overall-edge",
+	": show pre-deal overall player's edge")
+int
+OverallEdge::main(const strategy& g, const string_list& args) {
+	cout << "overall edge: " << g.overall_edge() << endl;
+	return CommandStatus::NORMAL;
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+DECLARE_STRATEGY_COMMAND_CLASS(ActionEdges, "action-edges",
+	": show complete edges/action table vs. dealer")
+int
+ActionEdges::main(const strategy& g, const string_list& args) {
+	g.dump_action_expectations(cout);
+	return CommandStatus::NORMAL;
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+DECLARE_STRATEGY_COMMAND_CLASS(ActionOptimal, "action-optimal",
+	": show optimal action table vs. dealer")
+int
+ActionOptimal::main(const strategy& g, const string_list& args) {
+	g.dump_optimal_actions(cout);
+	return CommandStatus::NORMAL;
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+DECLARE_STRATEGY_COMMAND_CLASS(AllInfo, "all-info",
+	": show all edge calculations")
+int
+AllInfo::main(const strategy& g, const string_list& args) {
+	g.dump(cout);
+	return CommandStatus::NORMAL;
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+}	// end namespace strategy_commands
 
 //=============================================================================
 }	// end namespace blackjack
