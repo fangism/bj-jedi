@@ -24,8 +24,6 @@ define/use API for hooking up different UIs (stdio, ncurses)
 
 test suite!
 
-basic/dynamic-strategy various dump commands
-
 options:
 show overall edge given exact count (accumulate)
 support different counting schemes besides hi-lo

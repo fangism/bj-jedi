@@ -3,10 +3,10 @@ You walk into in the lobby a casino.
 Type 'help' or '?' for a list of lobby commands.
 lobby> help
 Available commands: 
-? : list all lobby commands
+? [cmd] : list lobby command(s)
 echo : print arguments
 exit : exit program
-help : list all lobby commands
+help [cmd] : list lobby command(s)
 options [cmd] : (menu) game-play options
 play : start playing blackjack
 quit : exit program

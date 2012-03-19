@@ -32,14 +32,17 @@ TEST_CASES = defaults basic-strategy-all
 
 TESTS = $(TEST_CASES:=.bj-test)
 
-TEST_OUTPUTS = \
-	$(TEST_CASES:=.bj-out) \
+TEST_OUTPUTS = $(TEST_CASES:=.bj-out)
+
+TEST_DIFFS = \
 	$(TEST_CASES:=.bj-diff) \
 	$(TEST_CASES:=.bj-test)
 
-CLEANFILES = $(TEST_OUTPUTS)
+$(TEST_OUTPUTS): $(BJ_EXE)
 
-keep-files: $(TEST_OUTPUTS)
+CLEANFILES = $(TEST_OUTPUTS) $(TEST_DIFFS)
+
+keep-files: $(TEST_OUTPUTS) $(TEST_DIFFS)
 
 EXTRA_DIST = \
 	$(TEST_CASES:=.bj-in) \
