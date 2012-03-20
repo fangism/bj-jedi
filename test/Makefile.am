@@ -28,7 +28,14 @@ SHELL_INTERPRETER = "\#!$(SHELL)"
 	$(CHMOD) +x $@
 
 
-TEST_CASES = defaults basic-strategy-all
+TEST_CASES = defaults \
+	basic-strategy-all \
+	basic-6to5-all \
+	basic-S17-all \
+	basic-no-surr-all \
+	basic-noDAS-all
+# need to re-analyze/fix:
+#	basic-hit-split-As
 
 TESTS = $(TEST_CASES:=.bj-test)
 
