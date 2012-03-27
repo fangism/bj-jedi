@@ -143,13 +143,13 @@ clean-temps: clean-bib clean-index clean-aux
 	-$(RM) *.stamp
 
 clean-bib:
-	-$(RM) *.bbl *.blg
+	-$(RM) *.bbl *.blg *.brf
 
 clean-index:
 	-$(RM) *.idx *.ind *.ilg *.out
 
 clean-aux:
-	-$(RM) *.aux *.log *.toc
+	-$(RM) *.aux *.log *.toc *.lof *.lot
 
 distclean-depend:
 	-$(RM) *.depend

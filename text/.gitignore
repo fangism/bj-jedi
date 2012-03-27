@@ -4,6 +4,7 @@
 *.ind
 *.idx
 *.bbl
+*.brf
 *.aux
 *.dvidepend
 *.pdfdepend
