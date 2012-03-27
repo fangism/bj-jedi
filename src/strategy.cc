@@ -615,27 +615,28 @@ strategy::compute_action_expectations(void) {
 // given dealer's reveal card, and player's optimal hit strategy.
 // again hit-stand only
 	optimize_player_hit_tables();
-	compute_player_hit_edges();
+	compute_player_hit_stand_edges();
 #if DUMP_DURING_EVALUATE
-	dump_player_hit_edges(cout) << endl;
+	dump_player_hit_stand_edges(cout) << endl;
 #endif
 	// OK up to here
 	reset_split_edges();	// zero-out
+	// the following computed edges are post-peek
 if (var.split) {
 	const bool DAS = var.double_after_split && var.some_double();
 if (var.resplit) {
 //	cout << "Resplitting allowed." <<  endl;
 	// need to work backwards from post-split edges
-	compute_player_initial_edges(DAS, var.resplit, false);
+	compute_player_initial_nonsplit_edges(DAS, var.resplit, false);
 	compute_player_split_edges(DAS, var.resplit);	// iterate
-	compute_player_initial_edges(DAS, var.resplit, false);
+	compute_player_initial_nonsplit_edges(DAS, var.resplit, false);
 	compute_player_split_edges(DAS, var.resplit);	// iterate
-	compute_player_initial_edges(var.some_double(), true, var.surrender_late);
+	compute_player_initial_nonsplit_edges(var.some_double(), true, var.surrender_late);
 } else {
 //	cout << "Single split allowed." <<  endl;
-	compute_player_initial_edges(DAS, false, false);
+	compute_player_initial_nonsplit_edges(DAS, false, false);
 	compute_player_split_edges(DAS, false);	// iterate
-	compute_player_initial_edges(var.some_double(), true, var.surrender_late);
+	compute_player_initial_nonsplit_edges(var.some_double(), true, var.surrender_late);
 }
 #if DUMP_DURING_EVALUATE
 	dump_player_split_edges(cout) << endl;
@@ -643,7 +644,7 @@ if (var.resplit) {
 } else {
 //	cout << "No split allowed." <<  endl;
 	// no splitting allowed!
-	compute_player_initial_edges(var.some_double(), false, var.surrender_late);
+	compute_player_initial_nonsplit_edges(var.some_double(), false, var.surrender_late);
 }
 	// to account for player's blackjack
 #if 0
@@ -658,7 +659,10 @@ if (var.resplit) {
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
 	Consider splitting not an option.  
-	NOTE: this uses post-peek player_hit_edges
+	NOTE: this uses only post-peek player_hit_stand_edges
+	Rationale: edges for splitting cannot be worse
+	than the weighted edges for hit/stand-only decisions.  
+	TODO: factor of 2x for playing two hands?
  */
 void
 strategy::reset_split_edges(void) {
@@ -666,8 +670,12 @@ strategy::reset_split_edges(void) {
 		&player_initial_edges_post_peek[pair_offset];
 	size_t i;
 	for (i=0; i<card_values; ++i) {
+#if 1
 		player_split_edges[i] =
-			player_hit_edges[play.p_initial_card_map[i]];
+			player_hit_stand_edges[play.p_initial_card_map[i]];
+#else
+		fill(player_split_edges[i].begin(), player_split_edges[i].end(), -1.0);
+#endif
 	}
 }
 
@@ -709,7 +717,7 @@ strategy::compute_player_split_edges(const bool d, const bool s) {
 		edge_type edge = player_initial_edges_post_peek[state][j];
 		// similar to expectation::best(d, i==k, r)
 		// already accounted for player_resplit vs. final_split
-		if ((i == ACE) && var.one_card_on_split_aces) {
+		if ((i == ACE) && !var.hit_split_aces) {
 			// each aces takes exactly one more card only
 			edge = pse[j][play_map::player_final_state_map(state)];
 //			cout << "1-card-ACE[D" << j << ",F" << state << "]: " << edge << endl;
@@ -765,7 +773,7 @@ strategy::dump_player_split_edges(ostream& o) const {
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
-	Create player hit state machines.
+	Create player optimal hit state machines.
 	Tables can be used to solve for distribution of expected
 	player terminal states.  
 	Decisions used to compute this table are *only* hit or stand, 
@@ -777,8 +785,8 @@ void
 strategy::optimize_player_hit_tables(void) {
 	size_t j;
 	for (j=0; j<card_values; ++j) {	// for each reveal card
-		player_opt[j] = play.player_hit;	// copy state machine
-		// use default assignment operator of util::array
+		player_opt_hit[j] = play.player_hit;	// copy entire state machine
+		// using default assignment operator of util::array
 		size_t i;
 		for (i=0; i<p_action_states; ++i) {
 			const expectations& e(player_actions[i][j]);
@@ -787,12 +795,12 @@ strategy::optimize_player_hit_tables(void) {
 			// or just compare e.hit vs. e.stand
 			if (b == STAND) {
 				// is either STAND or DOUBLE
-				player_opt[j][i].out_edges.clear();
+				player_opt_hit[j][i].out_edges.clear();
 				// make all stands terminal states
 			}
 		}
 #if 0
-		player_opt[j].dump(cout) << endl;
+		player_opt_hit[j].dump(cout) << endl;
 #endif
 	}
 #if DUMP_DURING_EVALUATE
@@ -805,7 +813,7 @@ strategy::optimize_player_hit_tables(void) {
 		size_t i;
 		for (i=0; i<p_action_states; ++i) {
 			unit[i] = 1.0;
-			player_opt[j].solve(card_odds, unit, result);
+			player_opt_hit[j].solve(card_odds, unit, result);
 			player_final_state_probabilities(result,
 				player_final_state_probability[j][i]);
 			unit[i] = 0.0;	// reset
@@ -824,7 +832,7 @@ strategy::dump_player_hit_tables(ostream& o) const {
 		// dump for debugging only
 		o << "Dealer shows " << card_name[j] <<
 			", player hit state machine:" << endl;
-		player_opt[j].dump(o) << endl;
+		player_opt_hit[j].dump(o) << endl;
 	}
 	return o;
 }
@@ -845,7 +853,7 @@ strategy::dump_player_final_state_probabilities(ostream& o) const {
 		for (i=0; i<p_action_states; ++i) {
 			const player_final_state_probability_vector&
 				v(player_final_state_probability[j][i]);
-			o << player_opt[j][i].name << '\t';
+			o << player_opt_hit[j][i].name << '\t';
 			copy(v.begin(), v.end(),
 				ostream_iterator<probability_type>(o, "\t"));
 			o << endl;
@@ -857,19 +865,19 @@ strategy::dump_player_final_state_probabilities(ostream& o) const {
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
-	Given player's optimal hit strategies, compute the edges given
+	Given player's optimal hit/stand strategies, compute the edges given
 	a dealer's reveal card, and the player's current state.  
 	Computed by taking inner-product of player's final state spreads
 	and the corresponding player-stand-edges.  
 	TODO: need pre-peek and post-peek edges
  */
 void
-strategy::__compute_player_hit_edges(
+strategy::__compute_player_hit_stand_edges(
 	const player_stand_edges_matrix& pse, 
 	const player_final_states_probability_matrix& fsp,
 	const expectations_matrix& actions,
 	const edge_type& surr, 
-	player_hit_edges_matrix& phe) {
+	player_hit_stand_edges_matrix& phe) {
 	static const edge_type eps = 
 		sqrt(std::numeric_limits<edge_type>::epsilon());
 #if 0
@@ -887,10 +895,11 @@ strategy::__compute_player_hit_edges(
 			fsp[i][j].begin(), 0.0);
 		phe[j][i] = e;
 		const expectations& x(actions[j][i]);
+		// take the better edge between hit/stand
 		const edge_type sh =
 			x.value(x.best(false, false, false), surr);
 		const edge_type d = fabs(sh-e);
-		// identity: sanity check
+		// identity: sanity check for numerical noise
 		if (d > eps) {
 			cout << "p=" << j << ", d=" << i <<
 				", sh=" << sh << ", e=" << e <<
@@ -904,30 +913,30 @@ strategy::__compute_player_hit_edges(
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
 	Hit edges should only be post-peek, when the player action
-	(decision to hit) is relevant.
+	(decision to hit at all vs. stand) is relevant.
  */
 void
-strategy::compute_player_hit_edges(void) {
+strategy::compute_player_hit_stand_edges(void) {
 #if 1
 	// hit-edges are post-peek, b/c/ using post-peek stand edges
-	__compute_player_hit_edges(player_stand_edges_post_peek, 
+	__compute_player_hit_stand_edges(player_stand_edges_post_peek, 
 		player_final_state_probability, player_actions, 
-		-var.surrender_penalty, player_hit_edges);
+		-var.surrender_penalty, player_hit_stand_edges);
 #else
-	__compute_player_hit_edges(player_stand_edges, 
+	__compute_player_hit_stand_edges(player_stand_edges, 
 		player_final_state_probability, player_actions, 
-		-var.surrender_penalty, player_hit_edges);
-	__compute_player_hit_edges(player_stand_edges_post_peek, 
+		-var.surrender_penalty, player_hit_stand_edges);
+	__compute_player_hit_stand_edges(player_stand_edges_post_peek, 
 		player_final_state_probability, player_actions, 
-		-var.surrender_penalty, player_hit_edges_post_peek);
+		-var.surrender_penalty, player_hit_stand_edges_post_peek);
 #endif
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ostream&
-strategy::dump_player_hit_edges(ostream& o) const {
-	// dump the player's hitting edges 
-	o << "Player's hit edges:\n";
+strategy::dump_player_hit_stand_edges(ostream& o) const {
+	// dump the player's hitting/standing edges 
+	o << "Player's hit/stand edges:\n";
 	o << "P\\D";
 	size_t j;
 	for (j=0; j<card_values; ++j) {
@@ -938,7 +947,7 @@ strategy::dump_player_hit_edges(ostream& o) const {
 		o << play.player_hit[j].name;
 		size_t i;
 		for (i=0; i<card_values; ++i) {
-			o << '\t' << player_hit_edges[j][i];
+			o << '\t' << player_hit_stand_edges[j][i];
 		}
 		o << endl;
 	}
@@ -961,7 +970,7 @@ strategy::dump_player_hit_edges(ostream& o) const {
 		and also overall pre-peek edges.  
  */
 void
-strategy::compute_player_initial_edges(
+strategy::compute_player_initial_nonsplit_edges(
 		const bool D, const bool S, const bool R) {
 //	const player_initial_edges_vector *player_split_edges =
 //		&player_initial_edges_post_peek[p_action_states];
@@ -970,7 +979,7 @@ strategy::compute_player_initial_edges(
 	size_t j;
 	for (j=0; j<card_values; ++j) {		// for dealer-reveal card
 		expectations c(player_actions[i][j]);	// yes, copy
-		c.hit = player_hit_edges[i][j];
+		c.hit = player_hit_stand_edges[i][j];
 		c.optimize(-var.surrender_penalty);
 		// since splits are folded into non-pair states
 		const pair<player_choice, player_choice>
@@ -1367,10 +1376,15 @@ strategy::dump(ostream& o) const {
 	play_map::dump_final_outcomes(o) << endl;	// verified
 	play.dump_dealer_policy(o) << endl;		// verified
 	play.dump_player_hit_state(o) << endl;		// verified
+	play.dump_player_split_state(o) << endl;	// verified
 	dump_dealer_final_table(o) << endl;		// verified
 	dump_player_stand_odds(o) << endl;		// verified
+	dump_player_hit_tables(o) << endl;
+	dump_player_hit_stand_edges(o) << endl;
+	dump_player_split_edges(o) << endl;
 
 	dump_action_expectations(o);
+	dump_player_initial_edges(o) << endl;
 	dump_reveal_edges(o) << endl;
 	const edge_type e(overall_edge());
 	o << "Player\'s overall edge = " << e <<
@@ -1504,7 +1518,7 @@ DECLARE_STRATEGY_COMMAND_CLASS(HitEdges, "hit-edges",
 	": show all hitting edges")
 int
 HitEdges::main(const strategy& g, const string_list& args) {
-	g.dump_player_hit_edges(cout);
+	g.dump_player_hit_stand_edges(cout);
 	return CommandStatus::NORMAL;
 }
 

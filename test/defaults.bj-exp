@@ -1,5 +1,5 @@
 Welcome to The BlackJack Trainer!
-You walk into in the lobby a casino.
+You walk into the lobby of a casino.
 Type 'help' or '?' for a list of lobby commands.
 lobby> help
 Available commands: 
@@ -32,7 +32,8 @@ player may double-down on other: yes
 player double after split: yes
 player may split: yes
 player may re-split: no
-player receives only one card on each split ace: yes
+player may hit on split aces: no
+player may re-split aces: no
 dealer 22 pushes against player: no
 blackjack pays: 1.5
 insurance pays: 2

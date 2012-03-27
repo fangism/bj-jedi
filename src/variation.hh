@@ -83,7 +83,9 @@ struct variation {
 	bool			resplit;
 
 	/// most casinos allow only 1 card on each split ace (common)
-	bool			one_card_on_split_aces;
+	bool			hit_split_aces;
+	/// some variations allot hitting on split aces, but not resplitting
+	bool			resplit_aces;
 	/// dealer pushes on 22 against any non-blackjack hand (switch)
 	bool			push22;
 	/// player's blackjack payoff (usually 1.5)
@@ -121,11 +123,13 @@ struct variation {
 		double_H9(true),
 		double_H10(true),
 		double_H11(true),
+		// double_ACEx(true),	// TODO:
 		double_other(true),
 		double_after_split(true),
 		split(true),
 		resplit(false),
-		one_card_on_split_aces(true),
+		hit_split_aces(false),
+		resplit_aces(false),
 		push22(false),
 		bj_payoff(1.5), 
 		insurance(2.0),

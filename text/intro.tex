@@ -1,0 +1,59 @@
+% "intro.tex"
+
+% \nextpageodd
+\chapter{Introduction}
+
+Blackjack (or 21) is a game played by one or more individuals against
+a dealer, an opponent whose actions are predetermined.
+No player's decisions will influence the dealer's decision.  
+The winner of each hand is whoever (player or dealer)
+has a card total closest to, but not exceeding, 21.  
+This seemingly simple game has captivated millions of gamblers
+and card game enthusiasts for centuries, 
+and continues to be popular today.
+
+This text details a raw, mathematical analysis of the game of Blackjack.
+The first sections derived many already-known results of Blackjack, 
+including optimal basic strategy and house edge.
+
+\section{History}
+
+\section{Rules}
+
+Blackjack has many simple variations around the world.
+First, we outline one of the most common variations of the game.
+
+A typical hand of Blackjack is played as follows:
+
+\begin{enumerate}
+\item The player places a bet on the table for the next hand, 
+before any cards are dealt.
+\item Cards are dealt: 2 to the player (face-up), 
+2 to the dealer (one revealed, one hidden, called the hole card)
+\item Checking for ``natural'' blackjack by player or dealer:
+\begin{enumerate}
+\item If the dealer reveals an Ace, the player is offered insurance,
+a side-bet of whether or not the hole card is a 10 (giving the dealer a natural).
+The typical side-bet amount is half of the original bet.
+Regardless of the insurance outcome, the player loses her original bet
+if the dealer has blackjack (and the player does not).
+If the dealer does not have blackjack, play resumes.  
+\item If the player has a natural (first two cards total 21), 
+and the dealer does not, then the player automatically wins
+(typically 1.5 times her original bet).
+\item If both the dealer and player have blackjack, it is considered
+a push (tie), and the bet is neither won nor lost.  
+\end{enumerate}
+\item TODO: double-down, split, surrender
+\item The player elects to hit (take additional cards) until either
+she busts (total exceeds 21) or stands, taking no more cards.
+In the case of a player bust, the bet is lost immediately.
+\item Once the player stands, the dealer hits until his hand either busts
+or his cards' total is 17 or higher.  
+If the dealer busts, then the player wins the bet immediately.  
+\item Whoever has the total closest to 21 wins the hand.
+In the event of a push (tie), the bet is null.
+\end{enumerate}
+
+Multiple players.
+

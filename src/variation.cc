@@ -58,8 +58,8 @@ variation::dump(ostream& o) const {
 	o << "player double after split: " << yn(double_after_split) << endl;
 	o << "player may split: " << yn(split) << endl;
 	o << "player may re-split: " << yn(resplit) << endl;
-	o << "player receives only one card on each split ace: "
-		<< yn(one_card_on_split_aces) << endl;
+	o << "player may hit on split aces: " << yn(hit_split_aces) << endl;
+	o << "player may re-split aces: " << yn(resplit_aces) << endl;
 	o << "dealer 22 pushes against player: " << yn(push22) << endl;
 	o << "blackjack pays: " << bj_payoff << endl;
 	o << "insurance pays: " << insurance << endl;
@@ -284,8 +284,11 @@ DEFINE_VARIATION_MEMBER_COMMAND(
 DEFINE_VARIATION_MEMBER_COMMAND(
 	resplit, "resplit", "[bool]: allow player more than one split")
 DEFINE_VARIATION_MEMBER_COMMAND(
-	one_card_on_split_aces,
-	"spit-aces-one-card", "[bool]: split Aces get only one card")
+	hit_split_aces,
+	"hit-split-aces", "[bool]: allow player hit on split Aces")
+DEFINE_VARIATION_MEMBER_COMMAND(
+	resplit_aces,
+	"resplit-aces", "[bool]: allow player re-split Aces")
 
 // payoffs and penalties
 DEFINE_VARIATION_MEMBER_COMMAND(

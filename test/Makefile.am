@@ -35,7 +35,10 @@ TEST_CASES = defaults \
 	basic-no-surr-all \
 	basic-noDAS-all
 # need to re-analyze/fix:
-#	basic-hit-split-As
+#	basic-hit-split-As-all
+#	basic-nosplit-all
+#	basic-resplit-all
+#	basic-resplit-aces-all
 
 TESTS = $(TEST_CASES:=.bj-test)
 
@@ -44,6 +47,9 @@ TEST_OUTPUTS = $(TEST_CASES:=.bj-out)
 TEST_DIFFS = \
 	$(TEST_CASES:=.bj-diff) \
 	$(TEST_CASES:=.bj-test)
+
+test-summaries: force
+	-cat *.bj-diff > $@
 
 $(TEST_OUTPUTS): $(BJ_EXE)
 
@@ -62,4 +68,6 @@ test.autodepend: Makefile
 	done > $@
 
 DISTCLEANFILES = test.autodepend
+
+force:
 

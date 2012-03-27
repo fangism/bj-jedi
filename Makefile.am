@@ -8,7 +8,7 @@
 
 AUTOMAKE_OPTIONS = 1.9 gnu subdir-objects dist-bzip2
 
-SUBDIRS = . src test
+SUBDIRS = . src test text
 
 # When to update the libtool script:
 libtool: $(LIBTOOL_DEPS)

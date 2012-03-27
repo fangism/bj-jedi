@@ -2,3 +2,4 @@
 *.bj-diff
 *.bj-test
 *.autodepend
+*-summaries

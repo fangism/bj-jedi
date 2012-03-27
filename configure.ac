@@ -25,8 +25,8 @@ AC_CHECK_PROG([CHMOD], chmod, chmod)
 AC_CHECK_PROG([DIFF], diff, diff)
 AC_CHECK_PROG([FIND], find, find)
 AC_CHECK_PROG([MV], mv, mv)
-dnl AC_CHECK_PROG([GREP], grep, grep)
-dnl AC_CHECK_PROG([PRINTF], printf, printf)
+AC_CHECK_PROG([GREP], grep, grep)
+AC_CHECK_PROG([PRINTF], printf, printf)
 dnl AC_CHECK_PROG([SORT], sort, sort)
 dnl AC_CHECK_PROG([CUT], cut, cut)
 dnl AC_CHECK_PROG([PASTE], paste, paste)
@@ -35,11 +35,13 @@ AC_CHECK_PROG([TAIL], tail, tail)
 dnl AC_CHECK_PROG([TEE], tee, tee)
 dnl AC_CHECK_PROG([TR], tr, tr)
 AC_CHECK_PROG([SED], sed, sed)
-dnl AC_CHECK_PROG([TOUCH], touch, touch)
+AC_CHECK_PROG([TOUCH], touch, touch)
 
 # documentation support, macros efined in "config/documentation.m4"
 dnl AC_CHECK_PROG([LATEX], latex, latex)
-dnl AC_CHECK_PROG([PDFLATEX], pdflatex, pdflatex)
+AC_CHECK_PROG([PDFLATEX], pdflatex, pdflatex)
+AC_CHECK_PROG([MAKEINDEX], makeindex, makeindex)
+AC_CHECK_PROG([BIBTEX], bibtex, bibtex)
 dnl already checked and defined by texinfos.am
 dnl DOC_CHECK_PROG_DVIPS
 dnl AC_CHECK_PROG([INFO], info, info)
@@ -351,6 +353,7 @@ AC_CONFIG_FILES([
 	Makefile
 	src/Makefile
 	test/Makefile
+	text/Makefile
 ])
 dnl AC_CONFIG_FILES([pre-inst-env], [chmod +x pre-inst-env])
 dnl AC_CONFIG_FILES([install_transform.sh], [chmod +x install_transform.sh])

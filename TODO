@@ -13,6 +13,10 @@ Dealer plays...
 deck_state.cc:120: failed assertion `cards[r]'
 Abort
 
+analysis:
+impact of using a fixed (basic) strategy in different count situations
+	imperfections of strategies
+
 simulator/analyzer:
 I/O: option to read raw character w/o hitting return (ncurses UI)
 logging
@@ -21,8 +25,6 @@ preset options for rules
 save/restore state/accounts
 define/use API for hooking up custom strategies
 define/use API for hooking up different UIs (stdio, ncurses)
-
-test suite!
 
 options:
 show overall edge given exact count (accumulate)

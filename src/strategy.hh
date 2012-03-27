@@ -66,7 +66,7 @@ private:
 			using a single convolve step; double-downs are not
 			included, they should be looked up.
 	 */
-	array<state_machine, card_values>		player_opt;
+	array<state_machine, card_values>		player_opt_hit;
 
 	// TODO: support a mode where a player's strategy (however suboptimal)
 	// can be mathematically evaluated (submit and score).
@@ -95,7 +95,7 @@ private:
 		j - player's initial state
 		k - player's final state (probability)
 		assuming that the player hits until it is not advisable 
-			(using player_opt)
+			(using player_opt_hit)
 	 */
 	typedef	array<array<player_final_state_probability_vector,
 			p_action_states>, card_values>
@@ -172,16 +172,20 @@ private:
 
 	/**
 		The edge (advantage) values for a player
-		in "hit-mode", using player_final_state_probabilities.
+		in "hit-or-stand-mode", using player_final_state_probabilities.
 		Computed using probability-weighted sum of 
 		final-state-spread and final-state-odds 
 		(when standing or in terminal state).
 		This table is not applicable to doubling, splitting, surrender.
 	 */
 	typedef	array<array<edge_type, card_values>, p_action_states>
-						player_hit_edges_matrix;
-	player_hit_edges_matrix			player_hit_edges;
-//	player_hit_edges_matrix			player_hit_edges_post_peek;
+						player_hit_stand_edges_matrix;
+	/**
+		This table represents the optimal edges given only a 
+		hit or stand choice.
+	 */
+	player_hit_stand_edges_matrix		player_hit_stand_edges;
+//	player_hit_stand_edges_matrix		player_hit_stand_edges_post_peek;
 	/**
 		Spread of player edges, given initial state and reveal card.
 		Each cell is taken as the max between stand, hit-mode, 
@@ -308,16 +312,16 @@ private:
 
 	static
 	void
-	__compute_player_hit_edges(const player_stand_edges_matrix&, 
+	__compute_player_hit_stand_edges(const player_stand_edges_matrix&, 
 		const player_final_states_probability_matrix&,
 		const expectations_matrix&,
-		const edge_type&, player_hit_edges_matrix&);
+		const edge_type&, player_hit_stand_edges_matrix&);
 
 	void
-	compute_player_hit_edges(void);
+	compute_player_hit_stand_edges(void);
 
 	void
-	compute_player_initial_edges(
+	compute_player_initial_nonsplit_edges(
 		const bool d, const bool s, const bool r);
 
 	// private:
@@ -368,7 +372,7 @@ public:
 	dump_optimal_actions(ostream&) const;
 
 	ostream&
-	dump_player_hit_edges(ostream&) const;
+	dump_player_hit_stand_edges(ostream&) const;
 
 	ostream&
 	dump_player_initial_edges(ostream&) const;

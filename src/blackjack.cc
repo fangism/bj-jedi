@@ -14,6 +14,7 @@ using std::ostringstream;
 using std::cout;
 using std::endl;
 using cards::card_name;
+using cards::ACE;
 
 //=============================================================================
 // Blackjack specific routines
@@ -396,7 +397,8 @@ void
 play_map::compute_player_split_state(void) {
 	last_split.resize(card_values);
 	size_t i;
-	for (i=0; i<card_values; ++i) {
+	for (i=ACE; i<card_values; ++i) {
+		// TODO: just use string and +=
 		ostringstream oss;
 		const char c = card_name[i];
 		oss << c << ',' << c;
@@ -406,7 +408,9 @@ play_map::compute_player_split_state(void) {
 	}
 	// copy table, then adjust
 	player_resplit = last_split;
-	for (i=0; i<card_values; ++i) {
+	i = var.resplit_aces ? ACE : ACE+1;
+	// if resplitting aces forbidden, leave ACE row as-is
+	for (; i<card_values; ++i) {
 		player_resplit.add_edge(i, pair_offset+i, i, card_values);
 	}
 #if DUMP_DURING_EVALUATE

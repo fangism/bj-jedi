@@ -1,5 +1,9 @@
 # "ChangeLog"
 
+2012-03-26	David Fang		<fangism@users.sourceforge.net>
+	Separated hit-split-aces from resplit-aces.
+	Started math documentation.
+
 2012-03-18	David Fang		<fangism@users.sourceforge.net>
 	Added strategy menu commands for dumping computation information.
 

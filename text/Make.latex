@@ -1,0 +1,186 @@
+# "dox/mk/Make.latex"
+#	vim: ft=automake
+# Include this file *LAST* in latex Makefiles.  
+# This file uses macros defined in "dox/Make.dox-head"
+#	In other words, that file must be included first!
+# Note, this is a configurable Makefile.in, resolved by the top configure script
+#	$Id: Make.latex,v 1.18 2008/03/21 00:19:37 fang Exp $
+
+SUFFIXES += .ps .dvi .tex .pdf .ind .idx .bbl .aux \
+	.dvidepend .pdfdepend
+
+# useful macros
+# some of these are defined to be specific to this (hackt) project
+get_bldroot=`$(ECHO) "$@" | $(SED) -e 's|^.*/||g' -e 's|\..*$$||g'`
+COMMONINPUTS = .$(PATH_SEPARATOR)$(srcdir)$(PATH_SEPARATOR)$(top_srcdir)/dox/common$(PATH_SEPARATOR)
+AUTOTEXINPUTS = $(COMMONINPUTS)"$$TEXINPUTS"$(PATH_SEPARATOR)
+AUTOBIBINPUTS = $(COMMONINPUTS)"$$BIBINPUTS"$(PATH_SEPARATOR)
+
+# dependence generation
+# this is now obsolete
+# .tex.depend:
+#	@$(ECHO) "Generating auto-dependencies $@..." ; \
+#	if test -f $@ ; then \
+#		$(MAKETEXDEPEND) $< > $@.new ; \
+#		if ! $(DIFF) -q $@ $@.new ; then \
+#			mv -f $@.new $@ ; \
+#			$(ECHO) "Updated $@." ; \
+#		else 	$(RM) $@.new ; \
+#			$(ECHO) "$@ is unchanged."; \
+#			$(TOUCH) $@; \
+#		fi > /dev/null ; \
+#	else	$(MAKETEXDEPEND) $< > $@ ; \
+#		$(ECHO) "Created $@." ; \
+#	fi
+
+IGNORE_TEXDEPEND_EXTENSIONS = aux bbl ind lot lof out toc
+# can += this variable to add more
+SCANTEXDEPEND_FILTER = $(AWK) -f $(top_srcdir)/text/scantexdepend.awk -v ignore_extensions="$(IGNORE_TEXDEPEND_EXTENSIONS)"
+SCANTEXDEPEND_SCRIPT = { $(PRINTF) "$@:" ; \
+	$(SCANTEXDEPEND_FILTER) $*.log ;} > $$depfile
+
+# create dummy dependencies first, overwrite later
+# .pdf.pdfdepend:
+#	@:
+.tex.pdfdepend:
+	@$(TOUCH) $@
+
+# .dvi.dvidepend:
+#	@:
+.tex.dvidepend:
+	@$(TOUCH) $@
+
+# makeindex
+.idx.ind:
+	@if test -f $< ; then $(MAKEINDEX) $< ; fi 
+	@$(TOUCH) $@
+
+# bibtex
+.aux.bbl:
+	@bldroot=$(get_bldroot) ; \
+	if $(GREP) -q "\\citation" $< ; then \
+		BIBINPUTS=$(AUTOBIBINPUTS) $(BIBTEX) $$bldroot ; \
+	fi
+	@$(TOUCH) $@
+
+
+.tex.dvi:
+	@bldroot=$(get_bldroot) ; \
+	depfile=$@depend ; \
+	$(ECHO) "Generating $$bldroot.dvi..." ; \
+	if test -f $$bldroot.stamp ; then \
+		if $(GREP) -q $(PDFLATEX) $$bldroot.stamp ; then \
+			$(MAKE) clean-temps ; fi \
+	fi ; \
+	TEXINPUTS=$(AUTOTEXINPUTS) $(LATEX) $< > /dev/null < /dev/null ; \
+	$(ECHO) $(LATEX) > $$bldroot.stamp ; \
+	$(ECHO) "Generating auto-dependencies from $*.log..." ; \
+	$(SCANTEXDEPEND_SCRIPT) ; \
+	if $(GREP) "TeX capacity" $$bldroot.log; \
+		then $(ECHO) SHIT ; \
+	fi ; \
+	if test -f $$bldroot.idx ; then $(MAKE) $$bldroot.ind ; fi ; \
+	if test -f $$bldroot.aux ; then $(MAKE) $$bldroot.bbl ; fi ; \
+	if ($(GREP) 'LaTeX Warning:' $$bldroot.log | $(GREP) -v floats); then \
+		$(ECHO); $(ECHO) "Detected warnings, doing second LaTeX pass..." ; \
+		TEXINPUTS=$(AUTOTEXINPUTS) $(LATEX) $< > /dev/null < /dev/null; \
+		if test -f $$bldroot.idx ; then $(MAKE) $$bldroot.ind ; fi ; \
+		if $(GREP) "TeX capacity" $$bldroot.log; \
+			then $(ECHO) SHIT; \
+		elif $(GREP) 'LaTeX Warning: Citation' $$bldroot.log; then \
+			$(ECHO); $(ECHO) "Citation warnings, third LaTeX pass..."; \
+			TEXINPUTS=$(AUTOTEXINPUTS) $(LATEX) $< > /dev/null < /dev/null; \
+		fi; \
+		($(GREP) 'LaTeX Warn' $$bldroot.log || ($(ECHO) > /dev/null)); \
+	fi
+	@$(ECHO) "$@ completed."
+
+.tex.pdf:
+	@bldroot=$(get_bldroot) ; \
+	depfile=$@depend ; \
+	$(ECHO) "Generating $$bldroot.pdf..." ; \
+	if test -f $$bldroot.stamp ; then \
+		if $(GREP) -q $(PDFLATEX) $$bldroot.stamp ; then \
+			: ; else $(MAKE) clean-temps ; fi \
+	fi ; \
+	TEXINPUTS=$(AUTOTEXINPUTS) $(PDFLATEX) $< > /dev/null < /dev/null ; \
+	$(ECHO) $(PDFLATEX) > $$bldroot.stamp ; \
+	$(ECHO) "Generating auto-dependencies from $*.log..." ; \
+	$(SCANTEXDEPEND_SCRIPT) ; \
+	if $(GREP) "TeX capacity" $$bldroot.log; \
+		then $(ECHO) SHIT ; \
+	fi ; \
+	if test -f $$bldroot.idx ; then $(MAKE) $$bldroot.ind ; fi ; \
+	if test -f $$bldroot.aux ; then $(MAKE) $$bldroot.bbl ; fi ; \
+	if ($(GREP) 'LaTeX Warning:' $$bldroot.log | $(GREP) -v floats); then \
+		$(ECHO); $(ECHO) "Detected warnings, doing second LaTeX pass..." ; \
+		TEXINPUTS=$(AUTOTEXINPUTS) $(PDFLATEX) $< > /dev/null < /dev/null ; \
+		if test -f $$bldroot.idx ; then $(MAKE) $$bldroot.ind ; fi ; \
+		if $(GREP) "TeX capacity" $$bldroot.log; \
+			then $(ECHO) SHIT; \
+		elif $(GREP) 'LaTeX Warning: Citation' $$bldroot.log; then \
+			$(ECHO); $(ECHO) "Citation warnings, third LaTeX pass..."; \
+			TEXINPUTS=$(AUTOTEXINPUTS) $(PDFLATEX) $< > /dev/null < /dev/null; \
+		fi; \
+		($(GREP) 'LaTeX Warn' $$bldroot.log || ($(ECHO) > /dev/null)); \
+	fi
+	@$(ECHO) "$@ completed."
+
+# This is now provided by texinfos.am (automake)
+# if HAVE_DVIPS
+# .dvi.ps:
+#	$(DVIPS) $< -o $@
+# endif
+
+# files that may conflict between latex and pdflatex
+# may add .lof, .lot, for list of ...
+
+echo-autotexinputs: force
+	@$(ECHO) $(AUTOTEXINPUTS)
+
+echo-autobibinputs: force
+	@$(ECHO) $(AUTOBIBINPUTS)
+
+echo-commoninputs: force
+	@$(ECHO) $(COMMONINPUTS)
+
+clean-temps: clean-bib clean-index clean-aux
+	-$(RM) *.stamp
+
+clean-bib:
+	-$(RM) *.bbl *.blg
+
+clean-index:
+	-$(RM) *.idx *.ind *.ilg *.out
+
+clean-aux:
+	-$(RM) *.aux *.log *.toc
+
+distclean-depend:
+	-$(RM) *.depend
+	-$(RM) *.*depend
+
+clean-docs:
+	-$(RM) *.ps *.dvi *.pdf
+
+clean-local: clean-docs clean-temps
+
+distclean-local: distclean-depend
+
+.PHONY: help-latex
+help-latex:
+	@$(ECHO) "LaTeX make targets"
+	@$(ECHO) "    clean-*: (all included in clean target)"
+	@$(ECHO) "	temps: removes all auxiliary files"
+	@$(ECHO) "	bib: removes BibTeX auxiliary files"
+	@$(ECHO) "	index: removes makeindex auxiliary files"
+	@$(ECHO) "	aux: removes LaTeX auxiliary files"
+	@$(ECHO) "	docs: removes output files"
+	@$(ECHO) "	depend: removes .depend dependency files"
+	@$(ECHO) "    echo-*: print some variables passed to LaTeX and friends"
+	@$(ECHO) "	commoninputs: COMMONINPUTS"
+	@$(ECHO) "	autotexinputs: AUTOTEXINPUTS"
+	@$(ECHO) "	autobibinputs: AUTOBIBINPUTS"
+
+# help: help-latex
+

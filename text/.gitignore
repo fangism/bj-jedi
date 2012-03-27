@@ -1,0 +1,14 @@
+*.ps
+*.dvi
+*.pdf
+*.ind
+*.idx
+*.bbl
+*.aux
+*.dvidepend
+*.pdfdepend
+*.lot
+*.lof
+*.toc
+*.out
+

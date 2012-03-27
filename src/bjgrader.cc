@@ -18,7 +18,7 @@ int
 main(int, char*[]) {
 	cout <<
 "Welcome to The BlackJack Trainer!\n"
-"You walk into in the lobby a casino.\n"
+"You walk into the lobby of a casino.\n"
 "Type 'help' or '?' for a list of lobby commands." << endl;
 	blackjack::lobby L;
 	L.main();
