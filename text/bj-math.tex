@@ -9,28 +9,60 @@
 \usepackage{graphicx,color}
 \usepackage{colortbl}
 \usepackage{url}
-\usepackage{hyperref}
+\usepackage[
+	pdftex,
+	pdftitle={Mathematics of Blackjack},
+	pdfauthor={David Fang},
+	pdfsubject={Blackjack,probability},
+	pdfkeywords={blackjack,card game,probability,strategy},
+	pdfpagemode={UseOutlines},
+%	pdfpagelayout={SinglePage},
+%	pdfstartview={Fit},
+	hyperfigures,
+	hyperindex,
+	bookmarks,
+	bookmarksnumbered,
+%	plainpages=false,
+	colorlinks
+]{hyperref}
 
+\bibliographystyle{plain}	% just alphabetized by first author
 \makeindex
 
 \begin{document}
 \title{Mathematics of Blackjack}
 \author{David Fang}
+% \date{March 2012}
+% \date{\today}
 % copyright?
 \maketitle
 
 % preliminary sections
-% \contentspage
-% \tablelistpage
-% \figurelistpage
+\tableofcontents
+
+\phantomsection
+\addcontentsline{toc}{chapter}{List of Tables}
+\listoftables
+
+\phantomsection
+\addcontentsline{toc}{chapter}{List of Figures}
+\listoffigures
+
+% glossary
 
 % chapters
 \input intro
+\input basic
+\input counting
 
 % appendices
-% \bibliography{bjm}
+\appendix
+
+\bibliography{bj-math}
 
 \clearpage
+% \singlespacing
+\pdfbookmark[0]{Index}{index}
 \printindex
 
 \end{document}

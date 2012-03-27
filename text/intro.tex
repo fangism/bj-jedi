@@ -2,6 +2,7 @@
 
 % \nextpageodd
 \chapter{Introduction}
+\label{sec:intro}
 
 Blackjack (or 21) is a game played by one or more individuals against
 a dealer, an opponent whose actions are predetermined.
@@ -13,16 +14,30 @@ and card game enthusiasts for centuries,
 and continues to be popular today.
 
 This text details a raw, mathematical analysis of the game of Blackjack.
-The first sections derived many already-known results of Blackjack, 
+The first sections derived many well-known results of Blackjack, 
 including optimal basic strategy and house edge.
 
-\section{History}
+% new insights?
 
-\section{Rules}
+\section{History}
+\label{sec:intro:history}
+
+\section{Rules and Gameplay}
+\label{sec:intro:rules}
+
+Blackjack can be played with one or more standard decks of cards.
+Cards numbered 2 thorugh 10 are worth their face value.  
+Face cards (Jack, Queen, King) are worth 10.
+Aces are worth 1 or 11, which is up to the player.
+Aces are worth 11 when the total does not exceed 21.
+For the remainder of this text, `10' shall refer to any 10-valued card.
+An Ace and a 10 form the highest-valued hand, a blackjack, 
+also known as a natural\index{natural}.
+Thus in standard decks of cards, there are 4 times as many 10-valued 
+cards as there are any of the other cards.
 
 Blackjack has many simple variations around the world.
-First, we outline one of the most common variations of the game.
-
+We begin with an outline one of the most common variations of the game.
 A typical hand of Blackjack is played as follows:
 
 \begin{enumerate}
@@ -30,9 +45,9 @@ A typical hand of Blackjack is played as follows:
 before any cards are dealt.
 \item Cards are dealt: 2 to the player (face-up), 
 2 to the dealer (one revealed, one hidden, called the hole card)
-\item Checking for ``natural'' blackjack by player or dealer:
+\item Checking for ``\emph{natural}'' blackjack by player or dealer\index{natural}:
 \begin{enumerate}
-\item If the dealer reveals an Ace, the player is offered insurance,
+\item If the dealer reveals an Ace, the player is offered insurance\index{insurance},
 a side-bet of whether or not the hole card is a 10 (giving the dealer a natural).
 The typical side-bet amount is half of the original bet.
 Regardless of the insurance outcome, the player loses her original bet
@@ -41,10 +56,25 @@ If the dealer does not have blackjack, play resumes.
 \item If the player has a natural (first two cards total 21), 
 and the dealer does not, then the player automatically wins
 (typically 1.5 times her original bet).
-\item If both the dealer and player have blackjack, it is considered
-a push (tie), and the bet is neither won nor lost.  
+\item If both the dealer and player have natural blackjack, it is considered
+a push\index{push} (tie), and the bet is neither won nor lost.  
 \end{enumerate}
-\item TODO: double-down, split, surrender
+\item Only with the first 2 cards, the player is given the option to:
+\begin{enumerate}
+\item \textbf{Double-down}:\index{double-down} player takes exactly 1 more card 
+and doubles her bet
+\item \textbf{Split}:\index{split} turn paired hand into two hands, 
+each of which is dealt an additional up-card.  
+Each new hand is then played normally.
+A total of 21 on any of the newly split hands is treated as 21, 
+not a natural blackjack.
+Sometimes the player is permitted to double-down on the newly split hands.
+Sometimes the player is permitted to re-split paired hands further.
+Paired Aces often have restrictions.  
+\item \textbf{Surrender}:\index{surrender} give up the hand by losing half of 
+the original bet (also known as late surrender).
+\item If none of these options are exercised, the hand resumes normally.
+\end{enumerate}
 \item The player elects to hit (take additional cards) until either
 she busts (total exceeds 21) or stands, taking no more cards.
 In the case of a player bust, the bet is lost immediately.
@@ -55,5 +85,28 @@ If the dealer busts, then the player wins the bet immediately.
 In the event of a push (tie), the bet is null.
 \end{enumerate}
 
-Multiple players.
+% hand signals when playing at a live table
+
+In the presence of multiple players playing against the dealer, 
+all of the players act first before the dealer reveals the hole card
+and plays.  
+Players win or lose only against the dealer, not against each other.
+The presence of multiple players does not impact the overall odds of the game.
+
+Table~\ref{tab:win-lose} summarizes the outcome of a player's hand total
+against the dealer's hand.
+Since the dealer never stands below 17, all player hands $<=$ 16
+are considered equal; they can only win when the dealer busts.
+`BJ' is the natural or blackjack state, which is determined 
+before any player actions are allowed.
+`Push' is a special dealer state for a variant called Blackjack Switch, 
+discussed later.
+
+\begin{table}[ht!]
+\caption{Player vs. dealer final state showdown}
+\begin{center}
+\input tables/win-lose-push
+\end{center}
+\label{tab:win-lose}
+\end{table}
 

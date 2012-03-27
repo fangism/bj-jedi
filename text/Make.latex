@@ -1,8 +1,6 @@
-# "dox/mk/Make.latex"
+# "text/Make.latex"
 #	vim: ft=automake
 # Include this file *LAST* in latex Makefiles.  
-# This file uses macros defined in "dox/Make.dox-head"
-#	In other words, that file must be included first!
 # Note, this is a configurable Makefile.in, resolved by the top configure script
 #	$Id: Make.latex,v 1.18 2008/03/21 00:19:37 fang Exp $
 
@@ -12,7 +10,7 @@ SUFFIXES += .ps .dvi .tex .pdf .ind .idx .bbl .aux \
 # useful macros
 # some of these are defined to be specific to this (hackt) project
 get_bldroot=`$(ECHO) "$@" | $(SED) -e 's|^.*/||g' -e 's|\..*$$||g'`
-COMMONINPUTS = .$(PATH_SEPARATOR)$(srcdir)$(PATH_SEPARATOR)$(top_srcdir)/dox/common$(PATH_SEPARATOR)
+COMMONINPUTS = .$(PATH_SEPARATOR)$(srcdir)$(PATH_SEPARATOR)
 AUTOTEXINPUTS = $(COMMONINPUTS)"$$TEXINPUTS"$(PATH_SEPARATOR)
 AUTOBIBINPUTS = $(COMMONINPUTS)"$$BIBINPUTS"$(PATH_SEPARATOR)
 
@@ -140,9 +138,6 @@ echo-autotexinputs: force
 
 echo-autobibinputs: force
 	@$(ECHO) $(AUTOBIBINPUTS)
-
-echo-commoninputs: force
-	@$(ECHO) $(COMMONINPUTS)
 
 clean-temps: clean-bib clean-index clean-aux
 	-$(RM) *.stamp
