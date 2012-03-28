@@ -47,20 +47,28 @@ A typical hand of Blackjack is played as follows:
 before any cards are dealt.
 \item Cards are dealt: 2 to the player (face-up), 
 2 to the dealer (one revealed, one hidden, called the hole card)
-\item Checking for ``\emph{natural}'' blackjack by player or dealer\index{natural}:
+\item Checking for ``\emph{natural}'' blackjack by player or 
+dealer\index{natural}:
 \begin{enumerate}
-\item If the dealer reveals an Ace, the player is offered insurance\index{insurance},
-a side-bet of whether or not the hole card is a 10 (giving the dealer a natural).
+\item If the dealer reveals an Ace, the player is offered 
+insurance\index{insurance},
+a side-bet of whether or not the hole card is a 10 
+(giving the dealer a natural).
 The typical side-bet amount is half of the original bet.
-Regardless of the insurance outcome, the player loses her original bet
-if the dealer has blackjack (and the player does not).
+Regardless of the insurance outcome, 
+if the dealer has blackjack (and the player does not),
+the player loses her original bet and the hand is over.
 If the dealer does not have blackjack, play resumes.  
 \item If the player has a natural (first two cards total 21), 
 and the dealer does not, then the player automatically wins
-(typically 1.5 times her original bet).
-\item If both the dealer and player have natural blackjack, it is considered
-a push\index{push} (tie), and the bet is neither won nor lost.  
+(typically 1.5 times her original bet), and the hand is over.
+\item If both the dealer and player have natural blackjack, 
+it is considered a push\index{push} (tie), 
+and the hand is over with the bet cancelled.  
 \end{enumerate}
+\item If the hand is not yet over, 
+the player is assured that the dealer does not have blackjack, 
+because he has already `peeked' for blackjack\index{peek}.
 \item Only with the first 2 cards, the player is given the option to:
 \begin{enumerate}
 \item \textbf{Double-down}:\index{double-down} player takes exactly 1 more card 
@@ -70,7 +78,8 @@ each of which is dealt an additional up-card.
 Each new hand is then played normally.
 A total of 21 on any of the newly split hands is treated as 21, 
 not a natural blackjack.
-Sometimes the player is permitted to double-down on the newly split hands.
+Sometimes the player is permitted to double-down on the newly 
+split hands (double-after-split\index{double-after-split}).
 Sometimes the player is permitted to re-split paired hands further.
 Paired Aces often have restrictions.  
 \item \textbf{Surrender}:\index{surrender} give up the hand by losing half of 
@@ -93,8 +102,18 @@ In the presence of multiple players playing against the dealer,
 all of the players act first before the dealer reveals the hole card
 and plays.  
 Players win or lose only against the dealer, not against each other.
-The presence of multiple players does not impact the overall odds of the game.
+The presence of multiple players does not impact the overall 
+odds of the game; nor do their decisions impact your odds.
 
+\begin{table}[ht!]
+\caption{Player vs. dealer final state showdown}
+\begin{center}
+\input tables/win-lose-push
+\end{center}
+\label{tab:win-lose}
+\end{table}
+
+When either the player or dealer has a natural
 Table~\ref{tab:win-lose} summarizes the outcome of a player's hand total
 against the dealer's hand.
 Since the dealer never stands below 17, all player hands $<=$ 16
@@ -104,11 +123,58 @@ before any player actions are allowed.
 `Push' is a special dealer state for a variant called Blackjack Switch, 
 discussed later.
 
+in the first two cards, the hand ends immediately
+and there are no further decisions to be made.
+The interesting part of the game is the rest of the time when
+there are actions to be decided.
+The analysis of the game of Blackjack begins with
+the dealer, who must act in accordance to his own hand only.
+
+\section{Dealer's Play}
+\label{sec:rules:dealer-play}
+
 \begin{table}[ht!]
-\caption{Player vs. dealer final state showdown}
+\caption{Dealer's state transition table (hits on soft-17)}
 \begin{center}
-\input tables/win-lose-push
+\input tables/dealer-hit-H17
 \end{center}
-\label{tab:win-lose}
+\label{tab:dealer-hit-H17}
 \end{table}
+
+The blank rows represent the dealer's terminal states.
+Since the dealer's actions are entirely independent of 
+the players' actions, we can define the state-machine
+for the dealer's cards, following the rule that the dealer
+must hit until his total exceeds 16.
+Table~\ref{tab:dealer-hit-H17} summarizes the various
+value transitions that the dealer's hand may take
+before reaching a terminal state.
+The row headers contain the dealer's current hand value, 
+and the column headers are the next card (if applicable).
+The table entries point to the next state.
+
+States labeled `A,$x$' represent soft-totals, where the Ace (A)
+can be evaluated as 1 or 11.  
+In this variation, the dealer must hit on a 
+soft-17 (A,6)\index{hit on soft-17}.
+Later, we will compare the edge impact of this variation
+vs. the dealer standing on soft-17\index{stand on soft-17}.
+
+In this table, the transition edges for A$\rightarrow$10
+and 10$\rightarrow$A result in 21, and not a natural blackjack
+because the dealer has already peeked\index{peek} for blackjack
+with his first two cards (if an Ace or 10 was revealed).
+
+By the state-transition process defined in the table,
+all non-terminal states will eventually reach
+one of the terminal states, 
+except for dealer blackjack (denoted BJ), 
+which will be evaluated separately.
+This state-transition process is also known as a 
+Markov chain\index{Markov chain}.
+
+TODO: table for S17
+
+\subsection{Probability of Dealer's Terminal States}
+\label{sec:rules:dealer-play:final-pdf}
 

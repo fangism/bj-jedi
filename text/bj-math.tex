@@ -1,5 +1,9 @@
 % "bj-math.tex"
-\documentclass{book}
+\documentclass[twoside]{book}
+
+\usepackage[twoside, top=1in, bottom=1in, inner=1.5in, outer=1in]{geometry}
+% \setlength\oddsidemargin{0in}
+% \setlength\evensidemargin{0in}
 
 % for comment environment blocks
 \usepackage{verbatim}
@@ -30,6 +34,8 @@
 \makeindex
 
 \begin{document}
+\frontmatter
+\pagenumbering{roman}
 \title{Mathematics of Blackjack}
 \author{David Fang}
 % \date{March 2012}
@@ -50,7 +56,10 @@
 
 % glossary
 
+\cleardoublepage
 % chapters
+\mainmatter
+\pagenumbering{arabic}
 \input intro
 \input basic
 \input counting
