@@ -1,3 +1,4 @@
+*.stamp
 *.ps
 *.dvi
 *.pdf
