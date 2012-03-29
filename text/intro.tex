@@ -220,9 +220,8 @@ they just accumulate.
 The system converges once all non-terminal state probabilities 
 in the probability vector are 0.0.
 
-The process described above assumes a constant 
-card probability distribution, 
-when in fact, as each card is drawn to the dealer, 
+The process described above assumes an invariant
+card distribution, when in fact, as each card is revealed and removed, 
 the probability distribution of remaining cards changes.
 Assuming a constant distribution is akin to modeling
 the deck as infinite.
@@ -231,7 +230,75 @@ For now we proceed using the infinite deck approximation.
 assuming an infinite deck vs. a finite deck, where one 
 draws cards without replacement.)
 
-Pre-peek vs. Post-peek.
+% Pre-peek vs. Post-peek.
+
+\begin{table}[ht!]
+\caption{Dealer's final state distribution, H17, pre-peek}
+\begin{center}
+\input tables/dealer-final-H17-pre-peek
+\end{center}
+\label{tab:dealer-final-H17-pre-peek}
+\end{table}
+
+\begin{table}[ht!]
+\caption{Dealer's final state distribution, H17, post-peek}
+\begin{center}
+\input tables/dealer-final-H17-post-peek
+\end{center}
+\label{tab:dealer-final-H17-post-peek}
+\end{table}
+
+Suppose that the dealer was given just one up-card with no hole card, 
+and the dealer hit until reaching a terminal state.
+Suppose further that if the first two cards are Ace and 10 is
+treated as a natural blackjack (BJ).
+Then the spread of final states would compute as 
+Table~\ref{tab:dealer-final-H17-pre-peek}.
+The entries are reported in percentages, so the columns add up to 100\%.
+
+However, in most blackjack variations, if the revealed card is an Ace or 10, 
+the dealer will check for blackjack by peeking\index{peek} at the hole card.
+In the event of a dealer natural (or player natural), 
+the dealer reveals the hole card (usually to the player's disappointment)
+and the hand ends before the player is given the opportunity to act.
+As soon as the player is prompted for action, she knows that the 
+dealer cannot have a natural.
+This means for a revealed Ace, the hole card cannot be 10, 
+and for a revealed 10, the hole card cannot be Ace.
+Since the first iteration of the redistribution\index{redistribution} 
+calculation represents the hole card, the first iteration
+should be computed by zero-ing out the probability of the
+card that is eliminated from the possibilities, and re-normalizing
+the probability of the other cards (to keep a sum of 1.0).  
+The result is a ``post-peek'' spread of final states, computed as 
+Table~\ref{tab:dealer-final-H17-post-peek}.
+Note that only the Ace and 10 columns are differ from 
+Table~\ref{tab:dealer-final-H17-pre-peek}, 
+because the dealer need not peek for blackjack on all other up-cards.
+
+\begin{table}[ht!]
+\caption{Dealer's final state distribution, S17, pre-peek}
+\begin{center}
+\input tables/dealer-final-S17-pre-peek
+\end{center}
+\label{tab:dealer-final-S17-pre-peek}
+\end{table}
+
+\begin{table}[ht!]
+\caption{Dealer's final state distribution, S17, post-peek}
+\begin{center}
+\input tables/dealer-final-S17-post-peek
+\end{center}
+\label{tab:dealer-final-S17-post-peek}
+\end{table}
+
+For the S17 variation, the corresponding tables are similarly computed.
+The pre-peek distribution is computed as 
+Table~\ref{tab:dealer-final-S17-pre-peek}, 
+and the post-peek distribution is computed as 
+Table~\ref{tab:dealer-final-S17-post-peek}.
+
+% observations
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Player's State Transitions}
