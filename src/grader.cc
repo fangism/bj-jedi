@@ -435,10 +435,10 @@ do {
 	case DOUBLE:
 	case HIT:
 	case SPLIT: 
-	case SURRENDER:
+	case SURRENDER: {
+		bool notified = false;
 		handle_player_action(j, pc);
-		if (opt.notify_when_wrong) {
-		if (pc != ac) {
+		if (opt.notify_when_wrong && (pc != ac)) {
 			ostr << "*** optimal choice was: " <<
 				action_names[ac] << endl;
 			if (pc == ac2) {
@@ -446,23 +446,28 @@ do {
 					<< " is also acceptable from " <<
 					(opt.use_dynamic_strategy ? "basic" : "dynamic")
 					<< " strategy." << endl;
-				// TODO: show count?
 			}
-			if (opt.show_edges) {
-				ostr << "\tedges:\tbasic\tdynamic" << endl;
-				expectations::dump_choice_actions_2(ostr,
-					ace.first, ace.second,
-					-var.surrender_penalty, d, p, r, "\t");
-			}
+			notified = true;
 		}
+		if (opt.notify_dynamic && (acp.second != acp.first)) {
+			ostr << "*** dynamic strategy beats basic ***" << endl;
+			notified = true;
+		}
+		if (notified) {
+			if (opt.notify_with_count) {
+				show_count();
+			}
+			ostr << oss.str() << endl;
 		}
 		break;
+	}
 	case COUNT:
 		show_count();
 		break;
 	case HINT:
 		ostr << oss.str() << endl;
 		break;
+	// case BOOKMARK: for later review
 	case OPTIM: {
 		ostr << oss.str() << endl;	// optional?
 		ostr << "auto: " << action_names[ac] << endl;

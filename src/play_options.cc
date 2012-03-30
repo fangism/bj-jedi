@@ -45,6 +45,8 @@ play_options::play_options() :
 	always_show_count_at_hand(false),
 	always_suggest(false),
 	notify_when_wrong(true),
+	notify_dynamic(true),
+	notify_with_count(true),
 	show_edges(true),
 	auto_play(false),
 	face_cards(true),
@@ -67,6 +69,8 @@ play_options::dump(ostream& o) const {
 	o << "always show count at action: " << yn(always_show_count_at_action) << endl;
 	o << "always suggest best action: " << yn(always_suggest) << endl;
 	o << "notify when wrong: " << yn(notify_when_wrong) << endl;
+	o << "notify when dynamic strategy beats basic: " << yn(notify_dynamic) << endl;
+	o << "notify with count: " << yn(notify_with_count) << endl;
 	o << "show edge values with analysis: " << yn(show_edges) << endl;
 	o << "automatically play optimally: " << yn(auto_play) << endl;
 	o << "current bet: " << bet << endl;
@@ -271,6 +275,14 @@ DEFINE_OPTION_MEMBER_COMMAND(
 DEFINE_OPTION_MEMBER_COMMAND(
 	notify_when_wrong, "notify-when-wrong",
 	"[bool]: alert player when choice was sub-optimal")
+
+DEFINE_OPTION_MEMBER_COMMAND(
+	notify_dynamic, "notify-dynamic",
+	"[bool]: alert player when dynamic strategy beats basic")
+
+DEFINE_OPTION_MEMBER_COMMAND(
+	notify_with_count, "notify-with-count",
+	"[bool]: show count when notifying about strategy")
 
 DEFINE_OPTION_MEMBER_COMMAND(
 	show_edges, "show-edges",

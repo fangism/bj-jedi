@@ -69,6 +69,14 @@ struct play_options {
 	 */
 	bool				notify_when_wrong;
 	/**
+		Notify when dynamic strategy differs and is better.
+	 */
+	bool				notify_dynamic;
+	/**
+		Show detailed count when notifying.
+	 */
+	bool				notify_with_count;
+	/**
 		Show mathematical edges with suggestions and 
 		wrong-move notifications.  
 	 */
