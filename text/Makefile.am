@@ -28,7 +28,10 @@ GENERATED_TABLES = \
 	tables/dealer-final-H17-post-peek.tex \
 	tables/dealer-final-S17-pre-peek.tex \
 	tables/dealer-final-S17-post-peek.tex \
-	tables/player-hit.tex
+	tables/player-hit.tex \
+	tables/player-final-split.tex \
+	tables/player-resplit.tex
+
 CLEANFILES = $(GENERATED_TABLES)
 
 tables: $(GENERATED_TABLES)
@@ -62,7 +65,7 @@ tables/dealer-hit-H17.tex: $(BASIC_STRATEGY)
 	$(PRINTF) '$$\\frac{\\textrm{next card}\\rightarrow}{\\textrm{dealer}\\downarrow}$$&A&2&3&4&5&6&7&8&9&10 \\\\ \\hline \\hline\n' ; \
 	$(SED) -n '/Dealer.*action table/,/^$$/p' $< | \
 		$(SED) -e '1d' -e '$$d' | \
-		$(SM_TO_TABULAR) | $(TABULAR_HEADER_HLINE) ; \
+		$(SM_TO_TABULAR) ; \
 	$(PRINTF) "\\\\end{tabular}\n" ;} > $@
 
 tables/dealer-hit-S17.tex: $(S17_STRATEGY)
@@ -71,7 +74,7 @@ tables/dealer-hit-S17.tex: $(S17_STRATEGY)
 	$(PRINTF) '$$\\frac{\\textrm{next card}\\rightarrow}{\\textrm{dealer}\\downarrow}$$&A&2&3&4&5&6&7&8&9&10 \\\\ \\hline \\hline\n' ; \
 	$(SED) -n '/Dealer.*action table/,/^$$/p' $< | \
 		$(SED) -e '1d' -e '$$d' | \
-		$(SM_TO_TABULAR) | $(TABULAR_HEADER_HLINE) ; \
+		$(SM_TO_TABULAR) ; \
 	$(PRINTF) "\\\\end{tabular}\n" ;} > $@
 
 tables/player-hit.tex: $(BASIC_STRATEGY)
@@ -80,7 +83,31 @@ tables/player-hit.tex: $(BASIC_STRATEGY)
 	$(PRINTF) '$$\\frac{\\textrm{next card}\\rightarrow}{\\textrm{player}\\downarrow}$$&A&2&3&4&5&6&7&8&9&10 \\\\ \\hline \\hline\n' ; \
 	$(SED) -n '/Player.*hit transition/,/^$$/p' $< | \
 		$(SED) -e '1d' -e '$$d' | \
-		$(SM_TO_TABULAR) | $(TABULAR_HEADER_HLINE) ; \
+		$(SM_TO_TABULAR) ; \
+	$(PRINTF) "\\\\end{tabular}\n" ;} > $@
+
+tables/player-final-split.tex: $(BASIC_STRATEGY)
+	{ $(ECHO) "% \"$@\" -- auto-generated" ; \
+	$(PRINTF) '\\begin{tabular}{|c||c|c|c|c|c|c|c|c|c|c|}\n\\hline\n' ; \
+	$(PRINTF) '$$\\frac{\\textrm{next card}\\rightarrow}{\\textrm{player}\\downarrow}$$&A&2&3&4&5&6&7&8&9&10 \\\\ \\hline \\hline\n' ; \
+	{ $(SED) -n '/Player.*hit transition/,/^$$/p' $< | \
+		$(SED) -e '1d' -e '/^35/,$$d' ; \
+	$(SED) -n '/Player.*split.*final.*transition/,/^$$/p' $< | \
+		$(SED) -e '1d' -e '$$d' | \
+		$(AWK) '{print $$1+35 "\t" $$2 "\t" $$3;}' ;} | \
+		$(SM_TO_TABULAR) | $(TAIL) -n 10 ; \
+	$(PRINTF) "\\\\end{tabular}\n" ;} > $@
+
+tables/player-resplit.tex: $(BASIC_STRATEGY)
+	{ $(ECHO) "% \"$@\" -- auto-generated" ; \
+	$(PRINTF) '\\begin{tabular}{|c||c|c|c|c|c|c|c|c|c|c|}\n\\hline\n' ; \
+	$(PRINTF) '$$\\frac{\\textrm{next card}\\rightarrow}{\\textrm{player}\\downarrow}$$&A&2&3&4&5&6&7&8&9&10 \\\\ \\hline \\hline\n' ; \
+	{ $(SED) -n '/Player.*hit transition/,/^$$/p' $< | \
+		$(SED) -e '1d' -e '/^35/,$$d' ; \
+	$(SED) -n '/Player.*resplit.*transition/,/^$$/p' $< | \
+		$(SED) -e '1d' -e '$$d' | \
+		$(AWK) '{print $$1+35 "\t" $$2 "\t" $$3;}' ;} | \
+		$(SM_TO_TABULAR) | $(TAIL) -n 10 ; \
 	$(PRINTF) "\\\\end{tabular}\n" ;} > $@
 
 SCALE_DEALER_FINAL = $(SCALE_PERCENT)

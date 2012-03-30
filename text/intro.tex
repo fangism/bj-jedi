@@ -115,7 +115,6 @@ odds of the game; nor do their decisions impact your odds.
 \label{tab:win-lose}
 \end{table}
 
-When either the player or dealer has a natural
 Table~\ref{tab:win-lose} summarizes the outcome of a player's hand total
 against the dealer's hand.
 Since the dealer never stands below 17, all player hands $<=$ 16
@@ -125,11 +124,16 @@ before any player actions are allowed.
 `Push' is a special dealer state for a variant called Blackjack Switch, 
 discussed later.
 
+When either the player or dealer has a natural
 in the first two cards, the hand ends immediately
 and there are no further decisions to be made.
 The interesting part of the game is the rest of the time when
 there are actions to be decided.
-The analysis of the game of Blackjack begins with
+The player's decision to hit, double-down, and split
+result in a probabilistic change of state, for better or worse.
+By computing expectations\index{expectations} in every state, 
+we can compute the optimal decision in every situation.  
+The analysis of the expectations begins with
 the dealer, who must act in accordance to his own hand only.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -300,6 +304,12 @@ Table~\ref{tab:dealer-final-S17-post-peek}.
 
 % observations
 
+When we compute the optimal basic strategy in Chapter~\ref{sec:basic}, 
+we will use the post-peek tables, since only they are relevant
+when the player has choice in action.  
+Pre-peek tables are still useful for evaluating overall player or house
+edges \emph{before} each hand is dealt.
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Player's State Transitions}
 \label{sec:rules:player-hit}
@@ -320,5 +330,28 @@ when taking another card, and is similar to the dealer's table.
 This table just shows possible transitions, 
 not all of them are necessarily favorable.
 
-Splitting.  Re-split vs. final split.
+\begin{table}[ht!]
+\caption{Player's final split transition table}
+\begin{center}
+\input tables/player-final-split
+\end{center}
+\label{tab:player-final-split}
+\end{table}
+
+\begin{table}[ht!]
+\caption{Player's resplit transition table}
+\begin{center}
+\input tables/player-resplit
+\end{center}
+\label{tab:player-resplit}
+\end{table}
+
+For paired hands, the player is given the option to split the
+hand into two new hands, with each receiving a new up-card on top
+of the original split card.
+If the player is only allowed to split to two hands
+(this is her last exercisable split), 
+then the transition table is Table~\ref{tab:player-final-split}.
+If further splitting is permitted, then the state transition table
+is Table~\ref{tab:player-resplit}.
 
