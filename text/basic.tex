@@ -21,17 +21,34 @@ is whether to hit or stand.
 \section{Double-down}
 \label{sec:basic:double}
 
+\index{double-down}
+On the player's first two cards, the player is given the option to
+double-down: double the original bet and take exactly one more card.
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Surrender}
 \label{sec:basic:surrender}
 
+\index{surrender}
 Some blackjack games allow an option to surrender, 
 to end the hand by taking back half of the original
 bet and giving up half.
 There exist situation where the expected outcome of any other action 
 is worse than just losing half of the bet outright.  
 
-Early-surrender vs. late-surrender.
+There exist two types of surrender:
+early-surrender\index{surrender!early} and late-surrender{surrender!late}.
+Early-surrender is very rare, it allows the player to 
+end the hand by losing half of the original bet \emph{before}
+the dealer peeks for blackjack.
+Late-surrender is more common, and give the player the opportunity to
+surrender the hand, again losing half the bet, 
+at the time the player is prompted to act on her first two cards, 
+which always happens \emph{after} peeking for blackjack.  
+With late-surrender, the player still loses her whole bet against 
+a dealer natural.
+For now, we only evaluate late-surrender, as it is far more common.
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Split}
@@ -44,17 +61,40 @@ Any two 10-valued cards are also splittable.
 \subsection{Double-after-split}
 \label{sec:basic:DAS}
 
+\index{double-after-split}
+
 \subsection{Resplit}
 \label{sec:basic:resplit}
+
+\index{resplit}
 
 \subsection{Split Aces}
 \label{sec:basic:split-aces}
 
+\index{split aces}
 Paired Aces are often given exceptional rules in some games.
 Some variations limit the resplitting of Aces, 
 and another variation allows no further action after
 up-cards are dealt on the split aces.  
 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Insurance}
+\label{sec:basic:insurance}
+
+\index{insurance}
+In most games, insurance is offered when the dealer reveals an Ace.
+Computing the insurance decision is an exercise in probability.
+Most insurance payoffs pay 2:1, i.e., the insurance bet (half of the original)
+pays the whole bet amount if the dealer does have a natural.
+In other words, the insurance bet is equivalent to betting 
+whether or not the dealer's hole card is a 10.
+In a standard deck, 4 out of 13 cards are 10-valued, 9 out of 13 are not, 
+so the odds are 9:4 against.  
+If the payoff is only 2:1 (8:4), then insurance is a losing bet.
+Hence, basic strategy dictates: \emph{never take insurance}.
+Only when the odds of a 10-valued card is less than 2:1 against
+is insurance a favorable side bet.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Edges}

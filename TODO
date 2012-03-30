@@ -17,6 +17,11 @@ analysis:
 impact of using a fixed (basic) strategy in different count situations
 	imperfections of strategies
 
+card randomization:
+alternatively, std::shuffle entire sequence up front
+	this avoids repeated call to RNG,
+	but makes it difficult to edit the deck.
+
 simulator/analyzer:
 I/O: option to read raw character w/o hitting return (ncurses UI)
 logging
