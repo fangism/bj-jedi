@@ -150,6 +150,15 @@ grader::reveal_hole_card(const size_t hole_card) {
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
+	Hole card was not used.
+ */
+void
+grader::replace_hole_card(void) {
+	C.replace_hole_card();
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
 	Play a hand of blackjack.
 	Player hands, dealer state, hole cards, etc...
 	could all just be local variables?
@@ -292,6 +301,7 @@ if (live || !opt.dealer_plays_only_against_live) {
 } else {
 	// hole card is never revealed and thus not counted
 	// treat as if hole card is replaced into shoe
+	replace_hole_card();
 }
 	// suspense double-down?  nah
 	const double bet2 = var.double_multiplier *bet;	// winning

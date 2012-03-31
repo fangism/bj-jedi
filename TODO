@@ -12,6 +12,12 @@ BUGS: (run out of cards?)
 Dealer plays...
 deck_state.cc:120: failed assertion `cards[r]'
 Abort
+	I think this happens when drawing randomly
+	from the deck when a hole card has been reserved, but not counted.
+	We need to adjust for the removed hole-card so that it is not 
+	removed twice by accident.  Thus there are hidden odds.
+	Now fixed:  Random selection happens accounting for the 
+	removed hole card.
 
 analysis:
 impact of using a fixed (basic) strategy in different count situations

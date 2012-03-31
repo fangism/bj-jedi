@@ -24,6 +24,7 @@ using util::normalize;
 using util::string_list;
 using util::tokenize;
 using util::strings::string_to_num;
+using util::value_saver;
 using cards::ACE;
 using cards::TEN;
 #if FACE_CARDS
@@ -47,11 +48,12 @@ using cards::card_index;
 	Initializes to default.
  */
 deck_state::deck_state(const variation& v) : 
-		num_decks(v.num_decks)
+		num_decks(v.num_decks),
 #if DECK_PROBABILITIES
-		, card_probabilities(card_values), 
-		need_update(true)
+		card_probabilities(card_values), 
+		need_update(true),
 #endif
+		hole_reserved(false)
 		{
 	reshuffle();		// does most of the initializing
 	// default penetration before reshuffling: 75%
@@ -165,14 +167,19 @@ deck_state::quick_draw(void) {
 /**
 	Peeks at one card from remaining deck at random.
 	Does NOT re-compute real-valued probabilities; just uses integers.
+	Accounts for the fact that a hole card was drawn.
  */
 size_t
 deck_state::quick_draw_uncounted(void) {
-#if 0
-	return util::random_draw_from_real_pdf(card_probabilities);
-#else
+if (hole_reserved) {
+	size_t& count(cards[hole_card]);
+	const value_saver<size_t> __tmp(count);	// save value
+	assert(count);
+	--count;		// the actual count (unknown to player)
 	return util::random_draw_from_integer_pdf(cards);
-#endif
+} else {
+	return util::random_draw_from_integer_pdf(cards);
+}
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -185,7 +192,7 @@ deck_state::quick_draw_uncounted(void) {
  */
 size_t
 deck_state::quick_draw_uncounted_except(const size_t i) {
-	const util::value_saver<size_t> __tmp(cards[i], 0);
+	const value_saver<size_t> __tmp(cards[i], 0);
 	return quick_draw_uncounted();
 }
 
@@ -248,13 +255,24 @@ deck_state::draw(void) {
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void
 deck_state::draw_hole_card(void) {
+	assert(!hole_reserved);
 	hole_card = quick_draw_uncounted();
+	hole_reserved = true;
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void
 deck_state::option_draw_hole_card(const bool m, istream& i, ostream& o) {
+	assert(!hole_reserved);
 	hole_card = option_draw_uncounted(m, i, o, false);
+	hole_reserved = true;
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+void
+deck_state::replace_hole_card(void) {
+	assert(hole_reserved);
+	hole_reserved = false;
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -263,6 +281,8 @@ deck_state::option_draw_hole_card(const bool m, istream& i, ostream& o) {
  */
 size_t
 deck_state::reveal_hole_card(void) {
+	assert(hole_reserved);
+	hole_reserved = false;
 	magic_draw(hole_card);
 	return hole_card;
 }

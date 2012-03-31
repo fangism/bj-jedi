@@ -151,6 +151,9 @@ private:
 	void
 	reveal_hole_card(const size_t);
 
+	void
+	replace_hole_card(void);
+
 	bool
 	already_split(void) const {
 		return player_hands.size() >= 2;

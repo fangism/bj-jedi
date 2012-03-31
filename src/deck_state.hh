@@ -67,11 +67,22 @@ private:
 		a single card is drawn.
 	 */
 	_deck_distribution			card_probabilities;
+	/**
+		Flag that determines whether or not card_probabilities
+		need to be updated (after cards were drawn).  
+	 */
+	bool					need_update;
 #endif
 	/**
 		Dealer is dealt one hole card (face-down).
 	 */
 	size_t					hole_card;
+	/**
+		When a hole card is drawn reserved, the remaining
+		cards needs to be updated for random drawing purpose,
+		but not for analysis purposes.
+	 */
+	bool					hole_reserved;
 	/**
 		Countdown of cards remaining.
 	 */
@@ -82,13 +93,6 @@ private:
 		Maximum allowed should be .90 (90%)
 	 */
 	size_t					maximum_penetration;
-#if DECK_PROBABILITIES
-	/**
-		Flag that determines whether or not card_probabilities
-		need to be updated (after cards were drawn).  
-	 */
-	bool					need_update;
-#endif
 public:
 	explicit
 	deck_state(const variation&);
@@ -144,6 +148,9 @@ public:
 
 	size_t
 	reveal_hole_card(void);
+
+	void
+	replace_hole_card(void);
 
 	void
 	reshuffle(void);
