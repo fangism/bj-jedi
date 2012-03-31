@@ -11,7 +11,7 @@
 #include <map>
 #include <vector>
 #include "util/tokenize.hh"
-// #include "util/value_saver.hh"
+#include "util/value_saver.hh"
 
 //=============================================================================
 // useful macros
@@ -120,15 +120,14 @@ public:
 	typedef	typename command_type::main_ptr_type	main_ptr_type;
 //	typedef	typename command_type::usage_ptr_type	usage_ptr_type;
 
-#if 0
 	class readline_init {
+	// type is util::completion_function_ptr from readline_wrap.hh
 		value_saver<char** (*)(const char*, int, int)>
 						_compl;
 	public:
 		readline_init();
 		~readline_init();
 	} __ATTRIBUTE_UNUSED__;
-#endif
 private:
 	static	command_map_type		command_map;
 	typedef	std::vector<string>		history_type;

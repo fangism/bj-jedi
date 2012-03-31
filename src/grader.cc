@@ -646,9 +646,6 @@ grader::main(void) {
 "Type 'help' or '?' for a list of table commands." << endl;
 	const value_saver<string>
 		tmp1(grader_command_registry::prompt, "table> ");
-	const value_saver<util::completion_function_ptr>
-		tmp(rl_attempted_completion_function,
-			&grader_command_registry::completion);
 	grader_command_registry::interpret(*this);
 	return 0;
 }

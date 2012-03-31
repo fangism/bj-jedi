@@ -6,8 +6,8 @@
 	$Id: readline_wrap.hh,v 1.2 2012/02/19 20:56:06 fang Exp $
  */
 
-#ifndef	__UTIL_READLINE_WRAP_H__
-#define	__UTIL_READLINE_WRAP_H__
+#ifndef	__UTIL_READLINE_WRAP_HH__
+#define	__UTIL_READLINE_WRAP_HH__
 
 #include "config.h"
 #include <iosfwd>
@@ -211,5 +211,5 @@ typedef	char** (*completion_function_ptr)(const char*, int, int);
 }	// end namespace util
 
 
-#endif	/* __UTIL_READLINE_WRAP_H__ */
+#endif	/* __UTIL_READLINE_WRAP_HH__ */
 

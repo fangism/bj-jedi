@@ -6,7 +6,7 @@
 #ifndef	__UTIL_VALUE_SAVER_HH__
 #define	__UTIL_VALUE_SAVER_HH__
 
-#include "config.h"
+#include "attributes.h"
 // #include "util/value_saver_fwd.hh"
 // #include "util/macros.h"
 

@@ -1406,9 +1406,6 @@ strategy::main(const char* prompt) const {
 "Type 'help' or '?' for a list of information commands." << endl;
 	const value_saver<string>
 		tmp1(strategy_command_registry::prompt, prompt);
-	const value_saver<util::completion_function_ptr>
-		tmp(rl_attempted_completion_function,
-			&strategy_command_registry::completion);
 	strategy_command_registry::interpret(*this);
 	return 0;
 }

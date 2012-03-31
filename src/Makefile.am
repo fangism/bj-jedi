@@ -26,6 +26,7 @@ libbj_la_SOURCES = \
 libbj_la_LIBADD = util/libutil.la
 
 util_libutil_la_SOURCES = \
+	util/attributes.h \
 	util/array.hh \
 	util/array.tcc \
 	util/command.hh \

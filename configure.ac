@@ -154,6 +154,13 @@ dnl XLC++, ICC, HPCC, etc...
 AM_PROG_CC_C_O
 AC_ISC_POSIX
 
+dnl some compiler support
+FANG_CXX_ATTRIBUTE_UNUSED
+FANG_CXX_ATTRIBUTE_ALIGNED
+FANG_CXX_ATTRIBUTE_ALIGNED_SIZE
+FANG_CXX_ATTRIBUTE_VISIBILITY
+FANG_CXX_ATTRIBUTE_MALLOC
+
 dnl checks tons of standard C++ headers in various locations
 dnl from "config/cxx_STL.m4"
 dnl from this point to the end, we also apply ANAL_FLAGS before CFLAGS

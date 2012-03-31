@@ -85,9 +85,6 @@ play_options::configure(void) {
 "Type 'help' or '?' for a list of commands." << endl;
 	const value_saver<string>
 		tmp1(option_command_registry::prompt, "options> ");
-	const value_saver<util::completion_function_ptr>
-		tmp2(rl_attempted_completion_function,
-			&option_command_registry::completion);
 	option_command_registry::interpret(*this);
 }
 

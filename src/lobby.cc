@@ -40,9 +40,6 @@ int
 lobby::main(void) {
 	const value_saver<string>
 		tmp1(lobby_command_registry::prompt, "lobby> ");
-	const value_saver<util::completion_function_ptr>
-		tmp(rl_attempted_completion_function,
-			&lobby_command_registry::completion);
 	lobby_command_registry::interpret(*this);
 	return 0;
 }
