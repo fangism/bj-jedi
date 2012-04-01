@@ -18,9 +18,6 @@ using std::string;
 using std::setw;
 using std::cerr;
 using std::endl;
-#if DECK_PROBABILITIES
-using util::normalize;
-#endif
 using util::string_list;
 using util::tokenize;
 using util::strings::string_to_num;
@@ -49,10 +46,6 @@ using cards::card_index;
  */
 deck_state::deck_state(const variation& v) : 
 		num_decks(v.num_decks),
-#if DECK_PROBABILITIES
-		card_probabilities(card_values), 
-		need_update(true),
-#endif
 		hole_reserved(false)
 		{
 	reshuffle();		// does most of the initializing
@@ -73,10 +66,6 @@ deck_state::reshuffle(void) {
 #else
 	std::fill(cards.begin(), cards.end() -1, f);
 	cards[TEN] = f*4;	// T, J, Q, K
-#endif
-#if DECK_PROBABILITIES
-	need_update = true;
-	update_probabilities();
 #endif
 }
 
@@ -105,30 +94,6 @@ deck_state::draw_ten_probability(void) const {
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-#if DECK_PROBABILITIES
-void
-deck_state::update_probabilities(void) {
-	if (need_update) {
-		assert(card_probabilities.size() == cards.size());
-		normalize(card_probabilities, cards);
-		need_update = false;
-	}
-}
-#endif
-
-//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-#if 0
-/**
-	\param d the card index of the counter to decrement.
- */
-void
-deck_state::count(const size_t c) {
-	assert(cards[c]);
-	--cards[c];
-}
-#endif
-
-//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
 	Draws the user-determined card, useful for setting up
 	and querying specific scenarios.
@@ -146,9 +111,6 @@ deck_state::magic_draw(const size_t r) {
 	--cards[r];
 	++cards_spent;
 	--cards_remaining;
-#if DECK_PROBABILITIES
-	need_update = true;
-#endif
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -246,9 +208,6 @@ deck_state::option_draw(const bool m, istream& i, ostream& o) {
 size_t
 deck_state::draw(void) {
 	const size_t ret = quick_draw();
-#if DECK_PROBABILITIES
-	update_probabilities();
-#endif
 	return ret;
 }
 
@@ -388,9 +347,6 @@ deck_state::edit_deck(const size_t c, const int n) {
 	cards[c] = n;
 	cards_remaining += d;
 	// leave used_cards and cards_spent alone
-#if DECK_PROBABILITIES
-	need_update = true;
-#endif
 	return false;
 }
 

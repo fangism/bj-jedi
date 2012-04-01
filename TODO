@@ -21,8 +21,11 @@ Abort
 
 analysis:
 impact of using a fixed (basic) strategy in different count situations
-	imperfections of strategies
+	imperfections of strategies (betting correlation)
 instead of infinite deck, compute finite deck edges (without replacement)
+	could do on-demand exact calculation as each situation
+	comes up, instead of for every dealer reveal card, 
+	and every player hand.
 
 card randomization:
 alternatively, std::shuffle entire sequence up front
@@ -72,8 +75,10 @@ sensitivity analysis of dynamic strategy and edges
 library:
 	export interfaces to: python, octave, guile, etc...
 	using swig
+	needs well-defined API
 
 paper:
 write an academic paper on results
 	second-order covariant sensitivity analysis
 	discuss betting strategies, Kelly criterion
+betting correlation (efficiency of counting systems)

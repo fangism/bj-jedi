@@ -17,9 +17,10 @@ enum player_choice {
 	SPLIT = 4,
 	SURRENDER = 5,
 	// for interactive mode-only
-	COUNT = 6,	// show count
-	HINT = 7,	// analyze
-	OPTIM = 8	// auto-optimal
+	BOOKMARK = 6,	// save away
+	COUNT = 7,	// show count
+	HINT = 8,	// analyze
+	OPTIM = 9	// auto-optimal
 };
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

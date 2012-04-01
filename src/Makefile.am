@@ -23,6 +23,8 @@ libbj_la_SOURCES = \
 	strategy.cc strategy.hh \
 	variation.cc variation.hh
 
+# TODO: readline function only needed with CLI library
+
 libbj_la_LIBADD = util/libutil.la
 
 util_libutil_la_SOURCES = \
@@ -56,8 +58,4 @@ bjswoc_LDADD = libbj.la
 bjgrader_SOURCES = bjgrader.cc
 bjgrader_LDADD = libbj.la
 
-cvsdiffs:
-	-cvs diff -u > $@
-
-.PHONY: cvsdiffs
-
+include $(top_srcdir)/globals.mk

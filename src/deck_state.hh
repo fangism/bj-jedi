@@ -19,13 +19,6 @@ using cards::deck_count_type;
 #endif
 using cards::state_machine;
 
-/**
-	Continuously track real-valued probabilities as cards
-	are drawn from deck.
-	Just get rid of this, no need for it.
- */
-#define	DECK_PROBABILITIES			0
-
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
 	Tracks cards remaining in deck(s).
@@ -61,18 +54,6 @@ private:
 		remaining in deck or shoe.
 	 */
 	_deck_count_type			cards;
-#if DECK_PROBABILITIES
-	/**
-		This is updated everytime cards change, e.g. when
-		a single card is drawn.
-	 */
-	_deck_distribution			card_probabilities;
-	/**
-		Flag that determines whether or not card_probabilities
-		need to be updated (after cards were drawn).  
-	 */
-	bool					need_update;
-#endif
 	/**
 		Dealer is dealt one hole card (face-down).
 	 */
@@ -105,12 +86,6 @@ public:
 		return cards;		// remaining
 	}
 
-#if DECK_PROBABILITIES
-	const _deck_distribution&
-	get_card_probabilities(void) const {
-		return card_probabilities;
-	}
-#endif
 	double
 	draw_ten_probability(void) const;
 
@@ -170,11 +145,6 @@ public:
 	show_extended_count(ostream& o) const {
 		return show_count(o, true);
 	}
-
-#if DECK_PROBABILITIES
-	void
-	update_probabilities(void);
-#endif
 
 	bool
 	edit_deck(const size_t, const int);

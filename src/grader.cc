@@ -301,6 +301,7 @@ if (live || !opt.dealer_plays_only_against_live) {
 } else {
 	// hole card is never revealed and thus not counted
 	// treat as if hole card is replaced into shoe
+	// this could happen if player surrendered, or busted.
 	replace_hole_card();
 }
 	// suspense double-down?  nah
@@ -313,7 +314,6 @@ for (j=0; j<player_hands.size(); ++j) {
 	if (player_hands[j].doubled_down()) {
 		stats.total_bets += bet;
 	}
-		// check for surrender could/should be outside this loop
 	const outcome& wlp(play_map::outcome_matrix
 		[play_map::player_final_state_map(player_hands[j].state)]
 		[dealer_hand.state -stop]);
@@ -447,7 +447,6 @@ do {
 	case SPLIT: 
 	case SURRENDER: {
 		bool notified = false;
-		handle_player_action(j, pc);
 		if (opt.notify_when_wrong && (pc != ac)) {
 			ostr << "*** optimal choice was: " <<
 				action_names[ac] << endl;
@@ -469,8 +468,15 @@ do {
 			}
 			ostr << oss.str() << endl;
 		}
+		// count needs to be shown before card is drawn
+		// TODO: bookmark_when_wrong or bookmark_when_interesting,
+		// *before* drawing card
+		handle_player_action(j, pc);
 		break;
 	}
+	case BOOKMARK:
+		ostr << "Bookmarking not yet implemented, sorry!" << endl;
+		break;
 	case COUNT:
 		show_count();
 		break;
@@ -494,7 +500,7 @@ do {
 		ph.dump_player(ostr) << endl;	// show final state
 	}
 	return ph.player_live();
-}
+}	// end grader::play_out_hand
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
@@ -550,12 +556,7 @@ grader::update_dynamic_strategy(void) {
 	// only now do we need to update probabilities
 	// TODO: track whether or not already up-to-date
 	// if so, don't re-evaluate
-#if DECK_PROBABILITIES
-	C.update_probabilities();
-	dynamic_strategy.set_card_distribution(C.get_card_probabilities());
-#else
 	dynamic_strategy.set_card_distribution(C.get_card_counts());
-#endif
 	dynamic_strategy.evaluate();
 }
 
@@ -580,6 +581,7 @@ grader::dump_situation(const size_t j) const {
 	\param p is splitting is permitted.
 	\param r if surrendering is permitted.
 	\param a if should just automatically play (OPTIM)
+	TODO: 'b' for bookmark
  */
 player_choice
 prompt_player_action(istream& i, ostream& o, 
@@ -624,6 +626,9 @@ do {
 	case 'r':
 	case 'R':
 		if (r) { c = SURRENDER; } break;
+	case 'b':
+	case 'B':
+		c = BOOKMARK; break;	// show count
 	case 'c':
 	case 'C':
 		c = COUNT; break;	// show count
@@ -757,6 +762,11 @@ if (args.size() <= 1) {
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 DECLARE_GRADER_COMMAND_CLASS(Bet, "bet", "[amt] : change/show bet amount")
+DECLARE_GRADER_COMMAND_CLASS(Bet2, "Bet", "[amt] : change/show bet amount")
+int
+Bet2::main(grader& g, const string_list& args) {
+	return Bet::main(g, args);
+}
 int
 Bet::main(grader& g, const string_list& args) {
 	const double br = g.get_bankroll();

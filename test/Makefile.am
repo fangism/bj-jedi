@@ -13,6 +13,7 @@ SHELL_INTERPRETER = "\#!$(SHELL)"
 
 .bj-out.bj-diff:
 	@exp=$(srcdir)/`echo $@ | $(SED) 's|\.bj-diff|.bj-exp|'` && \
+	$(RM) $@ && \
 	test -f $$exp || { $(ECHO) "$$exp not found." ; exit 1 ;} && \
 	$(ECHO) "$(DIFF) -u $$exp $< > $@" && \
 	$(DIFF) -u $$exp $< > $@ || :
@@ -82,5 +83,5 @@ test.autodepend: Makefile
 
 DISTCLEANFILES = test.autodepend
 
-force:
+include $(top_srcdir)/globals.mk
 

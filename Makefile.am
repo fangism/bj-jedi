@@ -58,8 +58,5 @@ help-local:
 	$(ECHO) "    maintainer-clean: removes bootstrap targets and distcleans" ; \
 	$(ECHO) "    libtool: regenerates the configured libtool script"
 
-# include $(top_srcdir)/Make.global
-
-.PHONY: force
-force:
+include $(top_srcdir)/globals.mk
 

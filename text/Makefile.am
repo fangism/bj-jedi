@@ -150,3 +150,5 @@ tables/dealer-final-S17-post-peek.tex: $(S17_STRATEGY)
 
 -include bj-math.pdfdepend
 
+include $(top_srcdir)/globals.mk
+
