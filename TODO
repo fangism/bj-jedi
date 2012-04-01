@@ -42,6 +42,7 @@ define/use API for hooking up different UIs (stdio, ncurses)
 options:
 show overall edge given exact count (accumulate)
 support different counting schemes besides hi-lo
+silent auto-play option for simulations (speed)
 
 struct history {
 to track every situation and decision?

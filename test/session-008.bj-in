@@ -1,0 +1,6 @@
+var show-all
+p
+opt show-all
+seed 0 0 8
+auto-play-until-shuffle
+stats
