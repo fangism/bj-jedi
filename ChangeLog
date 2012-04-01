@@ -1,5 +1,9 @@
 # "ChangeLog"
 
+2012-03-30	David Fang		<fangism@users.sourceforge.net>
+	Fixed edit_deck command, added test cases for single-deck
+	sensitivity analysis, and sample 6-deck auto-play sessions.
+
 2012-03-26	David Fang		<fangism@users.sourceforge.net>
 	Separated hit-split-aces from resplit-aces.
 	Started math documentation.

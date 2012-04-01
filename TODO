@@ -65,6 +65,14 @@ option for infinite deck (replace every card)
 command-line options:
 paths to search for config/save/load files?
 
+test cases:
+using basic vs. dynamic strategy
+sensitivity analysis of dynamic strategy and edges
+
+library:
+	export interfaces to: python, octave, guile, etc...
+	using swig
+
 paper:
 write an academic paper on results
 	second-order covariant sensitivity analysis

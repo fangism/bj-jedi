@@ -1080,8 +1080,8 @@ case 4: {
 	default:
 		cerr << "error: invalid operator, expecting [+-=]" << endl;
 		return CommandStatus::BADARG;
-		break;
 	}
+	break;
 }
 default: cerr << "usage: " << name << " " << brief << endl;
 	return CommandStatus::SYNTAX;

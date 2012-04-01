@@ -35,7 +35,17 @@ TEST_CASES = defaults \
 	basic-6to5-all \
 	basic-S17-all \
 	basic-no-surr-all \
-	basic-noDAS-all
+	basic-noDAS-all \
+	dynamic-strategy-1-less-2 dynamic-strategy-1-more-2 \
+	dynamic-strategy-1-less-3 dynamic-strategy-1-more-3 \
+	dynamic-strategy-1-less-4 dynamic-strategy-1-more-4 \
+	dynamic-strategy-1-less-5 dynamic-strategy-1-more-5 \
+	dynamic-strategy-1-less-6 dynamic-strategy-1-more-6 \
+	dynamic-strategy-1-less-7 dynamic-strategy-1-more-7 \
+	dynamic-strategy-1-less-8 dynamic-strategy-1-more-8 \
+	dynamic-strategy-1-less-9 dynamic-strategy-1-more-9 \
+	dynamic-strategy-1-less-T dynamic-strategy-1-more-T \
+	dynamic-strategy-1-less-A dynamic-strategy-1-more-A
 # need to re-analyze/fix:
 #	basic-hit-split-As-all
 #	basic-nosplit-all
@@ -61,7 +71,8 @@ keep-files: $(TEST_OUTPUTS) $(TEST_DIFFS)
 
 EXTRA_DIST = \
 	$(TEST_CASES:=.bj-in) \
-	$(TEST_CASES:=.bj-exp)
+	$(TEST_CASES:=.bj-exp) \
+	update-tests.sh
 
 -include test.autodepend
 test.autodepend: Makefile
