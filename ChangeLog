@@ -1,5 +1,8 @@
 # "ChangeLog"
 
+2012-04-01	David Fang		<fangism@users.sourceforge.net>
+	Added bookmarking feature to save 'interesting' hands.
+
 2012-03-30	David Fang		<fangism@users.sourceforge.net>
 	Fixed edit_deck command, added test cases for single-deck
 	sensitivity analysis, and sample 6-deck auto-play sessions.

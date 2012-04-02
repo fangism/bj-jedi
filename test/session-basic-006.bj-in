@@ -1,7 +1,8 @@
 var show-all
 p
+opt use-dynamic-strategy 0
 opt show-all
-seed 0 0 2
+seed 0 0 6
 auto-play-until-shuffle
 stats
 bookmarks-list

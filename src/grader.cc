@@ -24,6 +24,7 @@ template class command_registry<blackjack::GraderCommand>;
 namespace blackjack {
 typedef	util::command_registry<GraderCommand>		grader_command_registry;
 
+using std::vector;
 using std::cerr;
 using std::endl;
 using std::ostringstream;
@@ -53,7 +54,8 @@ grader::grader(const variation& v, play_options& p, istream& i, ostream& o) :
 		basic_strategy(play), dynamic_strategy(play), 
 		C(v),
 		player_hands(), dealer_hand(play), 
-		stats() {
+		stats(), 
+		bookmarks() {
 	player_hands.reserve(16);	// to prevent realloc
 #if FACE_CARDS
 	const extended_deck_count_type& d(C.get_card_counts());
@@ -66,6 +68,7 @@ grader::grader(const variation& v, play_options& p, istream& i, ostream& o) :
 	basic_strategy.evaluate();
 	dynamic_strategy.evaluate();	// not really necessary
 	stats.initialize_bankroll(100.0);	// default bankroll
+	bookmarks.reserve(256);
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -123,7 +126,7 @@ grader::offer_insurance(const bool pbj) const {
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void
 grader::show_count(void) const {
-	C.show_count(ostr, opt.count_face_cards);
+	C.show_count(ostr, opt.count_face_cards, opt.count_used_cards);
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -425,6 +428,8 @@ do {
 	if (opt.always_show_count_at_action) {
 		show_count();
 	}
+	// snapshot of current state, in case of bookmark
+	const bookmark bm(dealer_reveal, ph, C, d, p, r);
 	ostringstream oss;
 	const pair<expectations, expectations>
 		ace(assess_action(ph.state, card_value_map[dealer_reveal],
@@ -439,6 +444,7 @@ do {
 		ostr << oss.str() << endl;
 	}
 	pc = prompt_player_action(istr, ostr, d, p, r, opt.auto_play);
+	bool bookmarked = false;
 	switch (pc) {
 		// all fall-through to handle_player_action()
 	case STAND:
@@ -447,7 +453,9 @@ do {
 	case SPLIT: 
 	case SURRENDER: {
 		bool notified = false;
-		if (opt.notify_when_wrong && (pc != ac)) {
+		if (pc != ac) {
+		// player's choice was wrong, sub-optimal
+		if (opt.notify_when_wrong) {
 			ostr << "*** optimal choice was: " <<
 				action_names[ac] << endl;
 			if (pc == ac2) {
@@ -458,9 +466,21 @@ do {
 			}
 			notified = true;
 		}
-		if (opt.notify_dynamic && (acp.second != acp.first)) {
+		if (opt.bookmark_wrong) {
+			bookmarks.push_back(bm);
+			bookmarked = true;
+		}
+		}
+		if (acp.second != acp.first) {
+		// basic != dynamic strategy (and is thus, interesting)
+		if (opt.notify_dynamic) {
 			ostr << "*** dynamic strategy beats basic ***" << endl;
 			notified = true;
+		}
+		if (opt.bookmark_dynamic && !bookmarked) {
+			bookmarks.push_back(bm);
+			bookmarked = true;
+		}
 		}
 		if (notified) {
 			if (opt.notify_with_count) {
@@ -469,13 +489,13 @@ do {
 			ostr << oss.str() << endl;
 		}
 		// count needs to be shown before card is drawn
-		// TODO: bookmark_when_wrong or bookmark_when_interesting,
-		// *before* drawing card
+		// same with auto bookmarks
 		handle_player_action(j, pc);
 		break;
 	}
 	case BOOKMARK:
-		ostr << "Bookmarking not yet implemented, sorry!" << endl;
+		bookmarks.push_back(bm);
+		bookmarked = true;
 		break;
 	case COUNT:
 		show_count();
@@ -483,15 +503,21 @@ do {
 	case HINT:
 		ostr << oss.str() << endl;
 		break;
-	// case BOOKMARK: for later review
 	case OPTIM: {
 		ostr << oss.str() << endl;	// optional?
 		ostr << "auto: " << action_names[ac] << endl;
+		if ((acp.second != acp.first) && opt.bookmark_dynamic) {
+			bookmarks.push_back(bm);
+			bookmarked = true;
+		}
 		handle_player_action(j, ac);
 		break;
 	}
 	default: break;
-	}	// end switch
+	}	// end switch(pc)
+	if (bookmarked) {
+		ostr << "Bookmark saved." << endl;
+	}
 	} while (ph.player_prompt());
 } while (ph.player_prompt());
 	if (ph.player_busted()) {
@@ -581,7 +607,6 @@ grader::dump_situation(const size_t j) const {
 	\param p is splitting is permitted.
 	\param r if surrendering is permitted.
 	\param a if should just automatically play (OPTIM)
-	TODO: 'b' for bookmark
  */
 player_choice
 prompt_player_action(istream& i, ostream& o, 
@@ -596,7 +621,7 @@ do {
 		if (d) o << 'd';
 		if (p) o << 'p';
 		if (r) o << 'r';
-		o << "c?!]> ";
+		o << "bc?!]> ";
 		if (!a) {
 //		ch = getchar();
 		// TODO: ncurses getch();
@@ -651,6 +676,24 @@ grader::status(ostream& o) const {
 		", bet: " << opt.bet << endl;
 	// deck remaning (%)
 	return o;
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+void
+grader::list_bookmarks(void) const {
+	ostr << "-------- bookmarks --------" << endl;
+	vector<bookmark>::const_iterator
+		i(bookmarks.begin()), e(bookmarks.end());
+	for ( ; i!=e; ++i) {
+		i->dump(ostr) << endl;
+	}
+	ostr << "------ end bookmarks ------" << endl;
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+void
+grader::clear_bookmarks(void) {
+	bookmarks.clear();
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -978,12 +1021,13 @@ case 1: {
 case 2: {
 	if (args.back() == "time") {
 		const time_t tm = std::time(NULL);	// Epoch time
+		const ushort mask(-1);
 		ushort sd[3] = {0, 0, 0};
-		sd[0] = tm & ushort(-1);
-		sd[1] = (tm >> 16) & ushort(-1);
+		sd[0] = tm & mask;
+		sd[1] = (tm >> 16) & mask;
 		// if (sizeof(time_t) > 4) {
-		// sd[2] = (tm >> 32) & ushort(-1);
-		sd[2] = (tm >> 8) & ushort(-1);
+		// sd[2] = (tm >> 32) & mask;
+		sd[2] = (tm >> 8) & mask;
 		// }
 		g.ostr << "seed48 = " << sd[0] << ' ' << sd[1] << ' ' << sd[2] << endl;
 		seed48(sd);
@@ -1098,6 +1142,29 @@ default: cerr << "usage: " << name << " " << brief << endl;
 }	// end switch
 	return CommandStatus::NORMAL;
 }
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+DECLARE_GRADER_COMMAND_CLASS(BookmarksClear, "bookmarks-clear",
+	": erase all saved bookmarks")
+int
+BookmarksClear::main(grader& g, const string_list& args) {
+	g.clear_bookmarks();
+	return CommandStatus::NORMAL;
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+DECLARE_GRADER_COMMAND_CLASS(BookmarksList, "bookmarks-list",
+	": print all saved bookmarks")
+int
+BookmarksList::main(grader& g, const string_list& args) {
+	g.list_bookmarks();
+	return CommandStatus::NORMAL;
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// bookmarks-export (save)
+// bookmarks-import (load)
+// bookmarks-review (quiz)
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // TODO: auto-play a whole hand, or N hands, or until some condition...

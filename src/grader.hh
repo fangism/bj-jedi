@@ -12,6 +12,7 @@
 #include "deck_state.hh"
 #include "statistics.hh"
 #include "hand.hh"
+#include "bookmark.hh"
 
 namespace blackjack {
 class variation;
@@ -81,7 +82,15 @@ private:
 	size_t					dealer_hole;
 
 public:
+	/**
+		Collection of statistics of play.
+	 */
 	statistics				stats;
+	/**
+		Collection of saved situations for 
+		analysis.
+	 */
+	std::vector<bookmark>			bookmarks;
 	// random seed?
 	/**
 		Hand-by-hand record of trends to plot.
@@ -134,6 +143,12 @@ public:
 
 	void
 	show_count(void) const;
+
+	void
+	list_bookmarks(void) const;
+
+	void
+	clear_bookmarks(void);
 
 	int
 	main(void);

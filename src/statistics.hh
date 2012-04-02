@@ -47,6 +47,8 @@ struct statistics {
 	// expectation
 	// lucky draws
 	// bad beats
+	// dealer initial->final stats (including bust, BJ)
+	// player initial->final stats (including bust)
 	// min true count, max true count
 
 	statistics();			// initial value

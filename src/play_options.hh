@@ -95,6 +95,21 @@ struct play_options {
 		Not particularly useful.
 	 */
 	bool				count_face_cards;
+	/**
+		If true, show separate counts for used up cards.
+		Information is redundant.
+	 */
+	bool				count_used_cards;
+	/**
+		If true, automatically bookmark situations
+		where user's action was not optimal.
+	 */
+	bool				bookmark_wrong;
+	/**
+		If true, bookmark all situations when
+		dynamic strategy differed from basic strategy.
+	 */
+	bool				bookmark_dynamic;
 	/// size of current bet (convert from integer)
 	double				bet;
 

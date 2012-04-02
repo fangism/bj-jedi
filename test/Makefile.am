@@ -32,6 +32,10 @@ SHELL_INTERPRETER = "\#!$(SHELL)"
 TEST_CASES = defaults \
 	session-000 session-001 session-002 session-003 session-004 \
 	session-005 session-006 session-007 session-008 session-009 \
+	session-basic-000 session-basic-001 session-basic-002 \
+	session-basic-003 session-basic-004 session-basic-005 \
+	session-basic-006 session-basic-007 session-basic-008 \
+	session-basic-009 \
 	basic-strategy-all \
 	basic-6to5-all \
 	basic-S17-all \

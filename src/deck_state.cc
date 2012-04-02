@@ -103,7 +103,7 @@ void
 deck_state::magic_draw(const size_t r) {
 	// TODO: safe-guard against drawing non-existent
 	if (!cards[r]) {
-		show_count(cerr, true);
+		show_count(cerr, true, true);
 		cerr << "FATAL: attempt to draw card " << card_name[r] << endl;
 	}
 	assert(cards[r]);
@@ -250,9 +250,10 @@ deck_state::reveal_hole_card(void) {
 /**
 	\param ex if extended detailed card count (TJQK) is desired.
 		Most of the time, user only cares about aggregating 10s.
+	\param used to show cards that have been used (redundant).
  */
 ostream&
-deck_state::show_count(ostream& o, const bool ex) const {
+deck_state::show_count(ostream& o, const bool ex, const bool used) const {
 	const size_t N = ex ? card_symbols : card_values;
 	const size_t p = o.precision(2);
 	const size_t* po = ex ? extended_reveal_print_ordering : reveal_print_ordering;
@@ -277,6 +278,7 @@ deck_state::show_count(ostream& o, const bool ex) const {
 		o << "   " << card_name[j];
 	}
 	o << "\ttotal\t%" << endl;
+if (used) {
 	o << "used:\t";
 	for (i=0 ; i<N; ++i) {
 		const size_t j = po[i];
@@ -284,6 +286,7 @@ deck_state::show_count(ostream& o, const bool ex) const {
 	}
 	o << "\t" << cards_spent << "\t(" <<
 		double(cards_spent) *100.0 / (num_decks *52) << "%)\n";
+}
 	o << "rem:\t";
 	for (i=0; i<N; ++i) {
 		const size_t j = po[i];

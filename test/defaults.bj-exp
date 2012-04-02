@@ -43,6 +43,7 @@ lobby> opt show-all
 uniquely-matched: options
 face cards: yes
 count face cards separately: no
+show used cards count: yes
 continuous shuffle: no
 user picks cards: no
 use dynamic strategy: yes
@@ -56,6 +57,8 @@ notify when dynamic strategy beats basic: yes
 notify with count: yes
 show edge values with analysis: yes
 automatically play optimally: no
+bookmark wrong decisions: yes
+bookmark when dynamic strategy != basic: yes
 current bet: 1
 lobby> 
 Thanks for playing!

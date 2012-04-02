@@ -40,12 +40,18 @@ preset options for rules
 save/restore state/accounts
 define/use API for hooking up custom strategies
 define/use API for hooking up different UIs (stdio, ncurses)
-	factor out current interface into libbj-cli
+	factor out current (CLI) interface into libbj-cli
+add robot players: play styles [perfect, basic, near-perfect, n00b]
+option for infinite deck (replace every card)
+	almost the same as continuous shuffle
 
 options:
 show overall edge given exact count (accumulate)
 support different counting schemes besides hi-lo
 silent auto-play option for simulations (speed)
+betting: auto-change bet amount according to conditions
+	based on true count or true edge.
+	set betting granularity.
 
 struct history {
 to track every situation and decision?
@@ -59,11 +65,6 @@ compare basic vs. dynamic strategy
 auto-play-until-count (falls below, based on true-count)
 
 quiz count: after every hand, or at reshuffle time, or periodically
-
-simulation:
-add robot players: play styles [perfect, basic, near-perfect, n00b]
-option for infinite deck (replace every card)
-	almost the same as continuous shuffle
 
 command-line options:
 paths to search for config/save/load files?

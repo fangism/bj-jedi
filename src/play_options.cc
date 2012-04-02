@@ -51,6 +51,9 @@ play_options::play_options() :
 	auto_play(false),
 	face_cards(true),
 	count_face_cards(false),
+	count_used_cards(true),
+	bookmark_wrong(true),
+	bookmark_dynamic(true),
 	bet(1.0) {
 }
 
@@ -59,20 +62,27 @@ ostream&
 play_options::dump(ostream& o) const {
 	o << "face cards: " << yn(face_cards) << endl;
 	o << "count face cards separately: " << yn(count_face_cards) << endl;
+	o << "show used cards count: " << yn(count_used_cards) << endl;
 	o << "continuous shuffle: " << yn(continuous_shuffle) << endl;
 	o << "user picks cards: " << yn(pick_cards) << endl;
 	o << "use dynamic strategy: " << yn(use_dynamic_strategy) << endl;
 	o << "dealer plays only vs. live player: " <<
 		yn(dealer_plays_only_against_live) << endl;
 	o << "always show bankroll and bet: " << yn(always_show_status) << endl;
-	o << "always show count before hand: " << yn(always_show_count_at_hand) << endl;
-	o << "always show count at action: " << yn(always_show_count_at_action) << endl;
+	o << "always show count before hand: " <<
+		yn(always_show_count_at_hand) << endl;
+	o << "always show count at action: " <<
+		yn(always_show_count_at_action) << endl;
 	o << "always suggest best action: " << yn(always_suggest) << endl;
 	o << "notify when wrong: " << yn(notify_when_wrong) << endl;
-	o << "notify when dynamic strategy beats basic: " << yn(notify_dynamic) << endl;
+	o << "notify when dynamic strategy beats basic: " <<
+		yn(notify_dynamic) << endl;
 	o << "notify with count: " << yn(notify_with_count) << endl;
 	o << "show edge values with analysis: " << yn(show_edges) << endl;
 	o << "automatically play optimally: " << yn(auto_play) << endl;
+	o << "bookmark wrong decisions: " << yn(bookmark_wrong) << endl;
+	o << "bookmark when dynamic strategy != basic: " <<
+		yn(bookmark_dynamic) << endl;
 	o << "current bet: " << bet << endl;
 	return o;
 }
@@ -239,6 +249,9 @@ DEFINE_OPTION_MEMBER_COMMAND(
 	count_face_cards, "count-face-cards", "[bool]: count face cards separately")
 
 DEFINE_OPTION_MEMBER_COMMAND(
+	count_used_cards, "count-used-cards", "[bool]: show used card counts")
+
+DEFINE_OPTION_MEMBER_COMMAND(
 	pick_cards, "cards-pick", "[bool]: user chooses card or randomly draw")
 
 DEFINE_OPTION_MEMBER_COMMAND(
@@ -288,6 +301,14 @@ DEFINE_OPTION_MEMBER_COMMAND(
 DEFINE_OPTION_MEMBER_COMMAND(
 	auto_play, "auto-play",
 	"[bool]: automatically play optimally")
+
+DEFINE_OPTION_MEMBER_COMMAND(
+	bookmark_wrong, "bookmark-wrong",
+	"[bool]: bookmark when user is wrong")
+
+DEFINE_OPTION_MEMBER_COMMAND(
+	bookmark_dynamic, "bookmark-dynamic",
+	"[bool]: bookmark when dynamic strategy beats basic strategy")
 
 #undef	DECLARE_OPTION_COMMAND_CLASS
 }	// end namespace option_commands

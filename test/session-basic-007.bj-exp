@@ -30,6 +30,8 @@ lobby> p
 uniquely-matched: play
 You sit down at a blackjack table.
 Type 'help' or '?' for a list of table commands.
+table> opt use-dynamic-strategy 0
+uniquely-matched: options
 table> opt show-all
 uniquely-matched: options
 face cards: yes
@@ -37,7 +39,7 @@ count face cards separately: no
 show used cards count: yes
 continuous shuffle: no
 user picks cards: no
-use dynamic strategy: yes
+use dynamic strategy: no
 dealer plays only vs. live player: yes
 always show bankroll and bet: yes
 always show count before hand: no

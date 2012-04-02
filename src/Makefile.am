@@ -9,6 +9,7 @@ AM_CPPFLAGS = $(RL_INCLUDE)
 
 libbj_la_SOURCES = \
 	blackjack.cc blackjack.hh \
+	bookmark.cc bookmark.hh \
 	card_state.cc card_state.hh \
 	config.h \
 	deck.cc deck.hh \

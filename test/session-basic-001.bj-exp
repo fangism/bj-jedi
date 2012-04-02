@@ -30,6 +30,8 @@ lobby> p
 uniquely-matched: play
 You sit down at a blackjack table.
 Type 'help' or '?' for a list of table commands.
+table> opt use-dynamic-strategy 0
+uniquely-matched: options
 table> opt show-all
 uniquely-matched: options
 face cards: yes
@@ -37,7 +39,7 @@ count face cards separately: no
 show used cards count: yes
 continuous shuffle: no
 user picks cards: no
-use dynamic strategy: yes
+use dynamic strategy: no
 dealer plays only vs. live player: yes
 always show bankroll and bet: yes
 always show count before hand: no
@@ -763,168 +765,192 @@ action? [hsdrbc?!]> !
 	hit  : -0.4716	-0.5233
 	dbl  : -0.9484	-1.057
 	surr.: -0.5	-0.5
-	advise:	hit	surrender	(different! using dynamic)
-auto: surrender
-Bookmark saved.
-[1/1] dealer: 9, player: Q5 (15) surrendered
-bankroll: 99.5, bet: 1
----------------- new hand ----------------
-dealer: 6
-[1/1] dealer: 6, player: 5Q (15)
-action? [hsdrbc?!]> !
-	edges:	basic	dynamic
-	stand: -0.1211	-0.158
-	hit  : -0.3752	-0.4272
-	dbl  : -0.7505	-0.8544
-	surr.: -0.5	-0.5
-	advise:	stand	stand
-auto: stand
-Dealer plays...
-dealer: 6T (16)
-dealer: 6T2 (18)
-[1/1] dealer: 6T2 (18), player: 5Q (15)
-Player loses.
-bankroll: 98.5, bet: 1
----------------- new hand ----------------
-dealer: 2
-[1/1] dealer: 2, player: 6Q (16)
-action? [hsdrbc?!]> !
-	edges:	basic	dynamic
-	stand: -0.2865	-0.2773
-	hit  : -0.4733	-0.4397
-	dbl  : -0.9466	-0.8794
-	surr.: -0.5	-0.5
-	advise:	stand	stand
-auto: stand
-Dealer plays...
-dealer: 2T (12)
-dealer: 2T8 (20)
-[1/1] dealer: 2T8 (20), player: 6Q (16)
-Player loses.
-bankroll: 97.5, bet: 1
----------------- new hand ----------------
-dealer: 4
-[1/1] dealer: 4, player: 74 (11)
-action? [hsdrbc?!]> !
-	edges:	basic	dynamic
-	stand: -0.2058	-0.1783
-	hit  : 0.2828	0.3014
-	dbl  : 0.5656	0.6027
-	surr.: -0.5	-0.5
-	advise:	double-down	double-down
-auto: double-down
-Dealer plays...
-dealer: 4A (A,4)
-dealer: 4A95 (19)
-[1/1] dealer: 4A95 (19), player: 744 (15) doubled-down
-Player loses.
-bankroll: 95.5, bet: 1
----------------- new hand ----------------
-dealer: 8
-[1/1] dealer: 8, player: 72 (9)
-action? [hsdrbc?!]> !
-	edges:	basic	dynamic
-	stand: -0.5105	-0.5489
-	hit  : 0.09838	0.1089
-	dbl  : -0.02644	-0.02859
-	surr.: -0.5	-0.5
-	advise:	hit	hit
+	advise:	hit	surrender	(different! using basic)
 auto: hit
-[1/1] dealer: 8, player: 727 (16)
+Bookmark saved.
+[1/1] dealer: 9, player: Q52 (17)
 action? [hsbc?!]> !
 	edges:	basic	dynamic
-	stand: -0.5105	-0.5552
-	hit  : -0.4584	-0.4413
-	advise:	hit	hit
-auto: hit
-player: 727Q (bust)
-[1/1] dealer: 8, player: 727Q (bust)
-bankroll: 94.5, bet: 1
----------------- new hand ----------------
-dealer: 8
-[1/1] dealer: 8, player: J9 (19)
-action? [hsdrbc?!]> !
-	edges:	basic	dynamic
-	stand: 0.5939	0.5732
-	hit  : -0.7137	-0.6489
-	dbl  : -1.427	-1.298
-	surr.: -0.5	-0.5
+	stand: -0.4232	-0.4297
+	hit  : -0.5537	-0.5052
 	advise:	stand	stand
 auto: stand
 Dealer plays...
-dealer: 8K (18)
-[1/1] dealer: 8K (18), player: J9 (19)
+dealer: 95 (14)
+dealer: 95Q (bust)
+[1/1] dealer: 95Q (bust), player: Q52 (17)
 Player wins.
-bankroll: 95.5, bet: 1
+bankroll: 101, bet: 1
 ---------------- new hand ----------------
-dealer: Q
-player: 87 (15)
-No dealer blackjack.
-[1/1] dealer: Q, player: 87 (15)
+dealer: 3
+[1/1] dealer: 3, player: 52 (7)
 action? [hsdrbc?!]> !
 	edges:	basic	dynamic
-	stand: -0.5404	-0.5247
-	hit  : -0.5044	-0.5399
-	dbl  : -1.009	-1.087
+	stand: -0.2466	-0.2196
+	hit  : -0.07694	-0.03867
+	dbl  : -0.3564	-0.297
 	surr.: -0.5	-0.5
-	advise:	surrender	surrender
-auto: surrender
-[1/1] dealer: Q, player: 87 (15) surrendered
-bankroll: 95, bet: 1
+	advise:	hit	hit
+auto: hit
+[1/1] dealer: 3, player: 52T (17)
+action? [hsbc?!]> !
+	edges:	basic	dynamic
+	stand: -0.1203	-0.09765
+	hit  : -0.5335	-0.4816
+	advise:	stand	stand
+auto: stand
+Dealer plays...
+dealer: 37 (10)
+dealer: 3755 (20)
+[1/1] dealer: 3755 (20), player: 52T (17)
+Player loses.
+bankroll: 100, bet: 1
+---------------- new hand ----------------
+dealer: A
+Player has blackjack!
+player: TA (BJ)
+even-money? [ync?!]: !
+odds: 2.29032 : 1
+pay : 2 : 1
+advise: no
+Declined insurance.
+dealer: AT (BJ)
+Dealer has blackjack.
+Push.
+bankroll: 100, bet: 1
+---------------- new hand ----------------
+dealer: A
+player: 8A (A,8)
+insurance? [ync?!]: !
+odds: 2.26667 : 1
+pay : 2 : 1
+advise: no
+Declined insurance.
+dealer: AQ (BJ)
+Dealer has blackjack.
+bankroll: 99, bet: 1
+---------------- new hand ----------------
+dealer: A
+player: 24 (6)
+insurance? [ync?!]: !
+odds: 2.24138 : 1
+pay : 2 : 1
+advise: no
+Declined insurance.
+No dealer blackjack.
+[1/1] dealer: A, player: 24 (6)
+action? [hsdrbc?!]> !
+	edges:	basic	dynamic
+	stand: -0.5987	-0.6048
+	hit  : -0.3406	-0.3886
+	dbl  : -1.185	-1.204
+	surr.: -0.5	-0.5
+	advise:	hit	hit
+auto: hit
+[1/1] dealer: A, player: 249 (15)
+action? [hsbc?!]> !
+	edges:	basic	dynamic
+	stand: -0.5987	-0.604
+	hit  : -0.5069	-0.5869
+	advise:	hit	hit
+auto: hit
+Dealer plays...
+dealer: AA (A,1)
+dealer: AA7 (19)
+[1/1] dealer: AA7 (19), player: 2496 (21)
+Player wins.
+bankroll: 100, bet: 1
 ---------------- new hand ----------------
 dealer: 7
-[1/1] dealer: 7, player: 42 (6)
+[1/1] dealer: 7, player: 3Q (13)
 action? [hsdrbc?!]> !
 	edges:	basic	dynamic
-	stand: -0.4754	-0.5283
-	hit  : -0.1519	-0.119
-	dbl  : -0.894	-0.9842
+	stand: -0.4754	-0.452
+	hit  : -0.2691	-0.3222
+	dbl  : -0.5874	-0.6576
 	surr.: -0.5	-0.5
 	advise:	hit	hit
 auto: hit
-[1/1] dealer: 7, player: 423 (9)
+[1/1] dealer: 7, player: 3Q3 (16)
 action? [hsbc?!]> !
 	edges:	basic	dynamic
-	stand: -0.4754	-0.5255
-	hit  : 0.1719	0.2054
+	stand: -0.4754	-0.4478
+	hit  : -0.4148	-0.4315
 	advise:	hit	hit
 auto: hit
-[1/1] dealer: 7, player: 4233 (12)
-action? [hsbc?!]> !
-	edges:	basic	dynamic
-	stand: -0.4754	-0.5225
-	hit  : -0.2128	-0.2874
-	advise:	hit	hit
-auto: hit
-player: 4233J (bust)
-[1/1] dealer: 7, player: 4233J (bust)
-bankroll: 94, bet: 1
+player: 3Q3J (bust)
+[1/1] dealer: 7, player: 3Q3J (bust)
+bankroll: 99, bet: 1
 ---------------- new hand ----------------
-dealer: 2
-[1/1] dealer: 2, player: J7 (17)
+dealer: 8
+[1/1] dealer: 8, player: 32 (5)
 action? [hsdrbc?!]> !
 	edges:	basic	dynamic
-	stand: -0.1564	-0.1071
-	hit  : -0.5382	-0.4622
-	dbl  : -1.076	-0.9244
+	stand: -0.5105	-0.4983
+	hit  : -0.1881	-0.2525
+	dbl  : -1.021	-0.9967
 	surr.: -0.5	-0.5
+	advise:	hit	hit
+auto: hit
+[1/1] dealer: 8, player: 324 (9)
+action? [hsbc?!]> !
+	edges:	basic	dynamic
+	stand: -0.5105	-0.5012
+	hit  : 0.09838	0.117
+	advise:	hit	hit
+auto: hit
+[1/1] dealer: 8, player: 3247 (16)
+action? [hsbc?!]> !
+	edges:	basic	dynamic
+	stand: -0.5105	-0.5084
+	hit  : -0.4584	-0.4824
+	advise:	hit	hit
+auto: hit
+player: 32477 (bust)
+[1/1] dealer: 8, player: 32477 (bust)
+bankroll: 98, bet: 1
+---------------- new hand ----------------
+dealer: J
+player: 52 (7)
+No dealer blackjack.
+[1/1] dealer: J, player: 52 (7)
+action? [hsdrbc?!]> !
+	edges:	basic	dynamic
+	stand: -0.5404	-0.5582
+	hit  : -0.3191	-0.3531
+	dbl  : -0.9509	-1.024
+	surr.: -0.5	-0.5
+	advise:	hit	hit
+auto: hit
+[1/1] dealer: J, player: 523 (10)
+action? [hsbc?!]> !
+	edges:	basic	dynamic
+	stand: -0.5404	-0.5644
+	hit  : 0.02531	0.002359
+	advise:	hit	hit
+auto: hit
+[1/1] dealer: J, player: 523T (20)
+action? [hsbc?!]> !
+	edges:	basic	dynamic
+	stand: 0.5545	0.5535
+	hit  : -0.849	-0.9202
 	advise:	stand	stand
 auto: stand
 Dealer plays...
-dealer: 23 (5)
-dealer: 233J (18)
-[1/1] dealer: 233J (18), player: J7 (17)
-Player loses.
+dealer: J5 (15)
+dealer: J5T (bust)
+[1/1] dealer: J5T (bust), player: 523T (20)
+Player wins.
 **************** Reshuffling... ****************
-bankroll: 93, bet: 1
+bankroll: 99, bet: 1
 table> stats
 initial bankroll: 100
-min bankroll: 93
+min bankroll: 94
 max bankroll: 101.5
-current bankroll: 93
-hands played: 46
-initial bets: 46
-total bets: 52
+current bankroll: 99
+hands played: 45
+initial bets: 45
+total bets: 50
 initial deal histogram: {
 	P\D	   2   3   4   5   6   7   8   9   T   A	total
 	0	   0   0   0   0   0   0   0   0   0   0	0
@@ -932,24 +958,24 @@ initial deal histogram: {
 	2	   0   0   0   0   0   0   0   0   0   0	0
 	3	   0   0   0   0   0   0   0   0   0   0	0
 	4	   0   0   0   0   0   0   0   0   0   0	0
-	5	   0   0   0   0   0   0   0   0   0   0	0
-	6	   0   0   0   0   0   1   0   0   0   1	2
-	7	   0   0   0   0   0   0   0   0   0   0	0
+	5	   0   0   0   0   0   0   1   0   0   0	1
+	6	   0   0   0   0   0   0   0   0   0   2	2
+	7	   0   1   0   0   0   0   0   0   1   0	2
 	8	   0   1   0   0   0   1   0   1   1   0	4
-	9	   0   1   0   0   0   0   1   0   0   0	2
+	9	   0   1   0   0   0   0   0   0   0   0	1
 	10	   0   0   0   0   1   0   0   0   0   0	1
-	11	   0   0   1   0   0   0   0   0   1   0	2
+	11	   0   0   0   0   0   0   0   0   1   0	1
 	12	   0   0   0   0   0   0   0   1   0   0	1
-	13	   0   0   0   0   0   0   1   1   1   0	3
+	13	   0   0   0   0   0   1   1   1   1   0	4
 	14	   0   0   1   1   1   0   0   0   1   0	4
-	15	   0   0   0   0   2   0   0   1   1   1	5
-	16	   1   0   0   0   0   0   0   0   0   0	1
-	17	   1   0   0   0   0   0   1   0   2   0	4
+	15	   0   0   0   0   1   0   0   1   0   1	3
+	16	   0   0   0   0   0   0   0   0   0   0	0
+	17	   0   0   0   0   0   0   1   0   2   0	3
 	18	   0   0   1   0   0   0   1   1   1   0	4
-	19	   0   0   0   0   0   0   1   0   1   0	2
+	19	   0   0   0   0   0   0   0   0   1   0	1
 	20	   0   0   0   0   0   0   0   0   0   0	0
 	21	   0   0   0   0   0   0   0   0   0   0	0
-	BJ	   0   1   0   1   0   0   0   1   0   0	3
+	BJ	   0   1   0   1   0   0   0   1   0   1	4
 	bust	   0   0   0   0   0   0   0   0   0   0	0
 	A	   0   0   0   0   0   0   0   0   0   0	0
 	A,1	   0   0   0   0   0   0   0   0   0   0	0
@@ -959,7 +985,7 @@ initial deal histogram: {
 	A,5	   0   0   0   0   0   0   0   0   0   0	0
 	A,6	   0   0   0   0   0   0   0   0   1   0	1
 	A,7	   0   0   0   0   0   0   0   0   0   1	1
-	A,8	   0   0   0   0   0   0   0   0   0   0	0
+	A,8	   0   0   0   0   0   0   0   0   0   1	1
 	A,9	   0   0   0   0   0   0   0   0   0   0	0
 	A,10	   0   0   0   0   0   0   0   0   0   0	0
 	A,A	   0   0   0   0   0   0   0   0   0   0	0
@@ -973,7 +999,7 @@ initial deal histogram: {
 	9,9	   0   0   0   0   0   0   0   0   0   0	0
 	T,T	   0   0   0   1   1   0   0   0   1   0	3
 
-	total	   2   3   3   3   5   3   7   6  11   3	46
+	total	   0   4   2   3   4   3   6   6  11   6	45
 }
 table> bookmarks-list
 -------- bookmarks --------

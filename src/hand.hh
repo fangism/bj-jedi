@@ -43,6 +43,9 @@ struct hand {
 	size_t					state;
 	play_state				action;
 
+	hand() : play(NULL), cards(), state(0), action(LIVE) { }
+
+	explicit
 	hand(const play_map& p) : play(&p), cards(), state(0), action(LIVE) { }
 
 	// initial deal

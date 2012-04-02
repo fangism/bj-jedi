@@ -134,17 +134,19 @@ public:
 	reshuffle_auto(void);
 
 	ostream&
-	show_count(ostream&, const bool) const;
+	show_count(ostream&, const bool, const bool) const;
 
+#if 0
 	ostream&
 	show_simple_count(ostream& o) const {
-		return show_count(o, false);
+		return show_count(o, false, true);
 	}
 
 	ostream&
 	show_extended_count(ostream& o) const {
-		return show_count(o, true);
+		return show_count(o, true, true);
 	}
+#endif
 
 	bool
 	edit_deck(const size_t, const int);

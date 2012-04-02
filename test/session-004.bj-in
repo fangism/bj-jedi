@@ -4,3 +4,4 @@ opt show-all
 seed 0 0 4
 auto-play-until-shuffle
 stats
+bookmarks-list
