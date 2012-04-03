@@ -42,6 +42,7 @@ user picks cards: no
 use dynamic strategy: no
 dealer plays only vs. live player: yes
 always show bankroll and bet: yes
+always show dynamic edge: no
 always show count before hand: no
 always show count at action: no
 always suggest best action: no

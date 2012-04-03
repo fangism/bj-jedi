@@ -41,6 +41,7 @@ play_options::play_options() :
 	use_dynamic_strategy(true), 
 	dealer_plays_only_against_live(true),
 	always_show_status(true),
+	always_show_dynamic_edge(false),
 	always_show_count_at_action(false),
 	always_show_count_at_hand(false),
 	always_suggest(false),
@@ -69,6 +70,7 @@ play_options::dump(ostream& o) const {
 	o << "dealer plays only vs. live player: " <<
 		yn(dealer_plays_only_against_live) << endl;
 	o << "always show bankroll and bet: " << yn(always_show_status) << endl;
+	o << "always show dynamic edge: " << yn(always_show_dynamic_edge) << endl;
 	o << "always show count before hand: " <<
 		yn(always_show_count_at_hand) << endl;
 	o << "always show count at action: " <<
@@ -269,6 +271,10 @@ DEFINE_OPTION_MEMBER_COMMAND(
 DEFINE_OPTION_MEMBER_COMMAND(
 	always_show_status, "always-show-status",
 	"[bool]: show bankroll and bet between each hand")
+
+DEFINE_OPTION_MEMBER_COMMAND(
+	always_show_dynamic_edge, "always-show-dynamic-edge",
+	"[bool]: show dynamic edge between each hand")
 
 DEFINE_OPTION_MEMBER_COMMAND(
 	always_show_count_at_hand, "always-show-count-before-hand",

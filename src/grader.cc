@@ -335,6 +335,10 @@ for (j=0; j<player_hands.size(); ++j) {
 	if (opt.always_show_status) {
 		status(ostr);
 	}
+	if (opt.always_show_dynamic_edge && !ret) {
+		// don't bother if just shuffled
+		show_dynamic_edge();
+	}
 //	only update_dynamic_strategy() when needed or requested
 	// update bet min/max watermark
 	return ret;
@@ -354,9 +358,22 @@ grader::auto_shuffle(void) {
 	if (b) {
 		ostr << "**************** Reshuffling... ****************"
 			<< endl;
+		if (opt.always_show_dynamic_edge && !opt.continuous_shuffle) {
+			// don't bother if shuffling is continuous
+			show_dynamic_edge();
+		}
 	}
 	return b;
 }
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+void
+grader::show_dynamic_edge(void) {
+	update_dynamic_strategy();
+	ostr << "player's edge (dynamic): " <<
+		dynamic_strategy.overall_edge() << endl;
+}
+
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
 	Handles player single action.

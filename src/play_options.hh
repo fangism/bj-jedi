@@ -53,6 +53,10 @@ struct play_options {
 	 */
 	bool				always_show_status;
 	/**
+		Show the player's mathematical edge between each hand.
+	 */
+	bool				always_show_dynamic_edge;
+	/**
 		Always show count when prompted for action.
 	 */
 	bool				always_show_count_at_action;

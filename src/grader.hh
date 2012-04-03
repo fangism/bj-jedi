@@ -183,6 +183,9 @@ private:
 	bool
 	auto_shuffle(void);
 
+	void
+	show_dynamic_edge(void);
+
 	ostream&
 	dump_situation(const size_t) const;
 

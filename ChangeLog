@@ -1,5 +1,8 @@
 # "ChangeLog"
 
+2012-04-02	David Fang		<fangism@users.sourceforge.net>
+	Added option to always-show-dynamic-edge between hands.
+
 2012-04-01	David Fang		<fangism@users.sourceforge.net>
 	Added bookmarking feature to save 'interesting' hands.
 
