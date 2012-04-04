@@ -387,6 +387,11 @@ bankroll: 98.5, bet: 1
 dealer: 3
 [1/1] dealer: 3, player: 48 (12)
 action? [hsdrbc?!]> !
+*** dynamic strategy beats basic ***
+card:	   2   3   4   5   6   7   8   9   T   A	total	%
+used:	  10   6   9   7   8   8  10   7  29   9	103	(33%)
+rem:	  14  18  15  17  16  16  14  17  67  15	209	(67%)
+hi-lo: 2, true-count: 0.5
 	edges:	basic	dynamic
 	stand: -0.2466	-0.2236
 	hit  : -0.234	-0.2354
@@ -453,6 +458,11 @@ player: 5J (15)
 No dealer blackjack.
 [1/1] dealer: Q, player: 5J (15)
 action? [hsdrbc?!]> !
+*** dynamic strategy beats basic ***
+card:	   2   3   4   5   6   7   8   9   T   A	total	%
+used:	  10   8  11   8   8  10  11   9  33  10	118	(38%)
+rem:	  14  16  13  16  16  14  13  15  63  14	194	(62%)
+hi-lo: 2, true-count: 0.54
 	edges:	basic	dynamic
 	stand: -0.5404	-0.5324
 	hit  : -0.5044	-0.4997
@@ -826,6 +836,11 @@ bankroll: 100.5, bet: 1
 dealer: 9
 [1/1] dealer: 9, player: 4J (14)
 action? [hsdrbc?!]> !
+*** dynamic strategy beats basic ***
+card:	   2   3   4   5   6   7   8   9   T   A	total	%
+used:	  18  17  20  15  19  21  19  18  64  18	229	(73%)
+rem:	   6   7   4   9   5   3   5   6  32   6	83	(27%)
+hi-lo: 7, true-count: 4.4
 	edges:	basic	dynamic
 	stand: -0.5431	-0.5682
 	hit  : -0.4309	-0.533

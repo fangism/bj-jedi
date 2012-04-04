@@ -1,5 +1,8 @@
 # "ChangeLog"
 
+2012-04-04	David Fang		<fangism@users.sourceforge.net>
+	Option to show count with edges when dynamic != basic.
+
 2012-04-02	David Fang		<fangism@users.sourceforge.net>
 	Added option to always-show-dynamic-edge between hands.
 

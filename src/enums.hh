@@ -8,6 +8,7 @@
 namespace blackjack {
 using cards::card_values;
 
+// keep consistent with blackjack.cc:action_names
 enum player_choice {
 	NIL = 0,	// invalid
 	// useful values for analysis

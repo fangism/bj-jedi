@@ -113,6 +113,11 @@ player: 69 (15)
 No dealer blackjack.
 [1/1] dealer: T, player: 69 (15)
 action? [hsdrbc?!]> !
+*** dynamic strategy beats basic ***
+card:	   2   3   4   5   6   7   8   9   T   A	total	%
+used:	   0   1   1   0   2   0   2   2   6   1	15	(4.8%)
+rem:	  24  23  23  24  22  24  22  22  90  23	297	(95%)
+hi-lo: -3, true-count: -0.53
 	edges:	basic	dynamic
 	stand: -0.5404	-0.5398
 	hit  : -0.5044	-0.4973
@@ -245,6 +250,11 @@ bankroll: 99.5, bet: 1
 dealer: 3
 [1/1] dealer: 3, player: 36 (9)
 action? [hsdrbc?!]> !
+*** dynamic strategy beats basic ***
+card:	   2   3   4   5   6   7   8   9   T   A	total	%
+used:	   4   4   3   0   4   2   4   4  16   3	44	(14%)
+rem:	  20  20  21  24  20  22  20  20  80  21	268	(86%)
+hi-lo: -4, true-count: -0.78
 	edges:	basic	dynamic
 	stand: -0.2466	-0.2713
 	hit  : 0.09927	0.077
@@ -642,6 +652,11 @@ bankroll: 101, bet: 1
 dealer: 2
 [1/1] dealer: 2, player: 45 (9)
 action? [hsdrbc?!]> !
+*** dynamic strategy beats basic ***
+card:	   2   3   4   5   6   7   8   9   T   A	total	%
+used:	  13  14  14  11  17   8  17  12  46  11	163	(52%)
+rem:	  11  10  10  13   7  16   7  12  50  13	149	(48%)
+hi-lo: 12, true-count: 4.2
 	edges:	basic	dynamic
 	stand: -0.2865	-0.2511
 	hit  : 0.07223	0.1198
@@ -846,6 +861,11 @@ action? [hsdrbc?!]> !
 auto: hit
 [1/1] dealer: Q, player: 952 (16)
 action? [hsbc?!]> !
+*** dynamic strategy beats basic ***
+card:	   2   3   4   5   6   7   8   9   T   A	total	%
+used:	  16  21  17  21  18  15  19  16  68  15	226	(72%)
+rem:	   8   3   7   3   6   9   5   8  28   9	86	(28%)
+hi-lo: 10, true-count: 6
 	edges:	basic	dynamic
 	stand: -0.5404	-0.5865
 	hit  : -0.5398	-0.6374
@@ -897,6 +917,11 @@ action? [hsdbc?!]> !
 auto: hit
 [2/2] dealer: 7, player: 249 (15)
 action? [hsbc?!]> !
+*** dynamic strategy beats basic ***
+card:	   2   3   4   5   6   7   8   9   T   A	total	%
+used:	  18  21  18  22  18  16  19  17  70  15	234	(75%)
+rem:	   6   3   6   2   6   8   5   7  26   9	78	(25%)
+hi-lo: 12, true-count: 8
 	edges:	basic	dynamic
 	stand: -0.4754	-0.477
 	hit  : -0.3698	-0.4897

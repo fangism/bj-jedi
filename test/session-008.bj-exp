@@ -439,6 +439,11 @@ Declined insurance.
 No dealer blackjack.
 [1/1] dealer: A, player: 92 (11)
 action? [hsdrbc?!]> !
+*** dynamic strategy beats basic ***
+card:	   2   3   4   5   6   7   8   9   T   A	total	%
+used:	   4   9   9   6   8   8  10   8  34  11	107	(34%)
+rem:	  20  15  15  18  16  16  14  16  62  13	205	(66%)
+hi-lo: -9, true-count: -2.3
 	edges:	basic	dynamic
 	stand: -0.5987	-0.6032
 	hit  : 0.1027	0.09332
@@ -826,6 +831,11 @@ player: 5T (15)
 No dealer blackjack.
 [1/1] dealer: K, player: 5T (15)
 action? [hsdrbc?!]> !
+*** dynamic strategy beats basic ***
+card:	   2   3   4   5   6   7   8   9   T   A	total	%
+used:	  16  16  16  15  15  18  19  13  70  18	216	(69%)
+rem:	   8   8   8   9   9   6   5  11  26   6	96	(31%)
+hi-lo: -10, true-count: -5.4
 	edges:	basic	dynamic
 	stand: -0.5404	-0.5119
 	hit  : -0.5044	-0.4297
@@ -858,6 +868,11 @@ bankroll: 104, bet: 1
 dealer: 9
 [1/1] dealer: 9, player: K6 (16)
 action? [hsdrbc?!]> !
+*** dynamic strategy beats basic ***
+card:	   2   3   4   5   6   7   8   9   T   A	total	%
+used:	  17  16  17  16  16  20  20  15  71  18	226	(72%)
+rem:	   7   8   7   8   8   4   4   9  25   6	86	(28%)
+hi-lo: -7, true-count: -4.2
 	edges:	basic	dynamic
 	stand: -0.5431	-0.5405
 	hit  : -0.5093	-0.451

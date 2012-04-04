@@ -115,6 +115,11 @@ player: 69 (15)
 No dealer blackjack.
 [1/1] dealer: T, player: 69 (15)
 action? [hsdrbc?!]> !
+*** dynamic strategy beats basic ***
+card:	   2   3   4   5   6   7   8   9   T   A	total	%
+used:	   0   1   1   0   2   0   2   2   6   1	15	(4.8%)
+rem:	  24  23  23  24  22  24  22  22  90  23	297	(95%)
+hi-lo: -3, true-count: -0.53
 	edges:	basic	dynamic
 	stand: -0.5404	-0.5398
 	hit  : -0.5044	-0.4973
@@ -574,6 +579,11 @@ player: T6 (16)
 No dealer blackjack.
 [1/1] dealer: Q, player: T6 (16)
 action? [hsdrbc?!]> !
+*** dynamic strategy beats basic ***
+card:	   2   3   4   5   6   7   8   9   T   A	total	%
+used:	  12  11   9   7  10  10  15  10  47   8	139	(45%)
+rem:	  12  13  15  17  14  14   9  14  49  16	173	(55%)
+hi-lo: -6, true-count: -1.8
 	edges:	basic	dynamic
 	stand: -0.5404	-0.5295
 	hit  : -0.5398	-0.4781

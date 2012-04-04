@@ -158,6 +158,11 @@ player: 87 (15)
 No dealer blackjack.
 [1/1] dealer: T, player: 87 (15)
 action? [hsdrbc?!]> !
+*** dynamic strategy beats basic ***
+card:	   2   3   4   5   6   7   8   9   T   A	total	%
+used:	   1   1   2   1   1   5   5   1   6   2	25	(8%)
+rem:	  23  23  22  23  23  19  19  23  90  22	287	(92%)
+hi-lo: -2, true-count: -0.36
 	edges:	basic	dynamic
 	stand: -0.5404	-0.5263
 	hit  : -0.5044	-0.4907
@@ -174,6 +179,11 @@ player: 5K (15)
 No dealer blackjack.
 [1/1] dealer: J, player: 5K (15)
 action? [hsdrbc?!]> !
+*** dynamic strategy beats basic ***
+card:	   2   3   4   5   6   7   8   9   T   A	total	%
+used:	   1   1   2   2   1   5   5   1   8   2	28	(9%)
+rem:	  23  23  22  22  23  19  19  23  88  22	284	(91%)
+hi-lo: -3, true-count: -0.55
 	edges:	basic	dynamic
 	stand: -0.5404	-0.5265
 	hit  : -0.5044	-0.4897
@@ -475,6 +485,11 @@ bankroll: 94, bet: 1
 dealer: 3
 [1/1] dealer: 3, player: T2 (12)
 action? [hsdrbc?!]> !
+*** dynamic strategy beats basic ***
+card:	   2   3   4   5   6   7   8   9   T   A	total	%
+used:	   5   8  10   8   9  10  10   7  32   9	108	(35%)
+rem:	  19  16  14  16  15  14  14  17  64  15	204	(65%)
+hi-lo: -1, true-count: -0.25
 	edges:	basic	dynamic
 	stand: -0.2466	-0.2178
 	hit  : -0.234	-0.2292
@@ -551,6 +566,11 @@ player: 4T (14)
 No dealer blackjack.
 [1/1] dealer: J, player: 4T (14)
 action? [hsdrbc?!]> !
+*** dynamic strategy beats basic ***
+card:	   2   3   4   5   6   7   8   9   T   A	total	%
+used:	   5   8  12  12  10  12  10   7  39  10	125	(40%)
+rem:	  19  16  12  12  14  12  14  17  57  14	187	(60%)
+hi-lo: -2, true-count: -0.56
 	edges:	basic	dynamic
 	stand: -0.5404	-0.5308
 	hit  : -0.4663	-0.5044
@@ -761,6 +781,11 @@ action? [hsdrbc?!]> !
 auto: hit
 [1/1] dealer: Q, player: 626 (14)
 action? [hsbc?!]> !
+*** dynamic strategy beats basic ***
+card:	   2   3   4   5   6   7   8   9   T   A	total	%
+used:	  10   9  18  16  17  16  12   8  56  16	178	(57%)
+rem:	  14  15   6   8   7   8  12  16  40   8	134	(43%)
+hi-lo: -2, true-count: -0.78
 	edges:	basic	dynamic
 	stand: -0.5404	-0.5474
 	hit  : -0.4663	-0.5659
@@ -769,6 +794,11 @@ auto: hit
 Bookmark saved.
 [1/1] dealer: Q, player: 6262 (16)
 action? [hsbc?!]> !
+*** dynamic strategy beats basic ***
+card:	   2   3   4   5   6   7   8   9   T   A	total	%
+used:	  11   9  18  16  17  16  12   8  56  16	179	(57%)
+rem:	  13  15   6   8   7   8  12  16  40   8	133	(43%)
+hi-lo: -1, true-count: -0.39
 	edges:	basic	dynamic
 	stand: -0.5404	-0.5503
 	hit  : -0.5398	-0.582

@@ -761,6 +761,11 @@ bankroll: 100, bet: 1
 dealer: 9
 [1/1] dealer: 9, player: Q5 (15)
 action? [hsdrbc?!]> !
+*** dynamic strategy beats basic ***
+card:	   2   3   4   5   6   7   8   9   T   A	total	%
+used:	  12  14  15  16  19  14  15  15  62  15	197	(63%)
+rem:	  12  10   9   8   5  10   9   9  34   9	115	(37%)
+hi-lo: -1, true-count: -0.45
 	edges:	basic	dynamic
 	stand: -0.5431	-0.554
 	hit  : -0.4716	-0.5233

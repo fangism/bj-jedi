@@ -455,13 +455,35 @@ do {
 		acp(ace.first.best(d, p, r), ace.second.best(d, p, r));
 	const player_choice ac =
 		opt.use_dynamic_strategy ? acp.second : acp.first;
-	const player_choice ac2 =
+	const player_choice ac2 =	// the other one
 		opt.use_dynamic_strategy ? acp.first : acp.second;
 	if (opt.always_suggest) {
 		ostr << oss.str() << endl;
 	}
 	pc = prompt_player_action(istr, ostr, d, p, r, opt.auto_play);
 	bool bookmarked = false;
+	bool notified = false;
+	bool detailed = false;
+	if (acp.second != acp.first) {
+	// basic != dynamic strategy (and is thus, interesting)
+		if (opt.notify_dynamic) {
+			ostr << "*** dynamic strategy beats basic ***" << endl;
+			notified = true;
+		}
+		if (opt.bookmark_dynamic && !bookmarked) {
+			bookmarks.push_back(bm);
+			bookmarked = true;
+		}
+	}
+	if (notified || (pc == HINT)) {
+		// count needs to be shown before card is drawn
+		// same with auto bookmarks
+		if (opt.notify_with_count) {
+			show_count();
+		}
+		ostr << oss.str() << endl;
+		detailed = true;
+	}
 	switch (pc) {
 		// all fall-through to handle_player_action()
 	case STAND:
@@ -469,7 +491,6 @@ do {
 	case HIT:
 	case SPLIT: 
 	case SURRENDER: {
-		bool notified = false;
 		if (pc != ac) {
 		// player's choice was wrong, sub-optimal
 		if (opt.notify_when_wrong) {
@@ -483,50 +504,34 @@ do {
 			}
 			notified = true;
 		}
-		if (opt.bookmark_wrong) {
+		if (opt.bookmark_wrong && !bookmarked) {
 			bookmarks.push_back(bm);
 			bookmarked = true;
 		}
 		}
-		if (acp.second != acp.first) {
-		// basic != dynamic strategy (and is thus, interesting)
-		if (opt.notify_dynamic) {
-			ostr << "*** dynamic strategy beats basic ***" << endl;
-			notified = true;
-		}
-		if (opt.bookmark_dynamic && !bookmarked) {
-			bookmarks.push_back(bm);
-			bookmarked = true;
-		}
-		}
-		if (notified) {
-			if (opt.notify_with_count) {
-				show_count();
-			}
-			ostr << oss.str() << endl;
-		}
-		// count needs to be shown before card is drawn
-		// same with auto bookmarks
 		handle_player_action(j, pc);
 		break;
 	}
 	case BOOKMARK:
-		bookmarks.push_back(bm);
-		bookmarked = true;
+		if (!bookmarked) {
+			bookmarks.push_back(bm);
+			bookmarked = true;
+		}
 		break;
 	case COUNT:
 		show_count();
 		break;
+#if 0
+	// handled above
 	case HINT:
 		ostr << oss.str() << endl;
 		break;
+#endif
 	case OPTIM: {
-		ostr << oss.str() << endl;	// optional?
-		ostr << "auto: " << action_names[ac] << endl;
-		if ((acp.second != acp.first) && opt.bookmark_dynamic) {
-			bookmarks.push_back(bm);
-			bookmarked = true;
+		if (opt.show_edges && !detailed) {
+			ostr << oss.str() << endl;
 		}
+		ostr << "auto: " << action_names[ac] << endl;
 		handle_player_action(j, ac);
 		break;
 	}

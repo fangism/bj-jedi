@@ -44,6 +44,7 @@ action_names[] = {
 	"double-down",
 	"split",
 	"surrender",
+	"bookmark",
 	"count",
 	"hint",
 	"optimal"
