@@ -502,7 +502,13 @@ do {
 					(opt.use_dynamic_strategy ? "basic" : "dynamic")
 					<< " strategy." << endl;
 			}
-			notified = true;
+			if (!detailed) {
+				if (opt.notify_with_count) {
+					show_count();
+				}
+				ostr << oss.str() << endl;
+				detailed = true;
+			}
 		}
 		if (opt.bookmark_wrong && !bookmarked) {
 			bookmarks.push_back(bm);
