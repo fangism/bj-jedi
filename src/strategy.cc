@@ -1018,6 +1018,27 @@ strategy::finalize_player_initial_edges(void) {
  */
 ostream&
 strategy::dump_player_initial_edges(ostream& o) const {
+{
+#if 0
+	// dump the player's initial state edges 
+	o << "Player's initial edges (pre-peek):" << endl;
+	o << "P\\D";
+	size_t j;
+	for (j=0; j<card_values; ++j) {
+		o << '\t' << card_name[j];
+	}
+	o << endl;
+	for (j=0 ; j<p_action_states; ++j) { // print split edges separately
+		o << play.player_hit[j].name;
+		size_t i;
+		for (i=0; i<card_values; ++i) {
+			o << '\t' << player_initial_edges_pre_peek[j][i];
+		}
+		o << endl;
+	}
+	o << endl;
+}{
+#endif
 	// dump the player's initial state edges 
 	o << "Player's initial edges (post-peek):" << endl;
 	o << "P\\D";
@@ -1034,9 +1055,7 @@ strategy::dump_player_initial_edges(ostream& o) const {
 		}
 		o << endl;
 	}
-#if 0
-	dump_player_split_edges(o);
-#endif
+}
 	return o;
 }
 
@@ -1162,6 +1181,41 @@ strategy::compute_overall_edge(void) {
 	_overall_edge =
 		inner_product(card_odds.begin(), card_odds.end(), 
 			player_edges_given_reveal_pre_peek.begin(), 0.0);
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
+	This could also be used to compute pre-peek initial edges,
+	which is currently missing.
+	\param p player's state
+	\param d dealer's reveal card
+ */
+edge_type
+strategy::lookup_pre_peek_initial_edge(const size_t p, const size_t d) const {
+	const edge_type& post(player_initial_edges_post_peek[p][d]);
+	switch (d) {
+	// conditioned on probability of the hole card making 
+	// a dealer natural (blackjack)
+	case ACE: {
+		const probability_type& pt(card_odds[TEN]);
+		if (p == player_blackjack) {
+			return var.bj_payoff * (1.0 -pt);
+		} else {
+			return pt*(post -1.0);
+		}
+	}
+	case TEN: {
+		const probability_type& pa(card_odds[ACE]);
+		if (p == player_blackjack) {
+			return var.bj_payoff * (1.0 -pa);
+		} else {
+			return pa*(post -1.0);
+		}
+	}
+	default:
+		break;
+	}
+	return post;
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

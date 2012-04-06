@@ -386,6 +386,8 @@ public:
 	ostream&
 	dump(ostream&) const;
 
+	edge_type
+	lookup_pre_peek_initial_edge(const size_t, const size_t) const;
 
 	const expectations&
 	lookup_player_action_expectations(const size_t, const size_t) const;

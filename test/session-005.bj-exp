@@ -929,6 +929,18 @@ current bankroll: 106
 hands played: 46
 initial bets: 46
 total bets: 47
+Edges before each hand dealt (a priori): {
+unweighted, uncounted expected change: -0.604575 (/hand = -0.0131429)
+weighted, uncounted expected change: -0.604575 (/hand = -0.0131429)
+unweighted, counted expected change: -0.462924 (/hand = -0.0100636)
+weighted, counted expected change: -0.462924 (/hand = -0.0100636)
+}
+Edges after each hand dealt (a posteriori): {
+unweighted, uncounted expected change: 0.560262 (/hand = 0.0121796)
+weighted, uncounted expected change: 0.560262 (/hand = 0.0121796)
+unweighted, counted expected change: 0.705479 (/hand = 0.0153365)
+weighted, counted expected change: -0.462924 (/hand = 0.0153365)
+}
 initial deal histogram: {
 	P\D	   2   3   4   5   6   7   8   9   T   A	total
 	0	   0   0   0   0   0   0   0   0   0   0	0

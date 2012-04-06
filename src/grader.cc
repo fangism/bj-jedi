@@ -180,8 +180,19 @@ grader::deal_hand(void) {
 	}
 	const double& bet(opt.bet);
 	double& bankroll(stats.bankroll);
+{	// accumulate some statistics
 	stats.initial_bets += bet;
 	stats.total_bets += bet;
+	update_dynamic_strategy();
+	const edge_type dyn_edge = dynamic_strategy.overall_edge();
+	const edge_type basic_edge = basic_strategy.overall_edge();
+	const edge_type wdyn_edge = bet *dyn_edge;	// bet-weighted
+	const edge_type wbasic_edge = bet *basic_edge;
+	stats.basic_priori.edge_sum += basic_edge;
+	stats.basic_priori.weighted_edge_sum += wbasic_edge;
+	stats.dynamic_priori.edge_sum += dyn_edge;
+	stats.dynamic_priori.weighted_edge_sum += wdyn_edge;
+}
 	const bool pick_cards = opt.pick_cards;
 	if (pick_cards) {
 		ostr << "choose player cards." << endl;
@@ -203,7 +214,19 @@ grader::deal_hand(void) {
 	if (pick_cards) {
 		ostr << "choose dealer hole-card." << endl;
 	}
+{	// more statistics
 	++stats.initial_state_histogram[pih.state][dealer_reveal_value];
+	const edge_type post_basic_edge =
+		basic_strategy.lookup_pre_peek_initial_edge(
+			pih.state, dealer_reveal_value);
+	const edge_type post_dynamic_edge =
+		dynamic_strategy.lookup_pre_peek_initial_edge(
+			pih.state, dealer_reveal_value);
+	stats.basic_posteriori.edge_sum += post_basic_edge;
+	stats.basic_posteriori.weighted_edge_sum += post_basic_edge *bet;
+	stats.dynamic_posteriori.edge_sum += post_dynamic_edge;
+	stats.dynamic_posteriori.weighted_edge_sum += post_dynamic_edge *bet;
+}
 	// except for European: no hole card
 	// TODO: option-draw hole card 2-stage prompt
 	// if peek, ask if dealer has blackjack

@@ -253,9 +253,9 @@ draws cards without replacement.)
 \end{table}
 
 Suppose that the dealer was given just one up-card with no hole card, 
-and the dealer hit until reaching a terminal state.
-Suppose further that if the first two cards are Ace and 10 is
-treated as a natural blackjack (BJ).
+and the dealer hit until reaching a terminal state ($>=$17 or bust).
+Suppose further that if the first two cards are Ace and 10,
+then the dealer's hand is treated as a natural blackjack (BJ).
 Then the spread of final states would compute as 
 Table~\ref{tab:dealer-final-H17-pre-peek}.
 The entries are reported in percentages, so the columns add up to 100\%.
@@ -314,6 +314,8 @@ while a revealed A or 10 is very unfavorable
 (only near 20\% chance of dealer busting).
 Most strategy guides organize tables with 2-6 on the left, 
 and 7-A on the right.
+
+% is peeking good or bad for the player?
 
 When we compute the optimal basic strategy in Chapter~\ref{sec:basic}, 
 we will use the post-peek tables, since only they are relevant

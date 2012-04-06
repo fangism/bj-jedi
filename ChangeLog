@@ -1,5 +1,10 @@
 # "ChangeLog"
 
+2012-04-05	David Fang		<fangism@users.sourceforge.net>
+	Accumulate basic/dynamic strategy edges, both a priori (before hand
+		is dealt), and a posteriori (after seeing initial deal).
+		The purpose is to tell how lucky your initial hands are.
+
 2012-04-04	David Fang		<fangism@users.sourceforge.net>
 	Option to show count with edges when dynamic != basic.
 

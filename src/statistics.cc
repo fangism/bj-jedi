@@ -48,7 +48,11 @@ statistics::statistics() :
 	bankroll(0.0),
 	initial_bets(0.0),
 	total_bets(0.0),
-	hands_played(0) {
+	hands_played(0),
+	basic_priori(),
+	dynamic_priori(),
+	basic_posteriori(),
+	dynamic_posteriori() {
 	initial_state_histogram_type::iterator
 		i(initial_state_histogram.begin()),
 		e(initial_state_histogram.end());
@@ -104,6 +108,30 @@ statistics::dump(ostream& o, const play_map& play) const {
 	o << "hands played: " << hands_played << endl;
 	o << "initial bets: " << initial_bets << endl;
 	o << "total bets: " << total_bets << endl;
+	o << "Edges before each hand dealt (a priori): {" << endl;
+	o << "unweighted, uncounted expected change: " << basic_priori.edge_sum
+		<< " (/hand = " << basic_priori.edge_sum/hands_played << ')' << endl;
+	o << "weighted, uncounted expected change: " << basic_priori.weighted_edge_sum
+		<< " (/hand = " << basic_priori.weighted_edge_sum/hands_played
+		<< ')' << endl;
+	o << "unweighted, counted expected change: " << dynamic_priori.edge_sum
+		<< " (/hand = " << dynamic_priori.edge_sum/hands_played << ')' << endl;
+	o << "weighted, counted expected change: " << dynamic_priori.weighted_edge_sum
+		<< " (/hand = " << dynamic_priori.weighted_edge_sum/hands_played
+		<< ')' << endl;
+	o << '}' << endl;
+	o << "Edges after each hand dealt (a posteriori): {" << endl;
+	o << "unweighted, uncounted expected change: " << basic_posteriori.edge_sum
+		<< " (/hand = " << basic_posteriori.edge_sum/hands_played << ')' << endl;
+	o << "weighted, uncounted expected change: " << basic_posteriori.weighted_edge_sum
+		<< " (/hand = " << basic_posteriori.weighted_edge_sum/hands_played
+		<< ')' << endl;
+	o << "unweighted, counted expected change: " << dynamic_posteriori.edge_sum
+		<< " (/hand = " << dynamic_posteriori.edge_sum/hands_played << ')' << endl;
+	o << "weighted, counted expected change: " << dynamic_priori.weighted_edge_sum
+		<< " (/hand = " << dynamic_posteriori.weighted_edge_sum/hands_played
+		<< ')' << endl;
+	o << '}' << endl;
 {
 	dealer_reveal_histogram_type vtotals;
 	fill(vtotals.begin(), vtotals.end(), 0);

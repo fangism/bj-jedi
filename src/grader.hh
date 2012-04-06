@@ -84,6 +84,7 @@ private:
 public:
 	/**
 		Collection of statistics of play.
+		These are cumulative numbers, constant memory.
 	 */
 	statistics				stats;
 	/**
@@ -95,6 +96,7 @@ public:
 	/**
 		Hand-by-hand record of trends to plot.
 		e.g. true count vs. bet
+		These arrays grow with every hand played.
 	 */
 	struct history {
 	};	// end struct history

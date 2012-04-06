@@ -6,12 +6,28 @@
 #include <iosfwd>
 #include "enums.hh"
 #include "util/array.hh"
+#include "deck.hh"
 
 namespace blackjack {
 using std::istream;
 using std::ostream;
 using util::array;
+using cards::edge_type;
 class play_map;
+
+/**
+	Unweighted and bet-weighted edges.
+ */
+struct edge_group {
+	/// expected outcome with only unit-bets
+	edge_type			edge_sum;
+	/// expected outcome, weighted by bets
+	edge_type			weighted_edge_sum;
+
+	edge_group() : edge_sum(0.0), weighted_edge_sum(0.0) { }
+
+};	// end struct edge group
+
 
 /**
 	Tracks cumulative statics about gameplay.
@@ -27,6 +43,15 @@ struct statistics {
 	double				total_bets;
 	/// total count of initial deals (not counting splits)
 	size_t				hands_played;
+
+	// uncounted, prior to dealing hand
+	edge_group			basic_priori;
+	// counted, prior to dealing hand
+	edge_group			dynamic_priori;
+	// uncounted, after to dealing hand
+	edge_group			basic_posteriori;
+	// counted, after to dealing hand
+	edge_group			dynamic_posteriori;
 
 	// won hands, lost hands, won doubles, lost doubles
 
