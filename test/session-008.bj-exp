@@ -945,7 +945,7 @@ Edges after each hand dealt (a posteriori): {
 unweighted, uncounted expected change: 1.56029 (/hand = 0.0346731)
 weighted, uncounted expected change: 1.56029 (/hand = 0.0346731)
 unweighted, counted expected change: 1.20218 (/hand = 0.026715)
-weighted, counted expected change: -0.989937 (/hand = 0.026715)
+weighted, counted expected change: 1.20218 (/hand = 0.026715)
 }
 initial deal histogram: {
 	P\D	   2   3   4   5   6   7   8   9   T   A	total

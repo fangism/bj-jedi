@@ -188,6 +188,7 @@ grader::deal_hand(void) {
 	const edge_type basic_edge = basic_strategy.overall_edge();
 	const edge_type wdyn_edge = bet *dyn_edge;	// bet-weighted
 	const edge_type wbasic_edge = bet *basic_edge;
+	// option to print these
 	stats.basic_priori.edge_sum += basic_edge;
 	stats.basic_priori.weighted_edge_sum += wbasic_edge;
 	stats.dynamic_priori.edge_sum += dyn_edge;
@@ -214,7 +215,7 @@ grader::deal_hand(void) {
 	if (pick_cards) {
 		ostr << "choose dealer hole-card." << endl;
 	}
-{	// more statistics
+{	// accumulate more statistics after initial deal
 	++stats.initial_state_histogram[pih.state][dealer_reveal_value];
 	const edge_type post_basic_edge =
 		basic_strategy.lookup_pre_peek_initial_edge(
@@ -222,10 +223,13 @@ grader::deal_hand(void) {
 	const edge_type post_dynamic_edge =
 		dynamic_strategy.lookup_pre_peek_initial_edge(
 			pih.state, dealer_reveal_value);
+	const edge_type wpost_basic_edge = post_basic_edge *bet;
+	const edge_type wpost_dynamic_edge = post_dynamic_edge *bet;
+	// option to print these
 	stats.basic_posteriori.edge_sum += post_basic_edge;
-	stats.basic_posteriori.weighted_edge_sum += post_basic_edge *bet;
+	stats.basic_posteriori.weighted_edge_sum += wpost_basic_edge;
 	stats.dynamic_posteriori.edge_sum += post_dynamic_edge;
-	stats.dynamic_posteriori.weighted_edge_sum += post_dynamic_edge *bet;
+	stats.dynamic_posteriori.weighted_edge_sum += wpost_dynamic_edge;
 }
 	// except for European: no hole card
 	// TODO: option-draw hole card 2-stage prompt
@@ -329,6 +333,11 @@ if (live || !opt.dealer_plays_only_against_live) {
 	// treat as if hole card is replaced into shoe
 	// this could happen if player surrendered, or busted.
 	replace_hole_card();
+	// FIXME: this is not truly mathematically accurate, 
+	// since peeking for blackjack gives some partial information
+	// about that hole card, and it is being replaced into the deck!
+	// Cannot just 'discard' it from the count either,
+	// for the same reason.
 }
 	// suspense double-down?  nah
 	const double bet2 = var.double_multiplier *bet;	// winning

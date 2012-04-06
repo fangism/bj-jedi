@@ -128,7 +128,7 @@ statistics::dump(ostream& o, const play_map& play) const {
 		<< ')' << endl;
 	o << "unweighted, counted expected change: " << dynamic_posteriori.edge_sum
 		<< " (/hand = " << dynamic_posteriori.edge_sum/hands_played << ')' << endl;
-	o << "weighted, counted expected change: " << dynamic_priori.weighted_edge_sum
+	o << "weighted, counted expected change: " << dynamic_posteriori.weighted_edge_sum
 		<< " (/hand = " << dynamic_posteriori.weighted_edge_sum/hands_played
 		<< ')' << endl;
 	o << '}' << endl;
