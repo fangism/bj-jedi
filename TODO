@@ -25,7 +25,12 @@ impact of using a fixed (basic) strategy in different count situations
 instead of infinite deck, compute finite deck edges (without replacement)
 	could do on-demand exact calculation as each situation
 	comes up, instead of for every dealer reveal card, 
-	and every player hand.
+	and every player hand.  
+Exact odds per situation could be computed using recursion/probability.
+	Recursion could also be limited based on cumulative probability
+		falling below tolerance.
+	Computing this is taxing --
+		probability-annotated decision/outcome tree.
 
 card randomization:
 alternatively, std::shuffle entire sequence up front
@@ -57,6 +62,9 @@ struct history {
 to track every situation and decision?
 situations to review? bookmark as a player-choice option
 auto-save "wrong" decisions
+	replay bookmark situations
+	bookmark insurance queries
+	quantify how wrong is wrong using edges, score
 }
 
 commands:

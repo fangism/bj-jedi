@@ -43,6 +43,10 @@ struct statistics {
 	double				total_bets;
 	/// total count of initial deals (not counting splits)
 	size_t				hands_played;
+	/// total number of prompted decisions
+	size_t				decisions_made;
+	size_t				basic_wrong_decisions;
+	size_t				dynamic_wrong_decisions;
 
 	// uncounted, prior to dealing hand
 	edge_group			basic_priori;

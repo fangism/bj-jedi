@@ -959,6 +959,9 @@ min bankroll: 92.5
 max bankroll: 100
 current bankroll: 99
 hands played: 48
+decisions made: 55
+wrong decisions (basic): 0
+wrong decisions (dynamic): 0
 initial bets: 48
 total bets: 50
 Edges before each hand dealt (a priori): {
@@ -1029,56 +1032,67 @@ card:	   2   3   4   5   6   7   8   9   T   A	total	%
 rem:	  19  17  21  19  17  15  19  19  67  15	228	(73%)
 hi-lo: -11, true-count: -2.5
 dealer: A, player: 74 (11)
+options: double:yes, split:no, surrender:yes
 
 card:	   2   3   4   5   6   7   8   9   T   A	total	%
 rem:	  14  15  20  16  13  12  13  12  49  14	178	(57%)
 hi-lo: -15, true-count: -4.4
 dealer: J, player: 87 (15)
+options: double:yes, split:no, surrender:yes
 
 card:	   2   3   4   5   6   7   8   9   T   A	total	%
 rem:	  13  15  19  16  13  12  13  12  48  14	175	(56%)
 hi-lo: -14, true-count: -4.2
 dealer: 2, player: K4 (14)
+options: double:yes, split:no, surrender:yes
 
 card:	   2   3   4   5   6   7   8   9   T   A	total	%
 rem:	  13  11  18  15  12  12  12  12  44  14	163	(52%)
 hi-lo: -11, true-count: -3.5
 dealer: T, player: 5Q (15)
+options: double:yes, split:no, surrender:yes
 
 card:	   2   3   4   5   6   7   8   9   T   A	total	%
 rem:	  12   9  16  14  12  12  12  11  40  13	151	(48%)
 hi-lo: -10, true-count: -3.4
 dealer: 4, player: 2K (12)
+options: double:yes, split:no, surrender:yes
 
 card:	   2   3   4   5   6   7   8   9   T   A	total	%
 rem:	  12   9  16  14  11  12  12  10  37  12	145	(46%)
 hi-lo: -13, true-count: -4.7
 dealer: J, player: 69 (15)
+options: double:yes, split:no, surrender:yes
 
 card:	   2   3   4   5   6   7   8   9   T   A	total	%
 rem:	  11   8  14  14   8  10  11   7  28  11	122	(39%)
 hi-lo: -16, true-count: -6.8
 dealer: 6, player: 99 (9,9)
+options: double:yes, split:yes, surrender:yes
 
 card:	   2   3   4   5   6   7   8   9   T   A	total	%
 rem:	  11   8  14  13   8  10  11   7  28  10	120	(38%)
 hi-lo: -16, true-count: -6.9
 dealer: 6, player: 95 (14)
+options: double:yes, split:no, surrender:no
 
 card:	   2   3   4   5   6   7   8   9   T   A	total	%
 rem:	  10   8  14  13   7  10  10   7  23   9	111	(36%)
 hi-lo: -20, true-count: -9.4
 dealer: Q, player: T6 (16)
+options: double:yes, split:no, surrender:yes
 
 card:	   2   3   4   5   6   7   8   9   T   A	total	%
 rem:	  10   8  13  12   7  10  10   7  22   9	108	(35%)
 hi-lo: -19, true-count: -9.1
 dealer: 5, player: 4J (14)
+options: double:yes, split:no, surrender:yes
 
 card:	   2   3   4   5   6   7   8   9   T   A	total	%
 rem:	   6   6  10   8   6   9   6   5  16   8	80	(26%)
 hi-lo: -12, true-count: -7.8
 dealer: 5, player: T2 (12)
+options: double:yes, split:no, surrender:yes
 
 ------ end bookmarks ------
 table> 

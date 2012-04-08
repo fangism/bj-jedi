@@ -157,7 +157,7 @@ public:
 
 private:
 	bool
-	offer_insurance(const bool) const;
+	offer_insurance(const bool);
 
 	size_t
 	draw_up_card(void);

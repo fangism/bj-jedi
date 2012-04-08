@@ -933,6 +933,9 @@ min bankroll: 96
 max bankroll: 105
 current bankroll: 104
 hands played: 45
+decisions made: 61
+wrong decisions (basic): 0
+wrong decisions (dynamic): 0
 initial bets: 45
 total bets: 48
 Edges before each hand dealt (a priori): {
@@ -1003,16 +1006,19 @@ card:	   2   3   4   5   6   7   8   9   T   A	total	%
 rem:	  20  15  15  18  16  16  14  16  62  13	205	(66%)
 hi-lo: -9, true-count: -2.3
 dealer: A, player: 92 (11)
+options: double:yes, split:no, surrender:yes
 
 card:	   2   3   4   5   6   7   8   9   T   A	total	%
 rem:	   8   8   8   9   9   6   5  11  26   6	96	(31%)
 hi-lo: -10, true-count: -5.4
 dealer: K, player: 5T (15)
+options: double:yes, split:no, surrender:yes
 
 card:	   2   3   4   5   6   7   8   9   T   A	total	%
 rem:	   7   8   7   8   8   4   4   9  25   6	86	(28%)
 hi-lo: -7, true-count: -4.2
 dealer: 9, player: K6 (16)
+options: double:yes, split:no, surrender:yes
 
 ------ end bookmarks ------
 table> 

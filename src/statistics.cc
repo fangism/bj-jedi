@@ -49,6 +49,9 @@ statistics::statistics() :
 	initial_bets(0.0),
 	total_bets(0.0),
 	hands_played(0),
+	decisions_made(0),
+	basic_wrong_decisions(0),
+	dynamic_wrong_decisions(0),
 	basic_priori(),
 	dynamic_priori(),
 	basic_posteriori(),
@@ -106,6 +109,9 @@ statistics::dump(ostream& o, const play_map& play) const {
 	o << "max bankroll: " << max_bankroll << endl;
 	o << "current bankroll: " << bankroll << endl;
 	o << "hands played: " << hands_played << endl;
+	o << "decisions made: " << decisions_made << endl;
+	o << "wrong decisions (basic): " << basic_wrong_decisions << endl;
+	o << "wrong decisions (dynamic): " << dynamic_wrong_decisions << endl;
 	o << "initial bets: " << initial_bets << endl;
 	o << "total bets: " << total_bets << endl;
 	o << "Edges before each hand dealt (a priori): {" << endl;

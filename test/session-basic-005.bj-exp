@@ -929,6 +929,9 @@ min bankroll: 94.5
 max bankroll: 106
 current bankroll: 106
 hands played: 46
+decisions made: 60
+wrong decisions (basic): 0
+wrong decisions (dynamic): 0
 initial bets: 46
 total bets: 47
 Edges before each hand dealt (a priori): {

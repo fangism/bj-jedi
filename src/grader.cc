@@ -78,9 +78,11 @@ grader::~grader() { }
 /**
 	Should be based on fraction of 10s vs. insurance payoff.
 	TODO: notify when wrong, based on count!
+	TODO: support bookmarking insurance?
+	Is non-const only because of updating statistics.
  */
 bool
-grader::offer_insurance(const bool pbj) const {
+grader::offer_insurance(const bool pbj) {
 	// if peek_ACE
 	const char* prompt = pbj ?  "even-money?" : "insurance?";
 	bool done = false;
@@ -120,8 +122,16 @@ grader::offer_insurance(const bool pbj) const {
 		}
 	}
 	} while (!done);
+	// TODO: calculate decision edges
+	++stats.decisions_made;
+	if (buy_insurance != advise) {
+		++stats.dynamic_wrong_decisions;
+		if (buy_insurance) {
+			++stats.basic_wrong_decisions;
+		}
+	}
 	return buy_insurance;
-}
+}	// end grader::offer_insurance
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void
@@ -412,6 +422,7 @@ grader::show_dynamic_edge(void) {
  */
 void
 grader::handle_player_action(const size_t j, const player_choice pc) {
+	++stats.decisions_made;
 	hand& ph(player_hands[j]);
 switch (pc) {
 	case STAND:
@@ -523,6 +534,13 @@ do {
 	case HIT:
 	case SPLIT: 
 	case SURRENDER: {
+		// if matches dynamic optimum, don't count against basic
+		if (pc != acp.second) {
+			++stats.dynamic_wrong_decisions;
+		if (pc != acp.first) {
+			++stats.basic_wrong_decisions;
+		}
+		}
 		if (pc != ac) {
 		// player's choice was wrong, sub-optimal
 		if (opt.notify_when_wrong) {
