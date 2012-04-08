@@ -96,7 +96,6 @@ strategy::set_card_distribution(const deck_count_type& o) {
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-#if FACE_CARDS
 void
 strategy::set_card_distribution(const extended_deck_count_type& o) {
 	deck_count_type t;
@@ -104,7 +103,6 @@ strategy::set_card_distribution(const extended_deck_count_type& o) {
 	t[TEN] += o[cards::JACK] +o[cards::QUEEN] +o[cards::KING];
 	set_card_distribution(t);
 }
-#endif
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**

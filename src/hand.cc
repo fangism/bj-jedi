@@ -14,10 +14,8 @@ using cards::TEN;
 using cards::card_name;
 using cards::standard_deck_distribution;
 using cards::card_index;
-#if FACE_CARDS
 using cards::card_symbols;
 using cards::card_value_map;
-#endif
 
 //=============================================================================
 // class hand method definitions
@@ -25,68 +23,36 @@ using cards::card_value_map;
 void
 hand::initial_card_player(const size_t p1) {
 	// the string stores the card names, not card indices
-#if FACE_CARDS
 	assert(p1 < card_symbols);
-#else
-	assert(p1 < card_values);
-#endif
 	cards.clear();
 	cards.push_back(card_name[p1]);
-#if FACE_CARDS
 	state = play->initial_card_player(card_value_map[p1]);
-#else
-	state = play->initial_card_player(p1);
-#endif
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void
 hand::initial_card_dealer(const size_t p1) {
 	// the string stores the card names, not card indices
-#if FACE_CARDS
 	assert(p1 < card_symbols);
-#else
-	assert(p1 < card_values);
-#endif
 	cards.clear();
 	cards.push_back(card_name[p1]);
-#if FACE_CARDS
 	state = play->initial_card_dealer(card_value_map[p1]);
-#else
-	state = play->initial_card_dealer(p1);
-#endif
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void
 hand::hit_player(const size_t p2) {
-#if FACE_CARDS
 	assert(p2 < card_symbols);
-#else
-	assert(p2 < card_values);
-#endif
 	cards.push_back(card_name[p2]);
-#if FACE_CARDS
 	state = play->hit_player(state, card_value_map[p2]);
-#else
-	state = play->hit_player(state, p2);
-#endif
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void
 hand::hit_dealer(const size_t p2) {
-#if FACE_CARDS
 	assert(p2 < card_symbols);
-#else
-	assert(p2 < card_values);
-#endif
 	cards.push_back(card_name[p2]);
-#if FACE_CARDS
 	state = play->hit_dealer(state, card_value_map[p2]);
-#else
-	state = play->hit_dealer(state, p2);
-#endif
 	if ((cards.size() == 2) && (state == goal)) {
 		state = dealer_blackjack;
 	}
@@ -102,11 +68,7 @@ hand::deal_player(const size_t p1, const size_t p2, const bool nat) {
 	cards.clear();
 	cards.push_back(card_name[p1]);
 	cards.push_back(card_name[p2]);
-#if FACE_CARDS
 	state = play->deal_player(card_value_map[p1], card_value_map[p2], nat);
-#else
-	state = play->deal_player(p1, p2, nat);
-#endif
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

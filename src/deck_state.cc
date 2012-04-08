@@ -24,13 +24,11 @@ using util::strings::string_to_num;
 using util::value_saver;
 using cards::ACE;
 using cards::TEN;
-#if FACE_CARDS
 using cards::JACK;
 using cards::QUEEN;
 using cards::KING;
 using cards::card_symbols;
 using cards::extended_reveal_print_ordering;
-#endif
 using cards::deck_count_type;
 using cards::card_values;
 using cards::card_name;
@@ -61,12 +59,7 @@ deck_state::reshuffle(void) {
 	cards_spent = 0;
 	const size_t f = num_decks*4;
 	std::fill(used_cards.begin(), used_cards.end(), 0);
-#if FACE_CARDS
 	std::fill(cards.begin(), cards.end(), f);
-#else
-	std::fill(cards.begin(), cards.end() -1, f);
-	cards[TEN] = f*4;	// T, J, Q, K
-#endif
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -85,12 +78,8 @@ deck_state::reshuffle_auto(void) {
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 double
 deck_state::draw_ten_probability(void) const {
-#if FACE_CARDS
 	return double(cards[TEN] +cards[JACK] +cards[QUEEN] +cards[KING])
 		/ double(cards_remaining);
-#else
-	return double(cards[TEN])/double(cards_remaining);
-#endif
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -256,8 +245,8 @@ ostream&
 deck_state::show_count(ostream& o, const bool ex, const bool used) const {
 	const size_t N = ex ? card_symbols : card_values;
 	const size_t p = o.precision(2);
-	const size_t* po = ex ? extended_reveal_print_ordering : reveal_print_ordering;
-#if FACE_CARDS
+	const size_t* const po = ex ? extended_reveal_print_ordering
+		: reveal_print_ordering;
 	deck_count_type s_cards_rem(&cards[0]);
 	deck_count_type s_cards_used(&used_cards[0]);
 	if (!ex) {
@@ -265,12 +254,10 @@ deck_state::show_count(ostream& o, const bool ex, const bool used) const {
 		s_cards_used[TEN] += used_cards[JACK]
 			+used_cards[QUEEN] +used_cards[KING];
 	}
-	const size_t* _cards_rem = ex ? &cards[0] : &s_cards_rem[0];
-	const size_t* _cards_used = ex ? &used_cards[0] : &s_cards_used[0];
-#else
-	const size_t* _cards_rem = &cards[0];
-	const size_t* _cards_used = &used_cards[0];
-#endif
+	const size_t* const _cards_rem =
+		ex ? &cards[0] : &s_cards_rem[0];
+	const size_t* const _cards_used =
+		ex ? &used_cards[0] : &s_cards_used[0];
 	size_t i = 0;
 	o << "card:\t";
 	for (i=0 ; i<N; ++i) {
@@ -302,9 +289,7 @@ if (used) {
 	hi_lo_count -= cards[1] +cards[2] +cards[3]
 		+cards[4] +cards[5];	// 2 through 6
 	hi_lo_count += cards[ACE] +cards[TEN];
-#if FACE_CARDS
 	hi_lo_count += cards[JACK] +cards[QUEEN] +cards[KING];
-#endif
 	double true_count = (double(hi_lo_count) * 52)
 		/ double(cards_remaining);
 	o << "hi-lo: " << hi_lo_count <<
@@ -319,11 +304,7 @@ if (used) {
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 bool
 deck_state::__check_edit_deck_args(const size_t c, const int n) {
-#if FACE_CARDS
 	const size_t N = card_symbols;
-#else
-	const size_t N = card_values;
-#endif
 	if (c >= N) {
 		cerr << "error: invalid card index " << c << endl;
 		return true;
@@ -388,11 +369,7 @@ deck_state::edit_deck_all(istream& i, ostream& o) {
 "\t[+|-] value : for relative count change" << endl;
 	size_t j = 0;
 for ( ; j<N; ++j) {
-#if FACE_CARDS
 	const size_t k = extended_reveal_print_ordering[j];
-#else
-	const size_t k = reveal_print_ordering[j];
-#endif
 	bool accept = true;
 	do {
 	o << "card: " << card_name[k] << " (" << cards[k] << "): ";

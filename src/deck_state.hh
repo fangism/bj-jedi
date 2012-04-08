@@ -10,13 +10,8 @@ class variation;
 using std::istream;
 using std::ostream;
 using cards::probability_vector;
-#if FACE_CARDS
 using cards::extended_deck_distribution;
 using cards::extended_deck_count_type;
-#else
-using cards::deck_distribution;
-using cards::deck_count_type;
-#endif
 using cards::state_machine;
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -33,13 +28,8 @@ using cards::state_machine;
  */
 class deck_state {
 public:
-#if FACE_CARDS
 	typedef	extended_deck_count_type	_deck_count_type;
 	typedef	extended_deck_distribution	_deck_distribution;
-#else
-	typedef	deck_count_type			_deck_count_type;
-	typedef	deck_distribution		_deck_distribution;
-#endif
 private:
 	/**
 		This is needed to replenish deck when reshuffling.

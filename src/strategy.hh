@@ -21,9 +21,7 @@ using cards::card_values;
 using cards::probability_type;
 using cards::probability_vector;
 using cards::deck_distribution;
-#if FACE_CARDS
 using cards::extended_deck_count_type;
-#endif
 using cards::deck_count_type;
 using cards::state_machine;
 
@@ -251,10 +249,8 @@ public:
 	void
 	set_card_distribution(const deck_count_type&);
 
-#if FACE_CARDS
 	void
 	set_card_distribution(const extended_deck_count_type&);
-#endif
 
 	void
 	evaluate(void);

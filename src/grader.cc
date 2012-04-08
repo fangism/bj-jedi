@@ -57,11 +57,7 @@ grader::grader(const variation& v, play_options& p, istream& i, ostream& o) :
 		stats(), 
 		bookmarks() {
 	player_hands.reserve(16);	// to prevent realloc
-#if FACE_CARDS
 	const extended_deck_count_type& d(C.get_card_counts());
-#else
-	const deck_count_type& d(C.get_card_counts());
-#endif
 	// each call does util::normalize()
 	basic_strategy.set_card_distribution(d);
 	dynamic_strategy.set_card_distribution(d);
