@@ -43,6 +43,10 @@ extern	const deck_count_type			standard_deck_count_reduced;
 extern	const deck_count_type			standard_deck_count;
 extern	const deck_distribution			standard_deck_distribution;
 
+extern
+void
+simplify_deck_count(const extended_deck_count_type&, deck_count_type&);
+
 }	// end namespace cards
 
 #endif	// __BOC2_DECK_HH__

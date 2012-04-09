@@ -44,7 +44,8 @@ using cards::card_index;
  */
 deck_state::deck_state(const variation& v) : 
 		num_decks(v.num_decks),
-		hole_reserved(false)
+		hole_reserved(false), 
+		hi_lo_counter("hi-lo", counter(cards::hi_lo_signature))
 		{
 	reshuffle();		// does most of the initializing
 	// default penetration before reshuffling: 75%
@@ -60,6 +61,7 @@ deck_state::reshuffle(void) {
 	const size_t f = num_decks*4;
 	std::fill(used_cards.begin(), used_cards.end(), 0);
 	std::fill(cards.begin(), cards.end(), f);
+	hi_lo_counter.second.initialize(cards);
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -100,6 +102,7 @@ deck_state::magic_draw(const size_t r) {
 	--cards[r];
 	++cards_spent;
 	--cards_remaining;
+	hi_lo_counter.second.incremental_count_card(r);
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -239,7 +242,7 @@ deck_state::reveal_hole_card(void) {
 /**
 	\param ex if extended detailed card count (TJQK) is desired.
 		Most of the time, user only cares about aggregating 10s.
-	\param used to show cards that have been used (redundant).
+	\param used to show cards that have been used (redundant info).
  */
 ostream&
 deck_state::show_count(ostream& o, const bool ex, const bool used) const {
@@ -250,6 +253,7 @@ deck_state::show_count(ostream& o, const bool ex, const bool used) const {
 	deck_count_type s_cards_rem(&cards[0]);
 	deck_count_type s_cards_used(&used_cards[0]);
 	if (!ex) {
+		// use cards::simplify_deck_count
 		s_cards_rem[TEN] += cards[JACK] +cards[QUEEN] +cards[KING];
 		s_cards_used[TEN] += used_cards[JACK]
 			+used_cards[QUEEN] +used_cards[KING];
@@ -282,6 +286,9 @@ if (used) {
 	// note: altered decks will have nonsense values
 	o << "\t" << cards_remaining << "\t(" <<
 		double(cards_remaining) *100.0 / (num_decks *52) << "%)\n";
+
+// TODO: support generalized counting schemes
+#if 0
 	// hi-lo count summary, details of true count, running count
 	int hi_lo_count = 0;
 	// more accurately, based on remaining cards, not used cards
@@ -297,6 +304,11 @@ if (used) {
 	// normalized to 1 deck
 		", true-count: " << true_count;
 	// adjusted count accounts for the house edge based on rules
+#else
+	hi_lo_counter.second.dump(o,
+		hi_lo_counter.first.c_str(), cards_remaining);
+#endif
+
 	o.precision(p);
 	return o << endl;
 }
@@ -331,6 +343,7 @@ deck_state::edit_deck(const size_t c, const int n) {
 	cards[c] = n;
 	cards_remaining += d;
 	// leave used_cards and cards_spent alone
+	hi_lo_counter.second.initialize(cards);
 	return false;
 }
 

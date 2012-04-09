@@ -1,9 +1,14 @@
 // "deck.cc"
 
+#include <algorithm>
+#include <numeric>
 #include "deck.hh"
 #include "util/array.tcc"
 
 namespace cards {
+using std::copy;
+using std::accumulate;
+
 //-----------------------------------------------------------------------------
 // enumeration-dependent interface
 const char card_name[card_symbols+1] = "A23456789TJQK";
@@ -95,6 +100,14 @@ static const probability_type __standard_deck_distribution[card_values] = {
 
 const deck_distribution
 standard_deck_distribution(__standard_deck_distribution);
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+void
+simplify_deck_count(const extended_deck_count_type& d, deck_count_type& rd) {
+	const extended_deck_count_type::const_iterator t(d.begin() +card_values);
+	copy(d.begin(), t, rd.begin());
+	rd.back() += accumulate(t, d.end(), 0);
+}
 
 }	// end namespace cards
 

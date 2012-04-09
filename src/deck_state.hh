@@ -3,16 +3,23 @@
 #ifndef	__BOC2_DECK_STATE_HH__
 #define	__BOC2_DECK_STATE_HH__
 
+#include <utility>
+#include <string>
 #include "card_state.hh"
+#include "counter.hh"
 
 namespace blackjack {
 class variation;
 using std::istream;
 using std::ostream;
+using std::string;
 using cards::probability_vector;
 using cards::extended_deck_distribution;
 using cards::extended_deck_count_type;
 using cards::state_machine;
+using cards::counter;
+
+typedef	std::pair<string, counter>		named_counter;
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
@@ -64,6 +71,9 @@ private:
 		Maximum allowed should be .90 (90%)
 	 */
 	size_t					maximum_penetration;
+
+	/// TODO: support extendable vector of various counters
+	named_counter				hi_lo_counter;
 public:
 	explicit
 	deck_state(const variation&);

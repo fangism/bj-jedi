@@ -1,5 +1,9 @@
 # "ChangeLog"
 
+2012-04-08	David Fang		<fangism@users.sourceforge.net>
+	Generalized count into a user-definable counter structure,
+		defined by integer coefficients.
+
 2012-04-07	David Fang		<fangism@users.sourceforge.net>
 	Track wrong decisions relative to basic/dynamic strategy.
 

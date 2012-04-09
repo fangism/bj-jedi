@@ -12,6 +12,7 @@ libbj_la_SOURCES = \
 	bookmark.cc bookmark.hh \
 	card_state.cc card_state.hh \
 	config.h \
+	counter.cc counter.hh \
 	deck.cc deck.hh \
 	deck_state.cc deck_state.hh \
 	enums.hh \
