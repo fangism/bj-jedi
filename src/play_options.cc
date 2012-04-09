@@ -55,6 +55,8 @@ play_options::play_options() :
 	count_used_cards(true),
 	bookmark_wrong(true),
 	bookmark_dynamic(true),
+	quiz_count_before_shuffle(true),
+	quiz_count_frequency(5),
 	bet(1.0) {
 }
 
@@ -85,6 +87,9 @@ play_options::dump(ostream& o) const {
 	o << "bookmark wrong decisions: " << yn(bookmark_wrong) << endl;
 	o << "bookmark when dynamic strategy != basic: " <<
 		yn(bookmark_dynamic) << endl;
+	o << "quiz count before reshuffle: " <<
+		yn(quiz_count_before_shuffle) << endl;
+	o << "quiz count every N hands: " << quiz_count_frequency << endl;
 	o << "current bet: " << bet << endl;
 	return o;
 }
@@ -315,6 +320,14 @@ DEFINE_OPTION_MEMBER_COMMAND(
 DEFINE_OPTION_MEMBER_COMMAND(
 	bookmark_dynamic, "bookmark-dynamic",
 	"[bool]: bookmark when dynamic strategy beats basic strategy")
+
+DEFINE_OPTION_MEMBER_COMMAND(
+	quiz_count_before_shuffle, "quiz-count-before-shuffle",
+	"[bool]: quiz player on hi-lo count before reshuffling")
+
+DEFINE_OPTION_MEMBER_COMMAND(
+	quiz_count_frequency, "quiz-count-frequency",
+	"[int]: quiz player on hi-lo count after N hands")
 
 #undef	DECLARE_OPTION_COMMAND_CLASS
 }	// end namespace option_commands

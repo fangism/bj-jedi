@@ -53,6 +53,8 @@ show edge values with analysis: yes
 automatically play optimally: no
 bookmark wrong decisions: yes
 bookmark when dynamic strategy != basic: yes
+quiz count before reshuffle: yes
+quiz count every N hands: 5
 current bet: 1
 table> seed 0 0 4
 table> auto-play-until-shuffle

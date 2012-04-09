@@ -65,12 +65,18 @@ deck_state::reshuffle(void) {
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+bool
+deck_state::needs_shuffle(void) const {
+	return (cards_remaining < maximum_penetration);
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
 	\return true if deck/shoe was shuffled.
  */
 bool
 deck_state::reshuffle_auto(void) {
-	if (cards_remaining < maximum_penetration) {
+	if (needs_shuffle()) {
 		reshuffle();
 		return true;
 	}
@@ -311,6 +317,30 @@ if (used) {
 
 	o.precision(p);
 	return o << endl;
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
+	This could be pushed into deck_state, or counter.
+ */
+void
+deck_state::quiz_count(istream& istr, ostream& ostr) const {
+	string line;
+	ostr << "Quiz: " << hi_lo_counter.first << " running count? ";
+	getline(istr, line);
+	int ans;
+	if (string_to_num(line, ans)) {
+		// for any other response, just show count
+		show_count(ostr, false, false);
+	} else {
+		if (ans == hi_lo_counter.second.get_running_count()) {
+			ostr << "Correct." << endl;
+		} else {
+			ostr << "Incorrect." << endl;
+			show_count(ostr, false, false);
+		}
+	}
+// otherwise, just skip quiz
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

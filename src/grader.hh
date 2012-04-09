@@ -177,6 +177,9 @@ private:
 	}
 
 	void
+	quiz_count(void) const;
+
+	void
 	handle_player_action(const size_t, const player_choice);
 
 	bool

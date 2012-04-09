@@ -127,6 +127,9 @@ public:
 	void
 	replace_hole_card(void);
 
+	bool
+	needs_shuffle(void) const;
+
 	void
 	reshuffle(void);
 
@@ -135,6 +138,9 @@ public:
 
 	ostream&
 	show_count(ostream&, const bool, const bool) const;
+
+	void
+	quiz_count(istream&, ostream&) const;
 
 #if 0
 	ostream&

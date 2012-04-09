@@ -9,7 +9,7 @@ fi
 set -- $args
 
 # assumed source directory
-srcdir=.
+srcdir=`dirname $0`
 for i
 do
 	case "$i"

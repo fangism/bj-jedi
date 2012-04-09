@@ -114,6 +114,14 @@ struct play_options {
 		dynamic strategy differed from basic strategy.
 	 */
 	bool				bookmark_dynamic;
+	/**
+		If true, prompt for count before reshuffling.
+	 */
+	bool				quiz_count_before_shuffle;
+	/**
+		Quiz count after every N hands.
+	 */
+	size_t				quiz_count_frequency;
 	/// size of current bet (convert from integer)
 	double				bet;
 

@@ -72,8 +72,6 @@ play-option::TMI: too much information
 compare basic vs. dynamic strategy
 auto-play-until-count (falls below, based on true-count)
 
-quiz count: after every hand, or at reshuffle time, or periodically
-
 command-line options:
 paths to search for config/save/load files?
 

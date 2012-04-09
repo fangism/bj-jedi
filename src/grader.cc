@@ -369,6 +369,10 @@ for (j=0; j<player_hands.size(); ++j) {
 }
 	++stats.hands_played;
 	stats.compare_bankroll();
+	if (opt.quiz_count_frequency &&	// don't divide by 0
+			!(stats.hands_played % opt.quiz_count_frequency)) {
+		quiz_count();
+	}
 	const bool ret = auto_shuffle();
 	if (opt.always_show_status) {
 		status(ostr);
@@ -377,7 +381,6 @@ for (j=0; j<player_hands.size(); ++j) {
 		// don't bother if just shuffled
 		show_dynamic_edge();
 	}
-//	only update_dynamic_strategy() when needed or requested
 	// update bet min/max watermark
 	return ret;
 }	// end grader::deal_hand
@@ -391,7 +394,11 @@ grader::auto_shuffle(void) {
 		C.reshuffle();
 		b = true;
 	} else {
-		b = C.reshuffle_auto();
+		b = C.needs_shuffle();
+		if (b && opt.quiz_count_before_shuffle) {
+			quiz_count();
+		}
+		C.reshuffle_auto();
 	}
 	if (b) {
 		ostr << "**************** Reshuffling... ****************"
@@ -402,6 +409,14 @@ grader::auto_shuffle(void) {
 		}
 	}
 	return b;
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+void
+grader::quiz_count(void) const {
+	if (!opt.auto_play) {
+		C.quiz_count(istr, ostr);
+	}
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -970,6 +985,7 @@ Count2::main(grader& g, const string_list& a) {
 DECLARE_GRADER_COMMAND_CLASS(Shuffle, "shuffle", ": shuffle deck")
 int
 Shuffle::main(grader& g, const string_list&) {
+	// optional quiz count here?
 	g.shuffle();
 	return CommandStatus::NORMAL;
 }

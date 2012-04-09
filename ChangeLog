@@ -1,6 +1,10 @@
 # "ChangeLog"
 
 2012-04-08	David Fang		<fangism@users.sourceforge.net>
+	Added option to quiz the user on count periodically,
+		or prior to shuffle.
+
+2012-04-08	David Fang		<fangism@users.sourceforge.net>
 	Generalized count into a user-definable counter structure,
 		defined by integer coefficients.
 

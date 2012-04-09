@@ -52,6 +52,9 @@ public:
 	void
 	initialize(const deck_count_type&);
 
+	int
+	get_running_count(void) const { return running_count; }
+
 	void
 	incremental_count_card(const size_t);
 
