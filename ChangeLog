@@ -1,5 +1,9 @@
 # "ChangeLog"
 
+2012-04-09	David Fang		<fangism@users.sourceforge.net>
+	Added precision control for numerical output, 
+		made more consistent by default now.
+
 2012-04-08	David Fang		<fangism@users.sourceforge.net>
 	Added option to quiz the user on count periodically,
 		or prior to shuffle.

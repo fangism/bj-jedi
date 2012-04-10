@@ -4,7 +4,7 @@ Type 'help' or '?' for a list of lobby commands.
 lobby> var show-all
 uniquely-matched: variation
 number of decks: 6
-maximum penetration: 0.75
+maximum penetration: 0.750
 dealer soft 17: hits
 player early surrender: no
 player late surrender: yes
@@ -22,10 +22,10 @@ player may re-split: no
 player may hit on split aces: no
 player may re-split aces: no
 dealer 22 pushes against player: no
-blackjack pays: 1.5
-insurance pays: 2
-surrender penalty: 0.5
-double-down multiplier: 2
+blackjack pays: 1.500
+insurance pays: 2.000
+surrender penalty: 0.500
+double-down multiplier: 2.000
 lobby> p
 uniquely-matched: play
 You sit down at a blackjack table.
@@ -55,7 +55,7 @@ bookmark wrong decisions: yes
 bookmark when dynamic strategy != basic: yes
 quiz count before reshuffle: yes
 quiz count every N hands: 5
-current bet: 1
+current bet: 1.000
 table> seed 0 0 6
 table> auto-play-until-shuffle
 ---------------- new hand ----------------
@@ -65,22 +65,22 @@ No dealer blackjack.
 [1/1] dealer: J, player: 32 (5)
 action? [hsdrbc?!]> !
 	edges:	basic	dynamic
-	stand: -0.5404	-0.5422
-	hit  : -0.3134	-0.3128
+	stand: -0.540	-0.542
+	hit  : -0.313	-0.313
 	dbl  : -1.081	-1.084
-	surr.: -0.5	-0.5
+	surr.: -0.500	-0.500
 	advise:	hit	hit
 auto: hit
 [1/1] dealer: J, player: 329 (14)
 action? [hsbc?!]> !
 	edges:	basic	dynamic
-	stand: -0.5404	-0.5414
-	hit  : -0.4663	-0.4627
+	stand: -0.540	-0.541
+	hit  : -0.466	-0.463
 	advise:	hit	hit
 auto: hit
 player: 329K (bust)
 [1/1] dealer: J, player: 329K (bust)
-bankroll: 99, bet: 1
+bankroll: 99.00, bet: 1.00
 ---------------- new hand ----------------
 dealer: K
 player: 6Q (16)
@@ -88,23 +88,23 @@ No dealer blackjack.
 [1/1] dealer: K, player: 6Q (16)
 action? [hsdrbc?!]> !
 	edges:	basic	dynamic
-	stand: -0.5404	-0.5425
-	hit  : -0.5398	-0.5326
-	dbl  : -1.08	-1.065
-	surr.: -0.5	-0.5
+	stand: -0.540	-0.543
+	hit  : -0.540	-0.533
+	dbl  : -1.080	-1.065
+	surr.: -0.500	-0.500
 	advise:	surrender	surrender
 auto: surrender
 [1/1] dealer: K, player: 6Q (16) surrendered
-bankroll: 98.5, bet: 1
+bankroll: 98.50, bet: 1.00
 ---------------- new hand ----------------
 dealer: 4
 [1/1] dealer: 4, player: 87 (15)
 action? [hsdrbc?!]> !
 	edges:	basic	dynamic
-	stand: -0.2058	-0.2106
-	hit  : -0.3971	-0.3943
-	dbl  : -0.7942	-0.7887
-	surr.: -0.5	-0.5
+	stand: -0.206	-0.211
+	hit  : -0.397	-0.394
+	dbl  : -0.794	-0.789
+	surr.: -0.500	-0.500
 	advise:	stand	stand
 auto: stand
 Dealer plays...
@@ -112,48 +112,48 @@ dealer: 48 (12)
 dealer: 487 (19)
 [1/1] dealer: 487 (19), player: 87 (15)
 Player loses.
-bankroll: 97.5, bet: 1
+bankroll: 97.50, bet: 1.00
 ---------------- new hand ----------------
 dealer: A
 player: 58 (13)
 insurance? [ync?!]: !
-odds: 2.21739 : 1
-pay : 2 : 1
+odds: 2.217 : 1
+pay : 2.000 : 1
 advise: no
 Declined insurance.
 No dealer blackjack.
 [1/1] dealer: A, player: 58 (13)
 action? [hsdrbc?!]> !
 	edges:	basic	dynamic
-	stand: -0.5987	-0.5935
-	hit  : -0.4281	-0.4384
-	dbl  : -0.899	-0.9196
-	surr.: -0.5	-0.5
+	stand: -0.599	-0.593
+	hit  : -0.428	-0.438
+	dbl  : -0.899	-0.920
+	surr.: -0.500	-0.500
 	advise:	hit	hit
 auto: hit
 [1/1] dealer: A, player: 584 (17)
 action? [hsbc?!]> !
 	edges:	basic	dynamic
-	stand: -0.5156	-0.507
-	hit  : -0.5794	-0.5793
+	stand: -0.516	-0.507
+	hit  : -0.579	-0.579
 	advise:	stand	stand
 auto: stand
 Dealer plays...
 dealer: A7 (18)
 [1/1] dealer: A7 (18), player: 584 (17)
 Player loses.
-bankroll: 96.5, bet: 1
+bankroll: 96.50, bet: 1.00
 ---------------- new hand ----------------
 dealer: A
 player: 78 (15)
 insurance? [ync?!]: !
-odds: 2.16304 : 1
-pay : 2 : 1
+odds: 2.163 : 1
+pay : 2.000 : 1
 advise: no
 Declined insurance.
 dealer: AQ (BJ)
 Dealer has blackjack.
-bankroll: 95.5, bet: 1
+bankroll: 95.50, bet: 1.00
 ---------------- new hand ----------------
 dealer: T
 player: 87 (15)
@@ -162,19 +162,19 @@ No dealer blackjack.
 action? [hsdrbc?!]> !
 *** dynamic strategy beats basic ***
 card:	   2   3   4   5   6   7   8   9   T   A	total	%
-used:	   1   1   2   1   1   5   5   1   6   2	25	(8%)
-rem:	  23  23  22  23  23  19  19  23  90  22	287	(92%)
+used:	   1   1   2   1   1   5   5   1   6   2	25	(8.01%)
+rem:	  23  23  22  23  23  19  19  23  90  22	287	(91.99%)
 hi-lo: -2, true-count: -0.36
 	edges:	basic	dynamic
-	stand: -0.5404	-0.5263
-	hit  : -0.5044	-0.4907
-	dbl  : -1.009	-0.9813
-	surr.: -0.5	-0.5
+	stand: -0.540	-0.526
+	hit  : -0.504	-0.491
+	dbl  : -1.009	-0.981
+	surr.: -0.500	-0.500
 	advise:	surrender	hit	(different! using basic)
 auto: surrender
 Bookmark saved.
 [1/1] dealer: T, player: 87 (15) surrendered
-bankroll: 95, bet: 1
+bankroll: 95.00, bet: 1.00
 ---------------- new hand ----------------
 dealer: J
 player: 5K (15)
@@ -183,19 +183,19 @@ No dealer blackjack.
 action? [hsdrbc?!]> !
 *** dynamic strategy beats basic ***
 card:	   2   3   4   5   6   7   8   9   T   A	total	%
-used:	   1   1   2   2   1   5   5   1   8   2	28	(9%)
-rem:	  23  23  22  22  23  19  19  23  88  22	284	(91%)
+used:	   1   1   2   2   1   5   5   1   8   2	28	(8.97%)
+rem:	  23  23  22  22  23  19  19  23  88  22	284	(91.03%)
 hi-lo: -3, true-count: -0.55
 	edges:	basic	dynamic
-	stand: -0.5404	-0.5265
-	hit  : -0.5044	-0.4897
-	dbl  : -1.009	-0.9795
-	surr.: -0.5	-0.5
+	stand: -0.540	-0.526
+	hit  : -0.504	-0.490
+	dbl  : -1.009	-0.979
+	surr.: -0.500	-0.500
 	advise:	surrender	hit	(different! using basic)
 auto: surrender
 Bookmark saved.
 [1/1] dealer: J, player: 5K (15) surrendered
-bankroll: 94.5, bet: 1
+bankroll: 94.50, bet: 1.00
 ---------------- new hand ----------------
 dealer: K
 player: 46 (10)
@@ -203,17 +203,17 @@ No dealer blackjack.
 [1/1] dealer: K, player: 46 (10)
 action? [hsdrbc?!]> !
 	edges:	basic	dynamic
-	stand: -0.5404	-0.5288
-	hit  : 0.02531	0.02454
-	dbl  : -0.008659	0.001136
-	surr.: -0.5	-0.5
+	stand: -0.540	-0.529
+	hit  : 0.025	0.025
+	dbl  : -0.009	0.001
+	surr.: -0.500	-0.500
 	advise:	hit	hit
 auto: hit
 [1/1] dealer: K, player: 46J (20)
 action? [hsbc?!]> !
 	edges:	basic	dynamic
-	stand: 0.5545	0.5533
-	hit  : -0.849	-0.8458
+	stand: 0.555	0.553
+	hit  : -0.849	-0.846
 	advise:	stand	stand
 auto: stand
 Dealer plays...
@@ -221,46 +221,46 @@ dealer: K4 (14)
 dealer: K4J (bust)
 [1/1] dealer: K4J (bust), player: 46J (20)
 Player wins.
-bankroll: 95.5, bet: 1
+bankroll: 95.50, bet: 1.00
 ---------------- new hand ----------------
 dealer: 8
 [1/1] dealer: 8, player: 5J (15)
 action? [hsdrbc?!]> !
 	edges:	basic	dynamic
-	stand: -0.5105	-0.5294
-	hit  : -0.4168	-0.4065
-	dbl  : -0.8416	-0.8258
-	surr.: -0.5	-0.5
+	stand: -0.511	-0.529
+	hit  : -0.417	-0.406
+	dbl  : -0.842	-0.826
+	surr.: -0.500	-0.500
 	advise:	hit	hit
 auto: hit
 [1/1] dealer: 8, player: 5J4 (19)
 action? [hsbc?!]> !
 	edges:	basic	dynamic
-	stand: 0.5939	0.5894
-	hit  : -0.7137	-0.6943
+	stand: 0.594	0.589
+	hit  : -0.714	-0.694
 	advise:	stand	stand
 auto: stand
 Dealer plays...
 dealer: 89 (17)
 [1/1] dealer: 89 (17), player: 5J4 (19)
 Player wins.
-bankroll: 96.5, bet: 1
+bankroll: 96.50, bet: 1.00
 ---------------- new hand ----------------
 dealer: 3
 [1/1] dealer: 3, player: 3A (A,3)
 action? [hsdrbc?!]> !
 	edges:	basic	dynamic
-	stand: -0.2466	-0.2306
-	hit  : 0.05119	0.06185
-	dbl  : -0.004424	0.01441
-	surr.: -0.5	-0.5
+	stand: -0.247	-0.231
+	hit  : 0.051	0.062
+	dbl  : -0.004	0.014
+	surr.: -0.500	-0.500
 	advise:	hit	hit
 auto: hit
 [1/1] dealer: 3, player: 3AK (14)
 action? [hsbc?!]> !
 	edges:	basic	dynamic
-	stand: -0.2466	-0.2342
-	hit  : -0.3499	-0.345
+	stand: -0.247	-0.234
+	hit  : -0.350	-0.345
 	advise:	stand	stand
 auto: stand
 Dealer plays...
@@ -268,17 +268,17 @@ dealer: 35 (8)
 dealer: 35438 (bust)
 [1/1] dealer: 35438 (bust), player: 3AK (14)
 Player wins.
-bankroll: 97.5, bet: 1
+bankroll: 97.50, bet: 1.00
 ---------------- new hand ----------------
 dealer: 5
 [1/1] dealer: 5, player: 33 (3,3)
 action? [hsdprbc?!]> !
 	edges:	basic	dynamic
-	stand: -0.1647	-0.1533
-	hit  : -0.03355	-0.02536
-	dbl  : -0.3112	-0.2869
-	split: 0.1044	0.1167
-	surr.: -0.5	-0.5
+	stand: -0.165	-0.153
+	hit  : -0.034	-0.025
+	dbl  : -0.311	-0.287
+	split: 0.104	0.117
+	surr.: -0.500	-0.500
 	advise:	split	split
 auto: split
 [1/2] dealer: 5, player: 3J (13)
@@ -287,17 +287,17 @@ back to player hand 1
 [1/2] dealer: 5, player: 3J (13)
 action? [hsdbc?!]> !
 	edges:	basic	dynamic
-	stand: -0.1647	-0.1604
-	hit  : -0.2577	-0.278
-	dbl  : -0.5153	-0.5559
+	stand: -0.165	-0.160
+	hit  : -0.258	-0.278
+	dbl  : -0.515	-0.556
 	advise:	stand	stand
 auto: stand
 [2/2] dealer: 5, player: 3Q (13)
 action? [hsdbc?!]> !
 	edges:	basic	dynamic
-	stand: -0.1647	-0.1604
-	hit  : -0.2577	-0.278
-	dbl  : -0.5153	-0.5559
+	stand: -0.165	-0.160
+	hit  : -0.258	-0.278
+	dbl  : -0.515	-0.556
 	advise:	stand	stand
 auto: stand
 Dealer plays...
@@ -307,75 +307,75 @@ dealer: 52A (18)
 Player loses.
 [2/2] dealer: 52A (18), player: 3Q (13)
 Player loses.
-bankroll: 95.5, bet: 1
+bankroll: 95.50, bet: 1.00
 ---------------- new hand ----------------
 dealer: 7
 [1/1] dealer: 7, player: J6 (16)
 action? [hsdrbc?!]> !
 	edges:	basic	dynamic
-	stand: -0.4754	-0.4742
-	hit  : -0.4148	-0.4236
-	dbl  : -0.8296	-0.8473
-	surr.: -0.5	-0.5
+	stand: -0.475	-0.474
+	hit  : -0.415	-0.424
+	dbl  : -0.830	-0.847
+	surr.: -0.500	-0.500
 	advise:	hit	hit
 auto: hit
 [1/1] dealer: 7, player: J63 (19)
 action? [hsbc?!]> !
 	edges:	basic	dynamic
 	stand: 0.616	0.629
-	hit  : -0.7154	-0.6927
+	hit  : -0.715	-0.693
 	advise:	stand	stand
 auto: stand
 Dealer plays...
 dealer: 7J (17)
 [1/1] dealer: 7J (17), player: J63 (19)
 Player wins.
-bankroll: 96.5, bet: 1
+bankroll: 96.50, bet: 1.00
 ---------------- new hand ----------------
 dealer: A
 Player has blackjack!
 player: AJ (BJ)
 even-money? [ync?!]: !
-odds: 2.20513 : 1
-pay : 2 : 1
+odds: 2.205 : 1
+pay : 2.000 : 1
 advise: no
 Declined insurance.
 dealer: AT (BJ)
 Dealer has blackjack.
 Push.
-bankroll: 96.5, bet: 1
+bankroll: 96.50, bet: 1.00
 ---------------- new hand ----------------
 dealer: 9
 [1/1] dealer: 9, player: QT (T,T)
 action? [hsdrbc?!]> !
 	edges:	basic	dynamic
-	stand: 0.7584	0.7534
-	hit  : -0.8508	-0.8584
+	stand: 0.758	0.753
+	hit  : -0.851	-0.858
 	dbl  : -1.702	-1.717
-	surr.: -0.5	-0.5
+	surr.: -0.500	-0.500
 	advise:	stand	stand
 auto: stand
 Dealer plays...
 dealer: 9T (19)
 [1/1] dealer: 9T (19), player: QT (T,T)
 Player wins.
-bankroll: 97.5, bet: 1
+bankroll: 97.50, bet: 1.00
 ---------------- new hand ----------------
 dealer: 7
 [1/1] dealer: 7, player: 94 (13)
 action? [hsdrbc?!]> !
 	edges:	basic	dynamic
-	stand: -0.4754	-0.4712
-	hit  : -0.2691	-0.2764
-	dbl  : -0.5874	-0.6038
-	surr.: -0.5	-0.5
+	stand: -0.475	-0.471
+	hit  : -0.269	-0.276
+	dbl  : -0.587	-0.604
+	surr.: -0.500	-0.500
 	advise:	hit	hit
 auto: hit
 [1/1] dealer: 7, player: 945 (18)
 action? [hsbc?!]> !
 	edges:	basic	dynamic
-	stand: 0.3996	0.4021
-	hit  : -0.5911	-0.5807
+	stand: 0.400	0.402
+	hit  : -0.591	-0.581
 	advise:	stand	stand
 auto: stand
 Dealer plays...
@@ -383,16 +383,16 @@ dealer: 79 (16)
 dealer: 79K (bust)
 [1/1] dealer: 79K (bust), player: 945 (18)
 Player wins.
-bankroll: 98.5, bet: 1
+bankroll: 98.50, bet: 1.00
 ---------------- new hand ----------------
 dealer: 5
 [1/1] dealer: 5, player: 5Q (15)
 action? [hsdrbc?!]> !
 	edges:	basic	dynamic
-	stand: -0.1647	-0.1723
-	hit  : -0.3862	-0.3765
-	dbl  : -0.7724	-0.7531
-	surr.: -0.5	-0.5
+	stand: -0.165	-0.172
+	hit  : -0.386	-0.377
+	dbl  : -0.772	-0.753
+	surr.: -0.500	-0.500
 	advise:	stand	stand
 auto: stand
 Dealer plays...
@@ -400,16 +400,16 @@ dealer: 56 (11)
 dealer: 56J (21)
 [1/1] dealer: 56J (21), player: 5Q (15)
 Player loses.
-bankroll: 97.5, bet: 1
+bankroll: 97.50, bet: 1.00
 ---------------- new hand ----------------
 dealer: 7
 [1/1] dealer: 7, player: 8Q (18)
 action? [hsdrbc?!]> !
 	edges:	basic	dynamic
-	stand: 0.3996	0.394
-	hit  : -0.5911	-0.5628
+	stand: 0.400	0.394
+	hit  : -0.591	-0.563
 	dbl  : -1.182	-1.126
-	surr.: -0.5	-0.5
+	surr.: -0.500	-0.500
 	advise:	stand	stand
 auto: stand
 Dealer plays...
@@ -417,16 +417,16 @@ dealer: 74 (11)
 dealer: 7447 (bust)
 [1/1] dealer: 7447 (bust), player: 8Q (18)
 Player wins.
-bankroll: 98.5, bet: 1
+bankroll: 98.50, bet: 1.00
 ---------------- new hand ----------------
 dealer: 6
 [1/1] dealer: 6, player: 46 (10)
 action? [hsdrbc?!]> !
 	edges:	basic	dynamic
-	stand: -0.1211	-0.1166
-	hit  : 0.2825	0.3026
-	dbl  : 0.565	0.6052
-	surr.: -0.5	-0.5
+	stand: -0.121	-0.117
+	hit  : 0.282	0.303
+	dbl  : 0.565	0.605
+	surr.: -0.500	-0.500
 	advise:	double-down	double-down
 auto: double-down
 Dealer plays...
@@ -434,32 +434,32 @@ dealer: 69 (15)
 dealer: 69A2 (18)
 [1/1] dealer: 69A2 (18), player: 466 (16) doubled-down
 Player loses.
-bankroll: 96.5, bet: 1
+bankroll: 96.50, bet: 1.00
 ---------------- new hand ----------------
 dealer: 8
 [1/1] dealer: 8, player: 7K (17)
 action? [hsdrbc?!]> !
 	edges:	basic	dynamic
-	stand: -0.382	-0.3988
-	hit  : -0.506	-0.4966
-	dbl  : -1.012	-0.9933
-	surr.: -0.5	-0.5
+	stand: -0.382	-0.399
+	hit  : -0.506	-0.497
+	dbl  : -1.012	-0.993
+	surr.: -0.500	-0.500
 	advise:	stand	stand
 auto: stand
 Dealer plays...
 dealer: 8K (18)
 [1/1] dealer: 8K (18), player: 7K (17)
 Player loses.
-bankroll: 95.5, bet: 1
+bankroll: 95.50, bet: 1.00
 ---------------- new hand ----------------
 dealer: 2
 [1/1] dealer: 2, player: K6 (16)
 action? [hsdrbc?!]> !
 	edges:	basic	dynamic
-	stand: -0.2865	-0.2692
-	hit  : -0.4733	-0.4686
-	dbl  : -0.9466	-0.9372
-	surr.: -0.5	-0.5
+	stand: -0.287	-0.269
+	hit  : -0.473	-0.469
+	dbl  : -0.947	-0.937
+	surr.: -0.500	-0.500
 	advise:	stand	stand
 auto: stand
 Dealer plays...
@@ -467,7 +467,7 @@ dealer: 2A (A,2)
 dealer: 2AA89 (21)
 [1/1] dealer: 2AA89 (21), player: K6 (16)
 Player loses.
-bankroll: 94.5, bet: 1
+bankroll: 94.50, bet: 1.00
 ---------------- new hand ----------------
 dealer: J
 player: K6 (16)
@@ -475,36 +475,36 @@ No dealer blackjack.
 [1/1] dealer: J, player: K6 (16)
 action? [hsdrbc?!]> !
 	edges:	basic	dynamic
-	stand: -0.5404	-0.5283
-	hit  : -0.5398	-0.5363
-	dbl  : -1.08	-1.073
-	surr.: -0.5	-0.5
+	stand: -0.540	-0.528
+	hit  : -0.540	-0.536
+	dbl  : -1.080	-1.073
+	surr.: -0.500	-0.500
 	advise:	surrender	surrender
 auto: surrender
 [1/1] dealer: J, player: K6 (16) surrendered
-bankroll: 94, bet: 1
+bankroll: 94.00, bet: 1.00
 ---------------- new hand ----------------
 dealer: 3
 [1/1] dealer: 3, player: T2 (12)
 action? [hsdrbc?!]> !
 *** dynamic strategy beats basic ***
 card:	   2   3   4   5   6   7   8   9   T   A	total	%
-used:	   5   8  10   8   9  10  10   7  32   9	108	(35%)
-rem:	  19  16  14  16  15  14  14  17  64  15	204	(65%)
+used:	   5   8  10   8   9  10  10   7  32   9	108	(34.62%)
+rem:	  19  16  14  16  15  14  14  17  64  15	204	(65.38%)
 hi-lo: -1, true-count: -0.25
 	edges:	basic	dynamic
-	stand: -0.2466	-0.2178
-	hit  : -0.234	-0.2292
-	dbl  : -0.468	-0.4583
-	surr.: -0.5	-0.5
+	stand: -0.247	-0.218
+	hit  : -0.234	-0.229
+	dbl  : -0.468	-0.458
+	surr.: -0.500	-0.500
 	advise:	hit	stand	(different! using basic)
 auto: hit
 Bookmark saved.
 [1/1] dealer: 3, player: T25 (17)
 action? [hsbc?!]> !
 	edges:	basic	dynamic
-	stand: -0.1203	-0.08888
-	hit  : -0.5335	-0.5197
+	stand: -0.120	-0.089
+	hit  : -0.533	-0.520
 	advise:	stand	stand
 auto: stand
 Dealer plays...
@@ -512,7 +512,7 @@ dealer: 3J (13)
 dealer: 3JQ (bust)
 [1/1] dealer: 3JQ (bust), player: T25 (17)
 Player wins.
-bankroll: 95, bet: 1
+bankroll: 95.00, bet: 1.00
 ---------------- new hand ----------------
 dealer: Q
 player: A5 (A,5)
@@ -520,40 +520,40 @@ No dealer blackjack.
 [1/1] dealer: Q, player: A5 (A,5)
 action? [hsdrbc?!]> !
 	edges:	basic	dynamic
-	stand: -0.5404	-0.5315
-	hit  : -0.2074	-0.2164
-	dbl  : -0.514	-0.5195
-	surr.: -0.5	-0.5
+	stand: -0.540	-0.532
+	hit  : -0.207	-0.216
+	dbl  : -0.514	-0.519
+	surr.: -0.500	-0.500
 	advise:	hit	hit
 auto: hit
 [1/1] dealer: Q, player: A57 (13)
 action? [hsbc?!]> !
 	edges:	basic	dynamic
-	stand: -0.5404	-0.5283
-	hit  : -0.4253	-0.4568
+	stand: -0.540	-0.528
+	hit  : -0.425	-0.457
 	advise:	hit	hit
 auto: hit
 [1/1] dealer: Q, player: A574 (17)
 action? [hsbc?!]> !
 	edges:	basic	dynamic
-	stand: -0.4197	-0.4194
-	hit  : -0.5845	-0.583
+	stand: -0.420	-0.419
+	hit  : -0.584	-0.583
 	advise:	stand	stand
 auto: stand
 Dealer plays...
 dealer: QT (20)
 [1/1] dealer: QT (20), player: A574 (17)
 Player loses.
-bankroll: 94, bet: 1
+bankroll: 94.00, bet: 1.00
 ---------------- new hand ----------------
 dealer: 5
 [1/1] dealer: 5, player: 76 (13)
 action? [hsdrbc?!]> !
 	edges:	basic	dynamic
-	stand: -0.1647	-0.156
-	hit  : -0.2577	-0.2838
-	dbl  : -0.5153	-0.5676
-	surr.: -0.5	-0.5
+	stand: -0.165	-0.156
+	hit  : -0.258	-0.284
+	dbl  : -0.515	-0.568
+	surr.: -0.500	-0.500
 	advise:	stand	stand
 auto: stand
 Dealer plays...
@@ -561,7 +561,7 @@ dealer: 5T (15)
 dealer: 5T5 (20)
 [1/1] dealer: 5T5 (20), player: 76 (13)
 Player loses.
-bankroll: 93, bet: 1
+bankroll: 93.00, bet: 1.00
 ---------------- new hand ----------------
 dealer: J
 player: 4T (14)
@@ -570,46 +570,46 @@ No dealer blackjack.
 action? [hsdrbc?!]> !
 *** dynamic strategy beats basic ***
 card:	   2   3   4   5   6   7   8   9   T   A	total	%
-used:	   5   8  12  12  10  12  10   7  39  10	125	(40%)
-rem:	  19  16  12  12  14  12  14  17  57  14	187	(60%)
+used:	   5   8  12  12  10  12  10   7  39  10	125	(40.06%)
+rem:	  19  16  12  12  14  12  14  17  57  14	187	(59.94%)
 hi-lo: -2, true-count: -0.56
 	edges:	basic	dynamic
-	stand: -0.5404	-0.5308
-	hit  : -0.4663	-0.5044
-	dbl  : -0.9382	-1.01
-	surr.: -0.5	-0.5
+	stand: -0.540	-0.531
+	hit  : -0.466	-0.504
+	dbl  : -0.938	-1.010
+	surr.: -0.500	-0.500
 	advise:	hit	surrender	(different! using basic)
 auto: hit
 Bookmark saved.
 player: 4T9 (bust)
 [1/1] dealer: J, player: 4T9 (bust)
-bankroll: 92, bet: 1
+bankroll: 92.00, bet: 1.00
 ---------------- new hand ----------------
 dealer: 8
 [1/1] dealer: 8, player: KK (T,T)
 action? [hsdprbc?!]> !
 	edges:	basic	dynamic
-	stand: 0.7918	0.786
-	hit  : -0.8515	-0.8524
+	stand: 0.792	0.786
+	hit  : -0.851	-0.852
 	dbl  : -1.703	-1.705
-	split: 0.3959	0.3789
-	surr.: -0.5	-0.5
+	split: 0.396	0.379
+	surr.: -0.500	-0.500
 	advise:	stand	stand
 auto: stand
 Dealer plays...
 dealer: 8A (19)
 [1/1] dealer: 8A (19), player: KK (T,T)
 Player wins.
-bankroll: 93, bet: 1
+bankroll: 93.00, bet: 1.00
 ---------------- new hand ----------------
 dealer: 6
 [1/1] dealer: 6, player: T5 (15)
 action? [hsdrbc?!]> !
 	edges:	basic	dynamic
-	stand: -0.1211	-0.1303
-	hit  : -0.3752	-0.3786
-	dbl  : -0.7505	-0.7572
-	surr.: -0.5	-0.5
+	stand: -0.121	-0.130
+	hit  : -0.375	-0.379
+	dbl  : -0.750	-0.757
+	surr.: -0.500	-0.500
 	advise:	stand	stand
 auto: stand
 Dealer plays...
@@ -617,7 +617,7 @@ dealer: 6A (A,6)
 dealer: 6A64 (17)
 [1/1] dealer: 6A64 (17), player: T5 (15)
 Player loses.
-bankroll: 92, bet: 1
+bankroll: 92.00, bet: 1.00
 ---------------- new hand ----------------
 dealer: T
 player: QJ (T,T)
@@ -625,10 +625,10 @@ No dealer blackjack.
 [1/1] dealer: T, player: QJ (T,T)
 action? [hsdrbc?!]> !
 	edges:	basic	dynamic
-	stand: 0.5545	0.5701
+	stand: 0.555	0.570
 	hit  : -0.849	-0.864
 	dbl  : -1.698	-1.728
-	surr.: -0.5	-0.5
+	surr.: -0.500	-0.500
 	advise:	stand	stand
 auto: stand
 Dealer plays...
@@ -636,13 +636,13 @@ dealer: T5 (15)
 dealer: T5Q (bust)
 [1/1] dealer: T5Q (bust), player: QJ (T,T)
 Player wins.
-bankroll: 93, bet: 1
+bankroll: 93.00, bet: 1.00
 ---------------- new hand ----------------
 dealer: 4
 Player has blackjack!
 player: AT (BJ)
 dealer: 42 (6)
-bankroll: 94.5, bet: 1
+bankroll: 94.50, bet: 1.00
 ---------------- new hand ----------------
 dealer: T
 player: 7Q (17)
@@ -650,33 +650,33 @@ No dealer blackjack.
 [1/1] dealer: T, player: 7Q (17)
 action? [hsdrbc?!]> !
 	edges:	basic	dynamic
-	stand: -0.4197	-0.418
-	hit  : -0.5845	-0.5517
+	stand: -0.420	-0.418
+	hit  : -0.584	-0.552
 	dbl  : -1.169	-1.103
-	surr.: -0.5	-0.5
+	surr.: -0.500	-0.500
 	advise:	stand	stand
 auto: stand
 Dealer plays...
 dealer: TJ (20)
 [1/1] dealer: TJ (20), player: 7Q (17)
 Player loses.
-bankroll: 93.5, bet: 1
+bankroll: 93.50, bet: 1.00
 ---------------- new hand ----------------
 dealer: 8
 [1/1] dealer: 8, player: 4A (A,4)
 action? [hsdrbc?!]> !
 	edges:	basic	dynamic
-	stand: -0.5105	-0.5305
-	hit  : -0.02705	-0.05831
-	dbl  : -0.3144	-0.3873
-	surr.: -0.5	-0.5
+	stand: -0.511	-0.530
+	hit  : -0.027	-0.058
+	dbl  : -0.314	-0.387
+	surr.: -0.500	-0.500
 	advise:	hit	hit
 auto: hit
 [1/1] dealer: 8, player: 4A5 (A,9)
 action? [hsbc?!]> !
 	edges:	basic	dynamic
-	stand: 0.7918	0.7802
-	hit  : 0.198	0.1779
+	stand: 0.792	0.780
+	hit  : 0.198	0.178
 	advise:	stand	stand
 auto: stand
 Dealer plays...
@@ -684,16 +684,16 @@ dealer: 82 (10)
 dealer: 827 (17)
 [1/1] dealer: 827 (17), player: 4A5 (A,9)
 Player wins.
-bankroll: 94.5, bet: 1
+bankroll: 94.50, bet: 1.00
 ---------------- new hand ----------------
 dealer: 6
 [1/1] dealer: 6, player: 27 (9)
 action? [hsdrbc?!]> !
 	edges:	basic	dynamic
-	stand: -0.1211	-0.1161
-	hit  : 0.1873	0.2172
-	dbl  : 0.3049	0.3367
-	surr.: -0.5	-0.5
+	stand: -0.121	-0.116
+	hit  : 0.187	0.217
+	dbl  : 0.305	0.337
+	surr.: -0.500	-0.500
 	advise:	double-down	double-down
 auto: double-down
 Dealer plays...
@@ -701,7 +701,7 @@ dealer: 64 (10)
 dealer: 64Q (20)
 [1/1] dealer: 64Q (20), player: 27A (A,9) doubled-down
 Push.
-bankroll: 94.5, bet: 1
+bankroll: 94.50, bet: 1.00
 ---------------- new hand ----------------
 dealer: J
 player: 5K (15)
@@ -709,57 +709,57 @@ No dealer blackjack.
 [1/1] dealer: J, player: 5K (15)
 action? [hsdrbc?!]> !
 	edges:	basic	dynamic
-	stand: -0.5404	-0.5284
-	hit  : -0.5044	-0.5329
+	stand: -0.540	-0.528
+	hit  : -0.504	-0.533
 	dbl  : -1.009	-1.066
-	surr.: -0.5	-0.5
+	surr.: -0.500	-0.500
 	advise:	surrender	surrender
 auto: surrender
 [1/1] dealer: J, player: 5K (15) surrendered
-bankroll: 94, bet: 1
+bankroll: 94.00, bet: 1.00
 ---------------- new hand ----------------
 dealer: A
 player: T6 (16)
 insurance? [ync?!]: !
-odds: 2.45238 : 1
-pay : 2 : 1
+odds: 2.452 : 1
+pay : 2.000 : 1
 advise: no
 Declined insurance.
 No dealer blackjack.
 [1/1] dealer: A, player: T6 (16)
 action? [hsdrbc?!]> !
 	edges:	basic	dynamic
-	stand: -0.5987	-0.5916
-	hit  : -0.5421	-0.5737
+	stand: -0.599	-0.592
+	hit  : -0.542	-0.574
 	dbl  : -1.084	-1.147
-	surr.: -0.5	-0.5
+	surr.: -0.500	-0.500
 	advise:	surrender	surrender
 auto: surrender
 [1/1] dealer: A, player: T6 (16) surrendered
-bankroll: 93.5, bet: 1
+bankroll: 93.50, bet: 1.00
 ---------------- new hand ----------------
 dealer: 7
 [1/1] dealer: 7, player: 32 (5)
 action? [hsdrbc?!]> !
 	edges:	basic	dynamic
-	stand: -0.4754	-0.4431
-	hit  : -0.1194	-0.1563
-	dbl  : -0.9508	-0.8861
-	surr.: -0.5	-0.5
+	stand: -0.475	-0.443
+	hit  : -0.119	-0.156
+	dbl  : -0.951	-0.886
+	surr.: -0.500	-0.500
 	advise:	hit	hit
 auto: hit
 [1/1] dealer: 7, player: 324 (9)
 action? [hsbc?!]> !
 	edges:	basic	dynamic
-	stand: -0.4754	-0.4397
-	hit  : 0.1719	0.1892
+	stand: -0.475	-0.440
+	hit  : 0.172	0.189
 	advise:	hit	hit
 auto: hit
 [1/1] dealer: 7, player: 324J (19)
 action? [hsbc?!]> !
 	edges:	basic	dynamic
-	stand: 0.616	0.6201
-	hit  : -0.7154	-0.6905
+	stand: 0.616	0.620
+	hit  : -0.715	-0.691
 	advise:	stand	stand
 auto: stand
 Dealer plays...
@@ -767,7 +767,7 @@ dealer: 76 (13)
 dealer: 764 (17)
 [1/1] dealer: 764 (17), player: 324J (19)
 Player wins.
-bankroll: 94.5, bet: 1
+bankroll: 94.50, bet: 1.00
 ---------------- new hand ----------------
 dealer: Q
 player: 62 (8)
@@ -775,22 +775,22 @@ No dealer blackjack.
 [1/1] dealer: Q, player: 62 (8)
 action? [hsdrbc?!]> !
 	edges:	basic	dynamic
-	stand: -0.5404	-0.544
-	hit  : -0.2494	-0.2525
-	dbl  : -0.7466	-0.7985
-	surr.: -0.5	-0.5
+	stand: -0.540	-0.544
+	hit  : -0.249	-0.252
+	dbl  : -0.747	-0.798
+	surr.: -0.500	-0.500
 	advise:	hit	hit
 auto: hit
 [1/1] dealer: Q, player: 626 (14)
 action? [hsbc?!]> !
 *** dynamic strategy beats basic ***
 card:	   2   3   4   5   6   7   8   9   T   A	total	%
-used:	  10   9  18  16  17  16  12   8  56  16	178	(57%)
-rem:	  14  15   6   8   7   8  12  16  40   8	134	(43%)
+used:	  10   9  18  16  17  16  12   8  56  16	178	(57.05%)
+rem:	  14  15   6   8   7   8  12  16  40   8	134	(42.95%)
 hi-lo: -2, true-count: -0.78
 	edges:	basic	dynamic
-	stand: -0.5404	-0.5474
-	hit  : -0.4663	-0.5659
+	stand: -0.540	-0.547
+	hit  : -0.466	-0.566
 	advise:	hit	stand	(different! using basic)
 auto: hit
 Bookmark saved.
@@ -798,36 +798,36 @@ Bookmark saved.
 action? [hsbc?!]> !
 *** dynamic strategy beats basic ***
 card:	   2   3   4   5   6   7   8   9   T   A	total	%
-used:	  11   9  18  16  17  16  12   8  56  16	179	(57%)
-rem:	  13  15   6   8   7   8  12  16  40   8	133	(43%)
+used:	  11   9  18  16  17  16  12   8  56  16	179	(57.37%)
+rem:	  13  15   6   8   7   8  12  16  40   8	133	(42.63%)
 hi-lo: -1, true-count: -0.39
 	edges:	basic	dynamic
-	stand: -0.5404	-0.5503
-	hit  : -0.5398	-0.582
+	stand: -0.540	-0.550
+	hit  : -0.540	-0.582
 	advise:	hit	stand	(different! using basic)
 auto: hit
 Bookmark saved.
 [1/1] dealer: Q, player: 62623 (19)
 action? [hsbc?!]> !
 	edges:	basic	dynamic
-	stand: 0.06312	0.06128
-	hit  : -0.7294	-0.7114
+	stand: 0.063	0.061
+	hit  : -0.729	-0.711
 	advise:	stand	stand
 auto: stand
 Dealer plays...
 dealer: QT (20)
 [1/1] dealer: QT (20), player: 62623 (19)
 Player loses.
-bankroll: 93.5, bet: 1
+bankroll: 93.50, bet: 1.00
 ---------------- new hand ----------------
 dealer: 5
 [1/1] dealer: 5, player: 2Q (12)
 action? [hsdrbc?!]> !
 	edges:	basic	dynamic
-	stand: -0.1647	-0.08886
-	hit  : -0.1934	-0.09103
-	dbl  : -0.3868	-0.1821
-	surr.: -0.5	-0.5
+	stand: -0.165	-0.089
+	hit  : -0.193	-0.091
+	dbl  : -0.387	-0.182
+	surr.: -0.500	-0.500
 	advise:	stand	stand
 auto: stand
 Dealer plays...
@@ -835,7 +835,7 @@ dealer: 58 (13)
 dealer: 58Q (bust)
 [1/1] dealer: 58Q (bust), player: 2Q (12)
 Player wins.
-bankroll: 94.5, bet: 1
+bankroll: 94.50, bet: 1.00
 ---------------- new hand ----------------
 dealer: K
 player: 25 (7)
@@ -843,31 +843,31 @@ No dealer blackjack.
 [1/1] dealer: K, player: 25 (7)
 action? [hsdrbc?!]> !
 	edges:	basic	dynamic
-	stand: -0.5404	-0.5579
-	hit  : -0.3191	-0.3468
-	dbl  : -0.9509	-1.014
-	surr.: -0.5	-0.5
+	stand: -0.540	-0.558
+	hit  : -0.319	-0.347
+	dbl  : -0.951	-1.014
+	surr.: -0.500	-0.500
 	advise:	hit	hit
 auto: hit
 [1/1] dealer: K, player: 252 (9)
 action? [hsbc?!]> !
 	edges:	basic	dynamic
-	stand: -0.5404	-0.5611
-	hit  : -0.153	-0.1584
+	stand: -0.540	-0.561
+	hit  : -0.153	-0.158
 	advise:	hit	hit
 auto: hit
 [1/1] dealer: K, player: 2523 (12)
 action? [hsbc?!]> !
 	edges:	basic	dynamic
-	stand: -0.5404	-0.5656
-	hit  : -0.381	-0.3171
+	stand: -0.540	-0.566
+	hit  : -0.381	-0.317
 	advise:	hit	hit
 auto: hit
 [1/1] dealer: K, player: 25235 (17)
 action? [hsbc?!]> !
 	edges:	basic	dynamic
-	stand: -0.4197	-0.4681
-	hit  : -0.5845	-0.5918
+	stand: -0.420	-0.468
+	hit  : -0.584	-0.592
 	advise:	stand	stand
 auto: stand
 Dealer plays...
@@ -875,16 +875,16 @@ dealer: K4 (14)
 dealer: K44 (18)
 [1/1] dealer: K44 (18), player: 25235 (17)
 Player loses.
-bankroll: 93.5, bet: 1
+bankroll: 93.50, bet: 1.00
 ---------------- new hand ----------------
 dealer: 8
 [1/1] dealer: 8, player: KJ (T,T)
 action? [hsdrbc?!]> !
 	edges:	basic	dynamic
-	stand: 0.7918	0.7976
-	hit  : -0.8515	-0.8657
+	stand: 0.792	0.798
+	hit  : -0.851	-0.866
 	dbl  : -1.703	-1.731
-	surr.: -0.5	-0.5
+	surr.: -0.500	-0.500
 	advise:	stand	stand
 auto: stand
 Dealer plays...
@@ -892,16 +892,16 @@ dealer: 83 (11)
 dealer: 83T (21)
 [1/1] dealer: 83T (21), player: KJ (T,T)
 Player loses.
-bankroll: 92.5, bet: 1
+bankroll: 92.50, bet: 1.00
 ---------------- new hand ----------------
 dealer: 3
 [1/1] dealer: 3, player: 6J (16)
 action? [hsdrbc?!]> !
 	edges:	basic	dynamic
-	stand: -0.2466	-0.1325
-	hit  : -0.4658	-0.5383
-	dbl  : -0.9316	-1.077
-	surr.: -0.5	-0.5
+	stand: -0.247	-0.133
+	hit  : -0.466	-0.538
+	dbl  : -0.932	-1.077
+	surr.: -0.500	-0.500
 	advise:	stand	stand
 auto: stand
 Dealer plays...
@@ -909,16 +909,16 @@ dealer: 39 (12)
 dealer: 39K (bust)
 [1/1] dealer: 39K (bust), player: 6J (16)
 Player wins.
-bankroll: 93.5, bet: 1
+bankroll: 93.50, bet: 1.00
 ---------------- new hand ----------------
 dealer: 7
 [1/1] dealer: 7, player: 82 (10)
 action? [hsdrbc?!]> !
 	edges:	basic	dynamic
-	stand: -0.4754	-0.4137
-	hit  : 0.2569	0.3266
-	dbl  : 0.3924	0.5962
-	surr.: -0.5	-0.5
+	stand: -0.475	-0.414
+	hit  : 0.257	0.327
+	dbl  : 0.392	0.596
+	surr.: -0.500	-0.500
 	advise:	double-down	double-down
 auto: double-down
 Dealer plays...
@@ -926,16 +926,16 @@ dealer: 79 (16)
 dealer: 799 (bust)
 [1/1] dealer: 799 (bust), player: 823 (13) doubled-down
 Player wins.
-bankroll: 95.5, bet: 1
+bankroll: 95.50, bet: 1.00
 ---------------- new hand ----------------
 dealer: 2
 [1/1] dealer: 2, player: 92 (11)
 action? [hsdrbc?!]> !
 	edges:	basic	dynamic
-	stand: -0.2865	-0.2588
-	hit  : 0.2376	0.2808
-	dbl  : 0.4701	0.5539
-	surr.: -0.5	-0.5
+	stand: -0.287	-0.259
+	hit  : 0.238	0.281
+	dbl  : 0.470	0.554
+	surr.: -0.500	-0.500
 	advise:	double-down	double-down
 auto: double-down
 Dealer plays...
@@ -943,14 +943,14 @@ dealer: 29 (11)
 dealer: 299 (20)
 [1/1] dealer: 299 (20), player: 926 (17) doubled-down
 Player loses.
-bankroll: 93.5, bet: 1
+bankroll: 93.50, bet: 1.00
 ---------------- new hand ----------------
 dealer: K
 Player has blackjack!
 player: AT (BJ)
 No dealer blackjack.
 dealer: K9 (19)
-bankroll: 95, bet: 1
+bankroll: 95.00, bet: 1.00
 ---------------- new hand ----------------
 dealer: K
 player: 42 (6)
@@ -958,24 +958,24 @@ No dealer blackjack.
 [1/1] dealer: K, player: 42 (6)
 action? [hsdrbc?!]> !
 	edges:	basic	dynamic
-	stand: -0.5404	-0.5827
-	hit  : -0.3377	-0.4001
+	stand: -0.540	-0.583
+	hit  : -0.338	-0.400
 	dbl  : -1.062	-1.148
-	surr.: -0.5	-0.5
+	surr.: -0.500	-0.500
 	advise:	hit	hit
 auto: hit
 [1/1] dealer: K, player: 424 (10)
 action? [hsbc?!]> !
 	edges:	basic	dynamic
-	stand: -0.5404	-0.5881
-	hit  : 0.02531	0.04434
+	stand: -0.540	-0.588
+	hit  : 0.025	0.044
 	advise:	hit	hit
 auto: hit
 [1/1] dealer: K, player: 4247 (17)
 action? [hsbc?!]> !
 	edges:	basic	dynamic
-	stand: -0.4197	-0.4812
-	hit  : -0.5845	-0.6431
+	stand: -0.420	-0.481
+	hit  : -0.584	-0.643
 	advise:	stand	stand
 auto: stand
 Dealer plays...
@@ -983,7 +983,7 @@ dealer: K3 (13)
 dealer: K3Q (bust)
 [1/1] dealer: K3Q (bust), player: 4247 (17)
 Player wins.
-bankroll: 96, bet: 1
+bankroll: 96.00, bet: 1.00
 ---------------- new hand ----------------
 dealer: Q
 player: 36 (9)
@@ -991,33 +991,33 @@ No dealer blackjack.
 [1/1] dealer: Q, player: 36 (9)
 action? [hsdrbc?!]> !
 	edges:	basic	dynamic
-	stand: -0.5404	-0.6006
-	hit  : -0.153	-0.1614
-	dbl  : -0.4667	-0.4931
-	surr.: -0.5	-0.5
+	stand: -0.540	-0.601
+	hit  : -0.153	-0.161
+	dbl  : -0.467	-0.493
+	surr.: -0.500	-0.500
 	advise:	hit	hit
 auto: hit
 [1/1] dealer: Q, player: 368 (17)
 action? [hsbc?!]> !
 	edges:	basic	dynamic
-	stand: -0.4197	-0.4878
-	hit  : -0.5845	-0.6559
+	stand: -0.420	-0.488
+	hit  : -0.584	-0.656
 	advise:	stand	stand
 auto: stand
 Dealer plays...
 dealer: Q7 (17)
 [1/1] dealer: Q7 (17), player: 368 (17)
 Push.
-bankroll: 96, bet: 1
+bankroll: 96.00, bet: 1.00
 ---------------- new hand ----------------
 dealer: 9
 [1/1] dealer: 9, player: 82 (10)
 action? [hsdrbc?!]> !
 	edges:	basic	dynamic
-	stand: -0.5431	-0.598
-	hit  : 0.1165	0.1708
-	dbl  : 0.1443	0.2802
-	surr.: -0.5	-0.5
+	stand: -0.543	-0.598
+	hit  : 0.117	0.171
+	dbl  : 0.144	0.280
+	surr.: -0.500	-0.500
 	advise:	double-down	double-down
 auto: double-down
 Dealer plays...
@@ -1026,29 +1026,29 @@ dealer: 95Q (bust)
 [1/1] dealer: 95Q (bust), player: 82A (21) doubled-down
 Player wins.
 **************** Reshuffling... ****************
-bankroll: 98, bet: 1
+bankroll: 98.00, bet: 1.00
 table> stats
-initial bankroll: 100
-min bankroll: 92
-max bankroll: 100
-current bankroll: 98
+initial bankroll: 100.000
+min bankroll: 92.000
+max bankroll: 100.000
+current bankroll: 98.000
 hands played: 46
 decisions made: 70
 wrong decisions (basic): 0
 wrong decisions (dynamic): 0
-initial bets: 46
-total bets: 52
+initial bets: 46.000
+total bets: 52.000
 Edges before each hand dealt (a priori): {
-unweighted, uncounted expected change: -0.604575 (/hand = -0.0131429)
-weighted, uncounted expected change: -0.604575 (/hand = -0.0131429)
-unweighted, counted expected change: -0.259852 (/hand = -0.00564897)
-weighted, counted expected change: -0.259852 (/hand = -0.00564897)
+unweighted, uncounted expected change: -0.605 (/hand = -0.013)
+weighted, uncounted expected change: -0.605 (/hand = -0.013)
+unweighted, counted expected change: -0.260 (/hand = -0.006)
+weighted, counted expected change: -0.260 (/hand = -0.006)
 }
 Edges after each hand dealt (a posteriori): {
-unweighted, uncounted expected change: 2.48795 (/hand = 0.0540858)
-weighted, uncounted expected change: 2.48795 (/hand = 0.0540858)
-unweighted, counted expected change: 3.08721 (/hand = 0.0671132)
-weighted, counted expected change: 3.08721 (/hand = 0.0671132)
+unweighted, uncounted expected change: 2.488 (/hand = 0.054)
+weighted, uncounted expected change: 2.488 (/hand = 0.054)
+unweighted, counted expected change: 3.087 (/hand = 0.067)
+weighted, counted expected change: 3.087 (/hand = 0.067)
 }
 initial deal histogram: {
 	P\D	   2   3   4   5   6   7   8   9   T   A	total
@@ -1103,37 +1103,37 @@ initial deal histogram: {
 table> bookmarks-list
 -------- bookmarks --------
 card:	   2   3   4   5   6   7   8   9   T   A	total	%
-rem:	  23  23  22  23  23  19  19  23  90  22	287	(92%)
+rem:	  23  23  22  23  23  19  19  23  90  22	287	(91.99%)
 hi-lo: -2, true-count: -0.36
 dealer: T, player: 87 (15)
 options: double:yes, split:no, surrender:yes
 
 card:	   2   3   4   5   6   7   8   9   T   A	total	%
-rem:	  23  23  22  22  23  19  19  23  88  22	284	(91%)
+rem:	  23  23  22  22  23  19  19  23  88  22	284	(91.03%)
 hi-lo: -3, true-count: -0.55
 dealer: J, player: 5K (15)
 options: double:yes, split:no, surrender:yes
 
 card:	   2   3   4   5   6   7   8   9   T   A	total	%
-rem:	  19  16  14  16  15  14  14  17  64  15	204	(65%)
+rem:	  19  16  14  16  15  14  14  17  64  15	204	(65.38%)
 hi-lo: -1, true-count: -0.25
 dealer: 3, player: T2 (12)
 options: double:yes, split:no, surrender:yes
 
 card:	   2   3   4   5   6   7   8   9   T   A	total	%
-rem:	  19  16  12  12  14  12  14  17  57  14	187	(60%)
+rem:	  19  16  12  12  14  12  14  17  57  14	187	(59.94%)
 hi-lo: -2, true-count: -0.56
 dealer: J, player: 4T (14)
 options: double:yes, split:no, surrender:yes
 
 card:	   2   3   4   5   6   7   8   9   T   A	total	%
-rem:	  14  15   6   8   7   8  12  16  40   8	134	(43%)
+rem:	  14  15   6   8   7   8  12  16  40   8	134	(42.95%)
 hi-lo: -2, true-count: -0.78
 dealer: Q, player: 626 (14)
 options: double:no, split:no, surrender:no
 
 card:	   2   3   4   5   6   7   8   9   T   A	total	%
-rem:	  13  15   6   8   7   8  12  16  40   8	133	(43%)
+rem:	  13  15   6   8   7   8  12  16  40   8	133	(42.63%)
 hi-lo: -1, true-count: -0.39
 dealer: Q, player: 6262 (16)
 options: double:no, split:no, surrender:no

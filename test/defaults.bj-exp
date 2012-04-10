@@ -17,7 +17,7 @@ menu without entering the menu.
 lobby> var show-all
 uniquely-matched: variation
 number of decks: 6
-maximum penetration: 0.75
+maximum penetration: 0.750
 dealer soft 17: hits
 player early surrender: no
 player late surrender: yes
@@ -35,10 +35,10 @@ player may re-split: no
 player may hit on split aces: no
 player may re-split aces: no
 dealer 22 pushes against player: no
-blackjack pays: 1.5
-insurance pays: 2
-surrender penalty: 0.5
-double-down multiplier: 2
+blackjack pays: 1.500
+insurance pays: 2.000
+surrender penalty: 0.500
+double-down multiplier: 2.000
 lobby> opt show-all
 uniquely-matched: options
 face cards: yes
@@ -62,6 +62,6 @@ bookmark wrong decisions: yes
 bookmark when dynamic strategy != basic: yes
 quiz count before reshuffle: yes
 quiz count every N hands: 5
-current bet: 1
+current bet: 1.000
 lobby> 
 Thanks for playing!

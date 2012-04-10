@@ -6,8 +6,8 @@
 #include <numeric>		// for accumulate
 #include <limits>		// for numeric_limits
 #include <iostream>
-#include <iterator>
 #include <iomanip>
+#include <iterator>
 #include <cmath>		// for fabs
 #include "strategy.hh"
 #include "variation.hh"
@@ -18,6 +18,7 @@
 #include "util/string.tcc"
 #include "util/command.tcc"
 #include "util/value_saver.hh"
+#include "util/iosfmt_saver.hh"
 
 /**
 	Debug switch: print tables as they are computed.
@@ -32,6 +33,7 @@ template class command_registry<blackjack::StrategyCommand>;
 
 namespace blackjack {
 typedef	util::command_registry<StrategyCommand>		strategy_command_registry;
+using std::ios_base;
 using std::vector;
 using std::fill;
 using std::copy;
@@ -48,8 +50,8 @@ using std::endl;
 using std::multimap;
 using std::make_pair;
 using std::setw;
-using std::setprecision;
 using util::normalize;
+using util::precision_saver;
 using cards::ACE;
 using cards::TEN;
 using cards::card_name;
@@ -279,6 +281,7 @@ strategy::compute_dealer_final_table(void) {
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ostream&
 strategy::dump_dealer_final_table(ostream& o) const {
+	const precision_saver p(o, 4);
 	o << "Dealer's final state odds (pre-peek):\n";
 	static const char header[] = 
 		"show\\do\t17\t18\t19\t20\t21\tBJ\tbust\tpush";
@@ -289,7 +292,6 @@ strategy::dump_dealer_final_table(ostream& o) const {
 		e(dealer_final_given_revealed.end());
 	dealer_final_matrix::const_iterator i(b);
 	o << header << endl;
-	o << setprecision(4);
 	for ( ; i!=e; ++i) {
 		o << play.dealer_hit[play_map::d_initial_card_map[i-b]].name << '\t';
 		copy(i->begin(), i->end(), osi);
@@ -304,7 +306,6 @@ strategy::dump_dealer_final_table(ostream& o) const {
 		e(dealer_final_given_revealed_post_peek.end());
 	dealer_final_matrix::const_iterator i(b);
 	o << header << endl;
-	o << setprecision(4);
 	for ( ; i!=e; ++i) {
 		o << play.dealer_hit[play_map::d_initial_card_map[i-b]].name << '\t';
 		copy(i->begin(), i->end(), osi);
@@ -441,7 +442,7 @@ strategy::__dump_player_stand_odds(ostream& o, const outcome_matrix& m,
 		o << '\t' << play_map::player_final_states[j];
 	}
 	o << endl;
-	o << setprecision(3);
+//	const precision_saver p(o, 3);
 	for ( ; i!=e; ++i) {
 		o << d[play_map::d_initial_card_map[i-b]].name << endl;
 		dump_outcome_vector(*i, o);
@@ -465,9 +466,9 @@ strategy::__dump_player_stand_edges(ostream& o,
 		o << '\t' << play_map::player_final_states[j];
 	}
 	o << endl;
+//	const precision_saver p(o, 3);
 	for ( ; i!=e; ++i) {
 		o << d[play_map::d_initial_card_map[i-b]].name << '\t';
-//		o << setprecision(3);
 		copy(i->begin(), i->end(),
 			ostream_iterator<probability_type>(o, "\t"));
 		o << endl;
@@ -1241,6 +1242,7 @@ strategy::dump_expectations(const expectations_vector& v, ostream& o) const {
 	size_t j;
 #if 1
 #define	EFORMAT(x)	setw(5) << int(x*1000)
+	const util::width_saver ws(o, 5);
 // setprecision?
 #else
 #define	EFORMAT(x)	x
@@ -1337,6 +1339,7 @@ strategy::dump_optimal_edges(const expectations_vector& v, ostream& o) const {
 #if 1
 #define	EFORMAT(x)	setw(5) << int(x*1000)
 // setprecision?
+	const util::width_saver ws(o, 5);
 #else
 #define	EFORMAT(x)	x
 #endif
@@ -1385,7 +1388,7 @@ strategy::dump_action_expectations(ostream& o) const {
 		o << '\t' << card_name[reveal_print_ordering[j]];
 	}
 	o << '\n' << endl;
-	o << setprecision(3);
+//	const precision_saver p(o, 3);
 	for ( ; i!=e; ++i) {
 		o << play.player_hit[i-b].name;
 //		o << endl;
@@ -1411,7 +1414,7 @@ strategy::dump_optimal_actions(ostream& o) const {
 		o << delim1 << card_name[reveal_print_ordering[j]];
 	}
 	o << '\n' << endl;
-	o << setprecision(3);
+//	const precision_saver p(o, 3);
 	for ( ; i!=e; ++i) {
 		o << play.player_hit[i-b].name << "\t";
 //		o << endl;

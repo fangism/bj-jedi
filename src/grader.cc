@@ -3,7 +3,6 @@
 #include <iostream>
 #include <sstream>
 #include <algorithm>
-#include <iomanip>
 #include <iterator>
 #include <numeric>		// for std::accumulate
 #include <cstdio>
@@ -14,6 +13,8 @@
 #include "util/string.tcc"	// for string_to_num
 #include "util/command.tcc"
 #include "util/value_saver.hh"
+#include "util/iosfmt_saver.hh"
+#include "util/configure_option.hh"
 
 namespace blackjack {
 typedef	util::Command<grader>			GraderCommand;
@@ -30,7 +31,6 @@ using std::endl;
 using std::ostringstream;
 using std::ostream_iterator;
 using std::fill;
-using std::setw;
 using std::accumulate;
 using cards::ACE;
 using cards::TEN;
@@ -40,6 +40,7 @@ using cards::card_index;
 using cards::reveal_print_ordering;
 using cards::card_value_map;
 
+using util::yn;
 using util::value_saver;
 using util::Command;
 using util::CommandStatus;
@@ -109,7 +110,7 @@ grader::offer_insurance(const bool pbj) {
 	} else if (line == "?" || line == "!") {
 		ostr << "odds: " << o << " : 1" << endl;
 		ostr << "pay : " << var.insurance << " : 1" << endl;
-		ostr << "advise: " << (advise ? "yes" : "no") << endl;
+		ostr << "advise: " << yn(advise) << endl;
 		if (line == "!") {
 			buy_insurance = advise;
 			ostr << (buy_insurance ? "Accepted" : "Declined")
@@ -502,6 +503,8 @@ do {
 	// snapshot of current state, in case of bookmark
 	const bookmark bm(dealer_reveal, ph, C, d, p, r);
 	ostringstream oss;
+	oss.flags(ostr.flags());
+	oss.precision(ostr.precision());
 	const pair<expectations, expectations>
 		ace(assess_action(ph.state, card_value_map[dealer_reveal],
 			oss, d, p, r));
@@ -761,8 +764,8 @@ do {
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ostream&
 grader::status(ostream& o) const {
-	o << "bankroll: " << stats.bankroll <<
-		", bet: " << opt.bet << endl;
+	const util::precision_saver p(o, 2);
+	o << "bankroll: " << stats.bankroll << ", bet: " << opt.bet << endl;
 	// deck remaning (%)
 	return o;
 }
@@ -929,7 +932,7 @@ default:
 	cerr << "usage: " << name << ' ' << brief << endl;
 	return CommandStatus::SYNTAX;
 }
-	g.ostr << "bet: " << bet << ", bankroll: " << br << endl;
+	g.status(g.ostr);
 	return CommandStatus::NORMAL;
 }
 // can't configure here

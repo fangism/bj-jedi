@@ -10,6 +10,7 @@
 #include "grader.hh"
 #include "util/command.tcc"
 #include "util/value_saver.hh"
+#include "util/iosfmt_saver.hh"
 
 namespace blackjack {
 using util::Command;
@@ -38,6 +39,9 @@ typedef	command_registry<LobbyCommand>		lobby_command_registry;
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 int
 lobby::main(void) {
+	const util::setf_saver __t1__(cout, std::ios_base::fixed);
+	const util::precision_saver __t2__(cout, 3);
+	// TODO: numerical format option commands
 	const value_saver<string>
 		tmp1(lobby_command_registry::prompt, "lobby> ");
 	lobby_command_registry::interpret(*this);

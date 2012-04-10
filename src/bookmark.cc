@@ -6,10 +6,12 @@
 #include <iostream>
 #include "bookmark.hh"
 #include "variation.hh"
+#include "util/configure_option.hh"
 
 namespace blackjack {
 using cards::card_name;
 using std::endl;
+using util::yn;
 
 //=============================================================================
 // struct bookmark method definitions
@@ -37,9 +39,9 @@ bookmark::dump(ostream& o) const {
 	// don't distinguish face cards, only show remaining, not used cards
 	o << "dealer: " << card_name[dealer_reveal] << ", ";
 	player_hand.dump_player(o) << endl;
-	o << "options: double:" << (may_double ? "yes" : "no");
-	o << ", split:" << (may_split ? "yes" : "no");
-	o << ", surrender:" << (may_surrender ? "yes" : "no") << endl;
+	o << "options: double:" << yn(may_double);
+	o << ", split:" << yn(may_split);
+	o << ", surrender:" << yn(may_surrender) << endl;
 }
 
 //=============================================================================

@@ -1,18 +1,16 @@
 // "expectations.cc"
 
 #include <iostream>
-#include <iomanip>
 #include <map>
 #include <cassert>
 #include "expectations.hh"
+#include "util/iosfmt_saver.hh"
 
 namespace blackjack {
 using std::cerr;
 using std::endl;
 using std::multimap;
 using std::make_pair;
-using std::setw;
-using std::setprecision;
 
 //=============================================================================
 // struct expectation method definitions
@@ -116,7 +114,8 @@ expectations::best_two(
 ostream&
 expectations::dump_choice_actions(ostream& o,
 		const edge_type& surr) const {
-	return o << "stand: " << setprecision(4) << stand
+//	const util::precision_saver p(o, 4);
+	return o << "stand: " << stand
 	<< "\nhit  : " << hit
 	<< "\ndbl  : " << double_down
 	<< "\nsplit: " << split
@@ -135,8 +134,9 @@ expectations::dump_choice_actions_2(ostream& o,
 		const edge_type& surr, 
 		const bool d, const bool p, const bool r, 
 		const char* _indent) {
+//	const util::precision_saver p(o, 4);
 	const char* indent = _indent ? _indent : "";
-	o << indent << "stand: " << setprecision(4) << e1.stand << '\t' << e2.stand
+	o << indent << "stand: " << e1.stand << '\t' << e2.stand
 		<< '\n' << indent << "hit  : " << e1.hit << '\t' << e2.hit;
 	if (d) {
 		o << '\n' << indent << "dbl  : " << e1.double_down << '\t' << e2.double_down;

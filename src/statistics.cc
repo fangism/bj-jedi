@@ -1,11 +1,12 @@
 // "statistics.cc"
 
 #include <iostream>
-#include <algorithm>
 #include <iomanip>
+#include <algorithm>
 #include <numeric>		// for std::accumulate
 #include "statistics.hh"
 #include "blackjack.hh"
+#include "util/iosfmt_saver.hh"
 #if 0
 #include "util/string.tcc"	// for string_to_num
 #include "util/command.tcc"
@@ -23,9 +24,9 @@ namespace blackjack {
 typedef	util::command_registry<GraderCommand>		stats_command_registry;
 #endif
 
+using std::setw;
 using std::endl;
 using std::fill;
-using std::setw;
 using std::accumulate;
 using cards::card_name;
 using cards::reveal_print_ordering;
@@ -149,6 +150,7 @@ statistics::dump(ostream& o, const play_map& play) const {
 		o << "   " << card_name[k];
 //		o << '(' << k << ')';
 	}
+	const util::width_saver ws(o, 4);
 	o << "\ttotal" << endl;
 	for (j=0; j<p_action_states; ++j) {
 		o << '\t' << play.player_hit[j].name << '\t';

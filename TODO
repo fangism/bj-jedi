@@ -65,6 +65,7 @@ auto-save "wrong" decisions
 	replay bookmark situations
 	bookmark insurance queries
 	quantify how wrong is wrong using edges, score
+	command: bookmarks-explain, show all solutions
 }
 
 commands:

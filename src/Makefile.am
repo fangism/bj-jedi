@@ -36,6 +36,7 @@ util_libutil_la_SOURCES = \
 	util/command.hh \
 	util/command.tcc \
 	util/configure_option.hh \
+	util/iosfmt_saver.hh \
 	util/probability.hh \
 	util/probability.tcc \
 	util/readline.h \

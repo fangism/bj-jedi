@@ -14,8 +14,67 @@ immediately replaced to eliminate the effects of history.
 \section{Hit vs. Stand}
 \label{sec:basic:hit-stand}
 
-The most common decision the places faces in any situation
+The most common decision the player faces in any situation
 is whether to hit or stand.
+
+\subsection{Standing}
+\label{sec:basic:hit-stand:stand}
+
+\begin{table}[ht!]
+\caption{Player's stand edges (H17, pre-peek)}
+\begin{center}
+\input tables/player-stand-H17-pre-peek
+\end{center}
+\label{tab:player-stand-H17-pre-peek}
+\end{table}
+
+\begin{table}[ht!]
+\caption{Player's stand edges (H17, post-peek)}
+\begin{center}
+\input tables/player-stand-H17-post-peek
+\end{center}
+\label{tab:player-stand-H17-post-peek}
+\end{table}
+
+If we combine Table~\ref{tab:win-lose} and
+Table~\ref{tab:dealer-final-H17-pre-peek} (pre-peek, H17) 
+using outcome weights of $+1$ for a win, $-1$ for lose, and $0$ for push, 
+the result is the expected winnings per unit bet, 
+is Table~\ref{tab:player-stand-H17-pre-peek}.
+Note that a player natural blackjack (BJ) is weighted by the 
+blackjack payoff of $3:2$ ($+1.5$).
+
+For post-peek conditions, Table~\ref{tab:win-lose} is combined with
+Table~\ref{tab:dealer-final-H17-post-peek} (post-peek, H17) to produce
+Table~\ref{tab:player-stand-H17-post-peek}.
+The only columns which differ between these tables are when
+the dealer's reveal card is an Ace or 10, since those are the only cards
+that provide information about the hole card
+when the dealer peeks for blackjack.
+
+\begin{table}[ht!]
+\caption{Player's stand edges (S17, pre-peek)}
+\begin{center}
+\input tables/player-stand-S17-pre-peek
+\end{center}
+\label{tab:player-stand-S17-pre-peek}
+\end{table}
+
+\begin{table}[ht!]
+\caption{Player's stand edges (S17, post-peek)}
+\begin{center}
+\input tables/player-stand-S17-post-peek
+\end{center}
+\label{tab:player-stand-S17-post-peek}
+\end{table}
+
+For the S17 variation, the same computation produces
+Table~\ref{tab:player-stand-S17-pre-peek} (pre-peek), and
+Table~\ref{tab:player-stand-S17-post-peek} (post-peek).
+
+\subsection{Hitting}
+\label{sec:basic:hit-stand:hit}
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Double-down}

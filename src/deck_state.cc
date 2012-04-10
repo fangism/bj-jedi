@@ -12,12 +12,13 @@
 #include "util/value_saver.hh"
 #include "util/string.tcc"		// for string_to_num
 #include "util/tokenize.hh"
+#include "util/iosfmt_saver.hh"
 
 namespace blackjack {
 using std::string;
-using std::setw;
 using std::cerr;
 using std::endl;
+using std::setw;
 using util::string_list;
 using util::tokenize;
 using util::strings::string_to_num;
@@ -253,7 +254,7 @@ deck_state::reveal_hole_card(void) {
 ostream&
 deck_state::show_count(ostream& o, const bool ex, const bool used) const {
 	const size_t N = ex ? card_symbols : card_values;
-	const size_t p = o.precision(2);
+	const util::precision_saver p(o, 2);
 	const size_t* const po = ex ? extended_reveal_print_ordering
 		: reveal_print_ordering;
 	deck_count_type s_cards_rem(&cards[0]);
@@ -268,6 +269,8 @@ deck_state::show_count(ostream& o, const bool ex, const bool used) const {
 		ex ? &cards[0] : &s_cards_rem[0];
 	const size_t* const _cards_used =
 		ex ? &used_cards[0] : &s_cards_used[0];
+{
+	const util::width_saver ws(o, 4);
 	size_t i = 0;
 	o << "card:\t";
 	for (i=0 ; i<N; ++i) {
@@ -292,6 +295,7 @@ if (used) {
 	// note: altered decks will have nonsense values
 	o << "\t" << cards_remaining << "\t(" <<
 		double(cards_remaining) *100.0 / (num_decks *52) << "%)\n";
+}
 
 // TODO: support generalized counting schemes
 #if 0
@@ -314,8 +318,6 @@ if (used) {
 	hi_lo_counter.second.dump(o,
 		hi_lo_counter.first.c_str(), cards_remaining);
 #endif
-
-	o.precision(p);
 	return o << endl;
 }
 

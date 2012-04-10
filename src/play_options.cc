@@ -31,6 +31,7 @@ using util::CommandStatus;
 using util::string_list;
 using util::tokenize;
 using util::yn;
+using util::strings::string_to_num;
 
 //=============================================================================
 // class play_options method definitions
@@ -237,6 +238,27 @@ if (args.size() != 2) {
 	} else {
 		cerr << "error: couldn't open file for reading" << endl;
 		return CommandStatus::BADARG;
+	}
+	return CommandStatus::NORMAL;
+}
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+DECLARE_OPTION_COMMAND_CLASS(Precision, "precision",
+	": set numeric output precision")
+int
+Precision::main(play_options&, const string_list& args) {
+if (args.size() != 2) {
+	cerr << "usage: " << name << " digits" << endl;
+	cerr << "current precision: " << cout.precision() << endl;
+	return CommandStatus::SYNTAX;
+} else {
+	size_t s;
+	if (string_to_num(args.back(), s)) {
+		cerr << "Error parsing integer (digits)." << endl;
+		return CommandStatus::BADARG;
+	} else {
+		cout.precision(s);
 	}
 	return CommandStatus::NORMAL;
 }
