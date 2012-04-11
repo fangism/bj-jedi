@@ -1240,12 +1240,12 @@ strategy::dump_expectations(const expectations_vector& v, ostream& o) const {
 	expectations z(0,0,0,0);
 	z = accumulate(b, e, z);
 	size_t j;
-#if 1
+#if 0
 #define	EFORMAT(x)	setw(5) << int(x*1000)
 	const util::width_saver ws(o, 5);
 // setprecision?
 #else
-#define	EFORMAT(x)	x
+#define	EFORMAT(x)	setw(6) << x
 #endif
 	o << "stand";
 	for (j=0; j<card_values; ++j) {
@@ -1336,12 +1336,12 @@ strategy::dump_optimal_actions(const expectations_vector& v, ostream& o,
 ostream&
 strategy::dump_optimal_edges(const expectations_vector& v, ostream& o) const {
 	dump_optimal_actions(v, o, 3, "\t");
-#if 1
+#if 0
 #define	EFORMAT(x)	setw(5) << int(x*1000)
 // setprecision?
 	const util::width_saver ws(o, 5);
 #else
-#define	EFORMAT(x)	x
+#define	EFORMAT(x)	setw(6) << x
 #endif
 	size_t j;
 	o << "edge";
@@ -1377,7 +1377,7 @@ strategy::dump_optimal_edges(const expectations_vector& v, ostream& o) const {
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ostream&
 strategy::dump_action_expectations(ostream& o) const {
-	o << "Player's action expectations (edges x1000):\n";
+	o << "Player's action expectations (edges):\n";
 	const expectations_matrix::const_iterator
 		b(player_actions.begin()), e(player_actions.end());
 	expectations_matrix::const_iterator i(b);

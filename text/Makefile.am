@@ -6,7 +6,8 @@ include $(srcdir)/Make.latex
 pdfdir = $(docdir)/pdf
 dist_pdf_DATA = bj-math.pdf
 
-BOOK_INPUTS = bj-math.tex intro.tex basic.tex counting.tex bj-math.bib
+BOOK_INPUTS = bj-math.tex intro.tex basic.tex counting.tex betting.tex \
+	bj-math.bib
 EXTRA_DIST = $(BOOK_INPUTS) scantexdepend.awk state-machine-tabular.awk \
 	transpose-matrix.awk scale.awk
 
@@ -53,6 +54,7 @@ SM_TO_TABULAR = $(AWK) -f $(srcdir)/state-machine-tabular.awk
 TRANSPOSE = $(AWK) -f $(srcdir)/transpose-matrix.awk
 SCALE_PERCENT = $(AWK) -f $(srcdir)/scale.awk -v scalefactor=100
 REORDER_ACE_LAST_ROW = $(SED) -e '/^A/h' -e '/^A/d' -e '/^10/G'
+SED_E_LE = -e 's|<=|$$\\le{}$$|g'
 
 # header for top-row: A,2,3,4,5,6,7,8,9,10
 NEXT_CARD_TABULAR = \
@@ -72,8 +74,8 @@ tables/win-lose-push.tex: $(BASIC_STRATEGY)
 	{ $(ECHO) "% \"$@\" -- auto-generated" ; \
 	$(PRINTF) "\\\\begin{tabular}{|c||c|c|c|c|c|c|c|c|}\n\\hline\n" ; \
 	$(SED) -n '/final state outcomes/,/^$$/p' $< | \
-		$(SED) -e '1d' -e '$$d' | \
-		$(SED) -e '1s|P.D|$$\\frac{\\textrm{dealer}\\rightarrow}{\\textrm{player}\\downarrow}$$|' -e '2s|<=|$$&$$|' | \
+		$(SED) -e '1d' -e '$$d' $(SED_E_LE) | \
+		$(SED) -e '1s|P.D|$$\\frac{\\textrm{dealer}\\rightarrow}{\\textrm{player}\\downarrow}$$|' | \
 		$(TABS_TO_TABULAR) | $(TABULAR_HEADER_HLINE) ; \
 	$(END_TABULAR) ;} > $@
 
@@ -196,7 +198,7 @@ tables/player-stand-H17-pre-peek.tex: $(BASIC_STRATEGY)
 	$(DEALER_REVEAL_HEADER) ; \
 	$(SED) -n '/Player.*stand edges.*pre-peek/,/^$$/p' $< | \
 		$(REORDER_ACE_LAST_ROW) | \
-		$(SED) -e '1d' -e '$$d' -e 's|<=|$$&$$|g' | \
+		$(SED) -e '1d' -e '$$d' $(SED_E_LE) | \
 		$(TRANSPOSE) | $(SED) -e '1d' | $(TABS_TO_TABULAR) ; \
 	$(END_TABULAR) ;} > $@
 
@@ -207,7 +209,7 @@ tables/player-stand-H17-post-peek.tex: $(BASIC_STRATEGY)
 	$(DEALER_REVEAL_HEADER) ; \
 	$(SED) -n '/Player.*stand edges.*post-peek/,/^$$/p' $< | \
 		$(REORDER_ACE_LAST_ROW) | \
-		$(SED) -e '1d' -e '$$d' -e 's|<=|$$&$$|g' | \
+		$(SED) -e '1d' -e '$$d' $(SED_E_LE) | \
 		$(TRANSPOSE) | $(SED) -e '1d' | $(TABS_TO_TABULAR) ; \
 	$(END_TABULAR) ;} > $@
 
@@ -218,7 +220,7 @@ tables/player-stand-S17-pre-peek.tex: $(S17_STRATEGY)
 	$(DEALER_REVEAL_HEADER) ; \
 	$(SED) -n '/Player.*stand edges.*pre-peek/,/^$$/p' $< | \
 		$(REORDER_ACE_LAST_ROW) | \
-		$(SED) -e '1d' -e '$$d' -e 's|<=|$$&$$|g' | \
+		$(SED) -e '1d' -e '$$d' $(SED_E_LE) | \
 		$(TRANSPOSE) | $(SED) -e '1d' | $(TABS_TO_TABULAR) ; \
 	$(END_TABULAR) ;} > $@
 
@@ -229,7 +231,7 @@ tables/player-stand-S17-post-peek.tex: $(S17_STRATEGY)
 	$(DEALER_REVEAL_HEADER) ; \
 	$(SED) -n '/Player.*stand edges.*post-peek/,/^$$/p' $< | \
 		$(REORDER_ACE_LAST_ROW) | \
-		$(SED) -e '1d' -e '$$d' -e 's|<=|$$&$$|g' | \
+		$(SED) -e '1d' -e '$$d' $(SED_E_LE) | \
 		$(TRANSPOSE) | $(SED) -e '1d' | $(TABS_TO_TABULAR) ; \
 	$(END_TABULAR) ;} > $@
 

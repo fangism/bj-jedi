@@ -41,8 +41,9 @@ Table~\ref{tab:dealer-final-H17-pre-peek} (pre-peek, H17)
 using outcome weights of $+1$ for a win, $-1$ for lose, and $0$ for push, 
 the result is the expected winnings per unit bet, 
 is Table~\ref{tab:player-stand-H17-pre-peek}.
-Note that a player natural blackjack (BJ) is weighted by the 
+Note that a player natural blackjack (row:BJ) is weighted by the 
 blackjack payoff of $3:2$ ($+1.5$).
+With any other blackjack payoff, this row would be re-computed accordingly.
 
 For post-peek conditions, Table~\ref{tab:win-lose} is combined with
 Table~\ref{tab:dealer-final-H17-post-peek} (post-peek, H17) to produce
@@ -51,6 +52,13 @@ The only columns which differ between these tables are when
 the dealer's reveal card is an Ace or 10, since those are the only cards
 that provide information about the hole card
 when the dealer peeks for blackjack.
+
+Intuitively, as the player's hand value increases up to 21, 
+her expected outcome also monotonically increases.
+This is trend is expected because the corresponding player value rows in
+Table~\ref{tab:win-lose} show the sets of winning scenarios
+grow with hand value, and the set of losing scenarios diminish with
+hand value.  
 
 \begin{table}[ht!]
 \caption{Player's stand edges (S17, pre-peek)}
@@ -72,8 +80,20 @@ For the S17 variation, the same computation produces
 Table~\ref{tab:player-stand-S17-pre-peek} (pre-peek), and
 Table~\ref{tab:player-stand-S17-post-peek} (post-peek).
 
+Decision evaluations will use the post-peek tables when
+comparing to against the expected outcomes of other actions, 
+because the player does not have a chance to act before
+being assured that the dealer does not have blackjack.  
+% exception: no peek variation
+
 \subsection{Hitting}
 \label{sec:basic:hit-stand:hit}
+
+The obvious hit decisions are when the player's hand is 11 or lower,
+as it cannot result in a bust, and since any total $\le{}16$ is
+worth the same, the hand can only improve by hitting.  
+% If it is better to stand than hit at X, then it is also better to
+% stand than hit at all X+k (for hard totals).
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -108,6 +128,10 @@ With late-surrender, the player still loses her whole bet against
 a dealer natural.
 For now, we only evaluate late-surrender, as it is far more common.
 
+To evaluate late-surrender, one simply compares the expected outcome
+of any action (under post-peek conditions) against an outcome of $-0.5$.
+When all other actions have a worse expected outcome than the surrender
+penalty, it is to the player's advantage to surrender.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Split}

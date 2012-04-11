@@ -79,6 +79,7 @@ paths to search for config/save/load files?
 test cases:
 using basic vs. dynamic strategy
 sensitivity analysis of dynamic strategy and edges
+	also repeat sensitivity analysis for using only basic-strategy
 
 library:
 	export interfaces to: python, octave, guile, etc...
@@ -90,3 +91,6 @@ write an academic paper on results
 	second-order covariant sensitivity analysis
 	discuss betting strategies, Kelly criterion
 betting correlation (efficiency of counting systems)
+graphics: pretty 3D surface plots
+	slider animations
+HTML?
