@@ -63,14 +63,16 @@ SCANTEXDEPEND_SCRIPT = { $(PRINTF) "$@:" ; \
 
 
 .tex.dvi:
-	@bldroot=$(get_bldroot) ; \
+	@set -e ; \
+	bldroot=$(get_bldroot) ; \
 	depfile=$@depend ; \
 	$(ECHO) "Generating $$bldroot.dvi..." ; \
 	if test -f $$bldroot.stamp ; then \
 		if $(GREP) -q $(PDFLATEX) $$bldroot.stamp ; then \
 			$(MAKE) clean-temps ; fi \
 	fi ; \
-	TEXINPUTS=$(AUTOTEXINPUTS) $(LATEX) $< > /dev/null < /dev/null ; \
+	TEXINPUTS=$(AUTOTEXINPUTS) $(LATEX) $< > /dev/null < /dev/null || \
+		{ $(ECHO) "Errors in $*.log" ; exit 1 ;} ; \
 	$(ECHO) $(LATEX) > $$bldroot.stamp ; \
 	$(ECHO) "Generating auto-dependencies from $*.log..." ; \
 	$(SCANTEXDEPEND_SCRIPT) ; \
@@ -89,19 +91,21 @@ SCANTEXDEPEND_SCRIPT = { $(PRINTF) "$@:" ; \
 			$(ECHO); $(ECHO) "Citation warnings, third LaTeX pass..."; \
 			TEXINPUTS=$(AUTOTEXINPUTS) $(LATEX) $< > /dev/null < /dev/null; \
 		fi; \
-		($(GREP) 'LaTeX Warn' $$bldroot.log || ($(ECHO) > /dev/null)); \
+		($(GREP) 'LaTeX Warn' $$bldroot.log || : ); \
 	fi
 	@$(ECHO) "$@ completed."
 
 .tex.pdf:
-	@bldroot=$(get_bldroot) ; \
+	@set -e ; \
+	bldroot=$(get_bldroot)  \
 	depfile=$@depend ; \
 	$(ECHO) "Generating $$bldroot.pdf..." ; \
 	if test -f $$bldroot.stamp ; then \
 		if $(GREP) -q $(PDFLATEX) $$bldroot.stamp ; then \
 			: ; else $(MAKE) clean-temps ; fi \
 	fi ; \
-	TEXINPUTS=$(AUTOTEXINPUTS) $(PDFLATEX) $< > /dev/null < /dev/null ; \
+	TEXINPUTS=$(AUTOTEXINPUTS) $(PDFLATEX) $< > /dev/null < /dev/null || \
+		{ $(ECHO) "Errors in $*.log" ; exit 1 ;} ; \
 	$(ECHO) $(PDFLATEX) > $$bldroot.stamp ; \
 	$(ECHO) "Generating auto-dependencies from $*.log..." ; \
 	$(SCANTEXDEPEND_SCRIPT) ; \
@@ -120,7 +124,7 @@ SCANTEXDEPEND_SCRIPT = { $(PRINTF) "$@:" ; \
 			$(ECHO); $(ECHO) "Citation warnings, third LaTeX pass..."; \
 			TEXINPUTS=$(AUTOTEXINPUTS) $(PDFLATEX) $< > /dev/null < /dev/null; \
 		fi; \
-		($(GREP) 'LaTeX Warn' $$bldroot.log || ($(ECHO) > /dev/null)); \
+		($(GREP) 'LaTeX Warn' $$bldroot.log || : ); \
 	fi
 	@$(ECHO) "$@ completed."
 

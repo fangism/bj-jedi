@@ -35,7 +35,9 @@ GENERATED_TABLES = \
 	tables/player-stand-H17-pre-peek.tex \
 	tables/player-stand-H17-post-peek.tex \
 	tables/player-stand-S17-pre-peek.tex \
-	tables/player-stand-S17-post-peek.tex
+	tables/player-stand-S17-post-peek.tex \
+	tables/player-action-expectations-basic-H17.txt \
+	tables/player-action-expectations-basic-H17.tex
 
 CLEANFILES = $(GENERATED_TABLES)
 
@@ -64,10 +66,13 @@ NEXT_CARD_HEADER = \
 # header for top-row: 2,3,4,5,6,7,8,9,10,A
 DEALER_REVEAL_TABULAR = \
 	$(PRINTF) "\\\\begin{tabular}{|c||c|c|c|c|c||c|c|c|c|c|}\n\\hline\n"
+DEALER_REVEAL_LONGTABLE = \
+	$(PRINTF) "\\\\begin{longtable}{|c||c|c|c|c|c||c|c|c|c|c|}\n"
 DEALER_REVEAL_HEADER = \
 	$(PRINTF) '&2&3&4&5&6&7&8&9&10&A \\\\ \\hline \\hline\n'
 
 END_TABULAR = $(PRINTF) "\\\\end{tabular}\n"
+END_LONGTABLE = $(PRINTF) "\\\\end{longtable}\n"
 
 # how to generate each table
 tables/win-lose-push.tex: $(BASIC_STRATEGY)
@@ -235,6 +240,25 @@ tables/player-stand-S17-post-peek.tex: $(S17_STRATEGY)
 		$(TRANSPOSE) | $(SED) -e '1d' | $(TABS_TO_TABULAR) ; \
 	$(END_TABULAR) ;} > $@
 
+# giant unified table, using longtable package
+tables/player-action-expectations-basic-H17.txt: $(BASIC_STRATEGY)
+	$(SED) -n '/action expectations/,/initial edges/p' $< | \
+		$(SED) -e '1d' -e '$$d' > $@
+
+HOME_ACTION_EXPECTATIONS = \
+	$$\\frac{\\textrm{reveal}\\rightarrow}{\\textrm{player}\\downarrow}$$
+tables/player-action-expectations-basic-H17.tex: tables/player-action-expectations-basic-H17.txt
+	{ $(ECHO) "% \"$@\" -- auto-generated" ; \
+		$(GREP) . $< | $(GREP) -v "^surr" | \
+		$(TABS_TO_TABULAR) | \
+		$(SED) -e '1d' \
+			-e '/[HDSRP][HDSRP]/s| \\hline|*|' \
+			-e '/^hit/s| \\hline|*|' \
+			-e '/^stand/s| \\hline|*|' \
+			-e '/^double/s| \\hline|*|' \
+			-e '/^split/s| \\hline|*|' \
+			-e '/^delta/s|$$| \\hline|' ; \
+	} > $@
 
 -include bj-math.pdfdepend
 
