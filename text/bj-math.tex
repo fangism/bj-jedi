@@ -11,7 +11,8 @@
 % \usepackage{subfigure}		% for sub-figure
 \usepackage{longtable}
 \usepackage{makeidx}
-\usepackage{graphicx,color}
+\usepackage[usenames]{color}
+\usepackage{graphicx}
 \usepackage{colortbl}
 \usepackage{url}
 \usepackage[
@@ -34,6 +35,26 @@
 \bibliographystyle{plain}	% just alphabetized by first author
 \makeindex
 
+% some useful commands:
+% table formatting:
+\DeclareRobustCommand{\raisehalf}[1]{\raisebox{1.2ex}[0pt]{#1}}
+\DeclareRobustCommand{\lowerhalf}[1]{\raisebox{-1.2ex}[0pt]{#1}}
+
+\newcommand{\abs}[1]{\left|#1\right|}
+\newcommand{\absdelta}{\abs{\Delta}}
+
+% summation
+\newcommand{\Sum}[3]{\sum_{#1}^{#2}{#3}}
+% expectation
+\newcommand{\Exp}[1]{\textrm{E}\left[#1\right]}
+\newcommand{\ExpAct}[2]{\textrm{E}_{#1}\left[#2\right]}
+\newcommand{\ExpOpt}[1]{\hat{\textrm{E}}\left[#1\right]}
+% maximum
+\newcommand{\Max}[2]{\textrm{max}\left(#1,#2\right)}
+% probability
+\newcommand{\Prob}[1]{p\left[#1\right]}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{document}
 \frontmatter
 \pagenumbering{roman}

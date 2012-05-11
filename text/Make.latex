@@ -31,7 +31,7 @@ AUTOBIBINPUTS = $(COMMONINPUTS)"$$BIBINPUTS"$(PATH_SEPARATOR)
 #		$(ECHO) "Created $@." ; \
 #	fi
 
-IGNORE_TEXDEPEND_EXTENSIONS = aux bbl ind lot lof out toc
+IGNORE_TEXDEPEND_EXTENSIONS = aux bbl brf ind lot lof out toc
 # can += this variable to add more
 SCANTEXDEPEND_FILTER = $(AWK) -f $(top_srcdir)/text/scantexdepend.awk -v ignore_extensions="$(IGNORE_TEXDEPEND_EXTENSIONS)"
 SCANTEXDEPEND_SCRIPT = { $(PRINTF) "$@:" ; \

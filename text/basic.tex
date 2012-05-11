@@ -16,6 +16,7 @@ immediately replaced to eliminate the effects of history.
 
 The most common decision the player faces in any situation
 is whether to hit or stand.
+It is also the most important to learn and master first.
 
 \subsection{Standing}
 \label{sec:basic:hit-stand:stand}
@@ -95,6 +96,48 @@ worth the same, the hand can only improve by hitting.
 % If it is better to stand than hit at X, then it is also better to
 % stand than hit at all X+k (for hard totals).
 
+The expected outcome of hitting in each state $s_i$ 
+can be computed recursively using the following equations:
+
+\begin{eqnarray}
+\ExpOpt{s_i} &=& \Max{\ExpAct{hit}{s_i}}{\ExpAct{stand}{s_i}}\\
+\ExpAct{hit}{s_i} &=& \Sum{j=1}{10}{\Prob{c=j}\ExpOpt{s_{i\rightarrow{}j}}}
+\end{eqnarray}
+
+\noindent
+To follow dependency ordering, the expectations $\ExpAct{hit}{s_i}$
+must be evaluated starting from the player's terminal states 
+(21, bust) and working backwards.  
+
+\begin{center}
+\begin{longtable}{|c||c|c|c|c|c||c|c|c|c|c|}
+\caption{Player hit vs. stand expectations (H17)%
+\label{tab:hit-stand-expectations-H17}}\\ \hline
+$\frac{\textrm{reveal}\rightarrow}{\textrm{player}\downarrow}$
+&2&3&4&5&6&7&8&9&10&A \\ \hline \hline
+\endfirsthead
+\caption[]{(continued)}\\ \hline \hline
+$\frac{\textrm{reveal}\rightarrow}{\textrm{player}\downarrow}$
+&2&3&4&5&6&7&8&9&10&A \\ \hline \hline
+\endhead
+\input tables/hit-stand-basic-H17
+\end{longtable}
+\end{center}
+
+\begin{center}
+\begin{longtable}{|c||c|c|c|c|c||c|c|c|c|c|}
+\caption{Player hit vs. stand expectations (S17)%
+\label{tab:hit-stand-expectations-S17}}\\ \hline
+$\frac{\textrm{reveal}\rightarrow}{\textrm{player}\downarrow}$
+&2&3&4&5&6&7&8&9&10&A \\ \hline \hline
+\endfirsthead
+\caption[]{(continued)}\\ \hline \hline
+$\frac{\textrm{reveal}\rightarrow}{\textrm{player}\downarrow}$
+&2&3&4&5&6&7&8&9&10&A \\ \hline \hline
+\endhead
+\input tables/hit-stand-basic-S17
+\end{longtable}
+\end{center}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Double-down}
@@ -179,8 +222,27 @@ $\frac{\textrm{reveal}\rightarrow}{\textrm{player}\downarrow}$
 \end{longtable}
 \end{center}
 
+\begin{center}
+\begin{longtable}{|c||c|c|c|c|c||c|c|c|c|c|}
+\caption{Player's action expectations (S17)%
+\label{tab:player-action-expectations-S17}}\\ \hline
+$\frac{\textrm{reveal}\rightarrow}{\textrm{player}\downarrow}$
+&2&3&4&5&6&7&8&9&10&A \\ \hline \hline
+\endfirsthead
+\caption[]{(continued)}\\ \hline \hline
+$\frac{\textrm{reveal}\rightarrow}{\textrm{player}\downarrow}$
+&2&3&4&5&6&7&8&9&10&A \\ \hline \hline
+\endhead
+\input tables/player-action-expectations-basic-S17
+\end{longtable}
+\end{center}
+
 Table~\ref{tab:player-action-expectations-H17} summarizes of the
-expectations per player action in every situation against the dealer.
+expectations per player action in every situation against the dealer
+for the H17 variation.
+Table~\ref{tab:player-action-expectations-S17} summarizes of the
+expectations per player action in every situation against the dealer
+for the S17 variation.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Insurance}
