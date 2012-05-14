@@ -65,6 +65,15 @@ struct expectations {
 			split +e.split);
 	}
 
+	expectations&
+	operator += (const expectations& e) {
+		stand += e.stand;
+		hit += e.hit;
+		double_down += e.double_down;
+		split += e.split;
+		return *this;
+	}
+
 	void
 	optimize(const edge_type& r);
 

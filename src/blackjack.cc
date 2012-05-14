@@ -90,6 +90,16 @@ play_map::outcome_matrix = play_map::__outcome_matrix;
 
 const int play_map::init_outcome_matrix = play_map::compute_final_outcomes();
 
+vector<size_t>
+play_map::__reverse_topo_order;
+
+const vector<size_t>&
+play_map::reverse_topo_order(play_map::__reverse_topo_order);
+
+const int
+play_map::init_reverse_topo_order =
+	play_map::initialize_reverse_topo_order();
+
 //-----------------------------------------------------------------------------
 // class play_map method definitions
 play_map::play_map(const variation& v) : var(v),
@@ -97,7 +107,7 @@ play_map::play_map(const variation& v) : var(v),
 	set_dealer_policy();
 	compute_player_hit_state();
 	compute_player_split_state();
-	compute_final_outcomes();
+//	compute_final_outcomes();	// is now static global
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -458,6 +468,39 @@ play_map::compute_final_outcomes(void) {
 	pbj[dealer_states -3] = PUSH;			// both blackjack
 	std::fill(px.begin(), px.end(), LOSE);
 	return 1;
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
+        Just a reverse topological sort of reachable states
+ */
+int
+play_map::initialize_reverse_topo_order(void) {
+	// reordering for-loop: player states
+	vector<size_t>& reorder(__reverse_topo_order);
+	reorder.reserve(p_action_states);
+	// backwards, starting from high hard value states
+	size_t i;
+	for (i=goal-1; i>goal-card_values; --i) {
+		reorder.push_back(i);
+	}
+	// backwards from soft states (Aces)
+	for (i=pair_offset-1; i>=player_soft; --i) {
+		reorder.push_back(i);
+	}
+	// backwards from low hard values
+	for (i=goal-card_values; i<p_action_states; --i) {
+		reorder.push_back(i);
+	}
+	// evaluate split states at their face value
+	for (i=p_action_states-1; i>=pair_offset; --i) {
+		reorder.push_back(i);
+	}
+#if 0
+	copy(reorder.begin(), reorder.end(),
+		ostream_iterator<size_t>(cout, ","));
+	cout << endl;
+#endif
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

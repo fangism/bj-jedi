@@ -15,6 +15,7 @@ using std::pair;
 using std::istream;
 using std::ostream;
 using std::string;
+using std::vector;
 using util::array;
 using cards::card_values;
 using cards::probability_vector;
@@ -65,9 +66,15 @@ public:
 							outcome_matrix_type;
 	static const outcome_matrix_type&	outcome_matrix;
 private:
+	// TODO: support rule variations in outcome matrix
 	static outcome_matrix_type	__outcome_matrix;
 	static const int		init_outcome_matrix;
 
+private:
+	static vector<size_t>		__reverse_topo_order;
+	static const int		init_reverse_topo_order;
+public:
+	static const vector<size_t>&	reverse_topo_order;
 public:
 	explicit
 	play_map(const variation&);
@@ -90,6 +97,10 @@ private:
 	static
 	int
 	compute_final_outcomes(void);
+
+	static
+	int
+	initialize_reverse_topo_order(void);
 
 public:
 	bool

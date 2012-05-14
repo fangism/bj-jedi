@@ -36,6 +36,7 @@ expectations::value(const player_choice c,
 /**
 	Assumes all choices (double, split, surrender) available.
 	It is up to the best() method to filter out invalid choices.  
+	\param surrender penalty should be < 0
  */
 void
 expectations::optimize(const edge_type& surrender) {
