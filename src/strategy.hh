@@ -30,8 +30,9 @@ using cards::state_machine;
 	one per reveal card.
 	Rationale: computation efficiency, incremental calculation.
 	Goal: 1
+	Status: tested, perm'd
  */
-#define	RESTRUCTURE_STRATEGY_BY_REVEAL_CARD		1
+// #define	RESTRUCTURE_STRATEGY_BY_REVEAL_CARD		1
 
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -292,59 +293,6 @@ private:
 		entries are 0-indexed, with 0 = Ace, 1 = 2, etc.
 	 */
 	deck_distribution		card_odds;
-#if !RESTRUCTURE_STRATEGY_BY_REVEAL_CARD
-	/**
-		"Hit until it's not good to hit..."
-		One player decision state machine for each dealer reveal card
-		Each state machine is generated after hit/stand choices
-		have been evaluated in the expectations matrix.
-		Each matrix can then be used to solve the probability
-		distribution of terminal states.  
-		Having evaluated splits is not necessary, however, 
-		Some of the variation variables affect the outcome of 
-		this matrix (e.g. double-after-split).  
-		NOTE: double-downs need to be computed separately, 
-			using a single convolve step; double-downs are not
-			included, they should be looked up.
-	 */
-	array<state_machine, card_values>		player_opt_hit;
-
-	// TODO: support a mode where a player's strategy (however suboptimal)
-	// can be mathematically evaluated (submit and score).
-
-	/**
-		This matrix is indexed: [reveal][finish-state]
-		cell values are probabilities.
-		Sum of each row should be 1.0.
-	 */
-	typedef	array<probability_type, dealer_states>
-						dealer_final_vector_type;
-	typedef	array<dealer_final_vector_type, card_values>	dealer_final_matrix;
-	/**
-		Prior to peek, these are the odds of the dealer's final state
-		given the reveal card.
-	 */
-	dealer_final_matrix		dealer_final_given_revealed;
-	/**
-		Post peek, these are the odds of the dealer's final state
-		given the reveal card.
-	 */
-	dealer_final_matrix		dealer_final_given_revealed_post_peek;
-	/**
-		Given:
-		i - dealer's reveal card
-		j - player's initial state
-		k - player's final state (probability)
-		assuming that the player hits until it is not advisable 
-			(using player_opt_hit)
-	 */
-	typedef	array<player_final_state_probability_vector, p_action_states>
-					player_final_states_probability_vector;
-	typedef	array<player_final_states_probability_vector, card_values>
-					player_final_states_probability_matrix;
-	player_final_states_probability_matrix
-					player_final_state_probability;
-#endif
 
 public:
 
@@ -353,109 +301,12 @@ public:
 	typedef	player_choice			action_preference[4];
 
 private:
-#if !RESTRUCTURE_STRATEGY_BY_REVEAL_CARD
-	typedef	array<outcome_vector, card_values>		outcome_matrix;
-
-	/**
-		Matrix is indexed: [reveal][player-state]
-		cell values are probabilities that player will win/draw/lose.
-	 */
-	outcome_matrix				player_stand;
-	outcome_matrix				player_stand_post_peek;
-	/**
-		For each entry in 'player_stand': win - lose = edge.
-	 */
-	typedef	array<probability_type, player_states>
-						player_stand_edges_vector;
-	typedef	array<player_stand_edges_vector, card_values>
-						player_stand_edges_matrix;
-	/**
-		index i: dealer's reveal card
-		index j: player's final value (including bust)
-	 */
-	player_stand_edges_matrix		player_stand_edges;
-	player_stand_edges_matrix		player_stand_edges_post_peek;
-#endif
-
-private:
-#if !RESTRUCTURE_STRATEGY_BY_REVEAL_CARD
-	typedef	array<expectations, card_values>	expectations_vector;
-	typedef	array<expectations_vector, p_action_states>
-						expectations_matrix;
-
-	/**
-		Matrix is indexed: [player-state][reveal]
-		NOTE: transposed.
-		cell values are expected outcome values.
-	 */
-	expectations_matrix			player_actions;
-
-	/**
-		The edge (advantage) values for a player
-		in "hit-or-stand-mode", using player_final_state_probabilities.
-		Computed using probability-weighted sum of 
-		final-state-spread and final-state-odds 
-		(when standing or in terminal state).
-		This table is not applicable to doubling, splitting, surrender.
-	 */
-	typedef	array<array<edge_type, card_values>, p_action_states>
-						player_hit_stand_edges_matrix;
-	/**
-		This table represents the optimal edges given only a 
-		hit or stand choice.
-	 */
-	player_hit_stand_edges_matrix		player_hit_stand_edges;
-//	player_hit_stand_edges_matrix		player_hit_stand_edges_post_peek;
-	/**
-		Spread of player edges, given initial state and reveal card.
-		Each cell is taken as the max between stand, hit-mode, 
-		double, and split if applicable.
-		Assumes already dealer already peeked for blackjack, 
-		if applicable.  
-		This table needs to be computed iteratively with
-		player_split_edges, below,
-		depending on double-after-split and resplit.
-		The first iteration will exclude splitting.
-
-		Separate table for computing only split expectations, 
-		as a workspace for evaluating.
-		Computed iteratively, based on player_initial_edges, 
-		first without resplits or double-after-split, 
-		then with doubles, if the variation uses it.
-		After computing this, player_actions::split can 
-		and should be updated to recompute player_initial_edges.
-		Index: player's pair, dealer's reveal card
-
-	edge_type (*player_split_edges)[card_values] =
-		&player_initial_edges[p_action_states];
-	 */
-	typedef	array<edge_type, card_values>		player_initial_edges_vector;
-	typedef	array<player_initial_edges_vector, p_action_states>
-						player_initial_edges_matrix;
-	/**
-		player's edges, given reveal card, post-peek.
-	 */
-//	player_initial_edges_matrix		player_initial_edges_pre_peek;
-	player_initial_edges_matrix		player_initial_edges_post_peek;
-
-#else
 	typedef	array<edge_type, card_values>		player_initial_edges_vector;
 
 	typedef	array<reveal_strategy, card_values>	reveal_array_type;
 	reveal_array_type				reveal;
-#endif
-	player_state_probability_vector		player_initial_state_odds;
 
-#if !RESTRUCTURE_STRATEGY_BY_REVEAL_CARD
-	/**
-		Given only the dealer's card, what is the player's
-		expected outcome, given optimal playing?
-		Computed using probability weighted sum over
-		spread of initial states.  
-	 */
-	player_initial_edges_vector		player_edges_given_reveal_pre_peek;
-	player_initial_edges_vector		player_edges_given_reveal_post_peek;
-#endif
+	player_state_probability_vector		player_initial_state_odds;
 
 	/**
 		The overall player's edge, before any cards are dealt.  
@@ -498,32 +349,14 @@ private:
 	optimize_player_hit_tables(void);
 
 	ostream&
-	dump_expectations(
-#if RESTRUCTURE_STRATEGY_BY_REVEAL_CARD
-		const size_t state,
-#else
-		const expectations_vector&,
-#endif
-		ostream&) const;
+	dump_expectations(const size_t state, ostream&) const;
 
 	ostream&
-	dump_optimal_actions(
-#if RESTRUCTURE_STRATEGY_BY_REVEAL_CARD
-		const size_t state,
-#else
-		const expectations_vector&,
-#endif
-		ostream&, 
+	dump_optimal_actions(const size_t state, ostream&, 
 		const size_t, const char*) const;
 
 	ostream&
-	dump_optimal_edges(
-#if RESTRUCTURE_STRATEGY_BY_REVEAL_CARD
-		const size_t state,
-#else
-		const expectations_vector&,
-#endif
-		ostream&) const;
+	dump_optimal_edges(const size_t state, ostream&) const;
 
 	void
 	reset_split_edges(void);
@@ -538,38 +371,11 @@ private:
 	void
 	compute_dealer_final_table(void);
 
-#if !RESTRUCTURE_STRATEGY_BY_REVEAL_CARD
-	static
-	void
-	compute_showdown_odds(const dealer_final_matrix&, const edge_type&,
-		outcome_matrix&, player_stand_edges_matrix&);
-#endif
-
 	void
 	compute_player_stand_odds(void);
 
 	void
 	compute_action_expectations(void);
-
-#if !RESTRUCTURE_STRATEGY_BY_REVEAL_CARD
-	static
-	void
-	__compute_player_hit_stand_edges(const player_stand_edges_matrix&, 
-		const player_final_states_probability_matrix&,
-		const expectations_matrix&,
-		const edge_type&, player_hit_stand_edges_matrix&);
-
-	void
-	compute_player_hit_stand_edges(void);
-
-	void
-	compute_player_initial_nonsplit_edges(
-		const bool d, const bool s, const bool r);
-
-	// private:
-	void
-	compute_player_split_edges(const bool d, const bool s);
-#endif
 
 	void
 	compute_reveal_edges(void);
@@ -593,37 +399,15 @@ public:
 	ostream&
 	dump_dealer_final_table(ostream&) const;
 
-#if !RESTRUCTURE_STRATEGY_BY_REVEAL_CARD
-	static
-#endif
 	ostream&
 	__dump_player_stand_odds(ostream&,
-#if RESTRUCTURE_STRATEGY_BY_REVEAL_CARD
 		outcome_vector reveal_strategy::*,
-#else
-		const outcome_matrix&, 
-#endif
-		const state_machine&)
-#if RESTRUCTURE_STRATEGY_BY_REVEAL_CARD
-		const
-#endif
-		;
+		const state_machine&) const;
 
-#if !RESTRUCTURE_STRATEGY_BY_REVEAL_CARD
-	static
-#endif
 	ostream&
 	__dump_player_stand_edges(ostream&,
-#if RESTRUCTURE_STRATEGY_BY_REVEAL_CARD
 		reveal_strategy::player_stand_edges_vector reveal_strategy::*,
-#else
-		const player_stand_edges_matrix&, 
-#endif
-		const state_machine&)
-#if RESTRUCTURE_STRATEGY_BY_REVEAL_CARD
-		const
-#endif
-		;
+		const state_machine&) const;
 
 	ostream&
 	dump_player_stand_odds(ostream&) const;

@@ -201,18 +201,16 @@ strategy::strategy(const play_map& v) :
 	play(v), 
 	card_odds(standard_deck_distribution),
 	need_update(true) {
-#if RESTRUCTURE_STRATEGY_BY_REVEAL_CARD
+	// each sub-strategy needs to know it's corresponding reveal card
 	size_t j = 0;
 	for ( ; j<card_values; ++j) {
 		reveal[j].reveal_card = j;
 	}
-#endif
 	// don't *have* to do this right away...
 	// update_player_initial_state_odds();
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-#if RESTRUCTURE_STRATEGY_BY_REVEAL_CARD
 void
 reveal_strategy::compute_dealer_final_table(const play_map& play, 
 		const deck_distribution& card_odds) {
@@ -270,7 +268,6 @@ if (j == ACE) {
 	}
 }
 }
-#endif
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
@@ -294,61 +291,8 @@ strategy::compute_dealer_final_table(void) {
 	//	this is called 'peek'
 	size_t j;
 	for (j=0 ; j<card_values; ++j) {
-#if RESTRUCTURE_STRATEGY_BY_REVEAL_CARD
 		reveal[j].compute_dealer_final_table(play, card_odds);
-#else
-		probability_vector init(play.dealer_hit.get_states().size(), 0.0);
-		probability_vector final(init.size());
-		init[play_map::d_initial_card_map[j]] = 1.0;
-		// for the first iteration
-		// isolate the case when dealer shows an ACE or TEN
-		// but hole card is known to NOT give dealer blackjack!
-		if (j == ACE) {
-			if (var.peek_on_Ace) {
-			final = init;
-			play.dealer_hit.convolve(cards_no_ten, final, init);
-			// then solve the rest
-			}
-		} else if (j == TEN) {
-			if (var.peek_on_10) {
-			final = init;
-			play.dealer_hit.convolve(cards_no_ace, final, init);
-			}
-		}
-		play.dealer_hit.solve(card_odds, init, final);
-		dealer_final_vector_type& row(dealer_final_given_revealed[j]);
-		dealer_final_vector_type::const_iterator i(&final[stop]);
-		copy(i, i+dealer_states, row.begin());
-		// odds of dealer blackjack
-		if (j == ACE) {
-			 row[dealer_states-3] = card_odds[TEN];
-		} else if (j == TEN) {
-			 row[dealer_states-3] = card_odds[ACE];
-		}
-#endif
 	}
-#if !RESTRUCTURE_STRATEGY_BY_REVEAL_CARD
-	// post-peek normalizing
-	// start by copying, zero out the blackjack odds, and re-normalize
-	dealer_final_given_revealed_post_peek = dealer_final_given_revealed;
-{
-	dealer_final_vector_type&
-		ace_row(dealer_final_given_revealed_post_peek[ACE]);
-	probability_type& dbj(ace_row[dealer_blackjack- stop]);
-	if (var.peek_on_Ace && dbj > 0.0) {
-		dbj = 0.0;
-		normalize(ace_row);
-	}
-}{
-	dealer_final_vector_type&
-		ten_row(dealer_final_given_revealed_post_peek[TEN]);
-	probability_type& dbj(ten_row[dealer_blackjack- stop]);
-	if (var.peek_on_10 && dbj > 0.0) {
-		dbj = 0.0;
-		normalize(ten_row);
-	}
-}
-#endif
 #if DUMP_DURING_EVALUATE
 	dump_dealer_final_table(cout) << endl;
 #endif
@@ -363,7 +307,6 @@ strategy::dump_dealer_final_table(ostream& o) const {
 		"show\\do\t17\t18\t19\t20\t21\tBJ\tbust\tpush";
 	ostream_iterator<probability_type> osi(o, "\t");
 {
-#if RESTRUCTURE_STRATEGY_BY_REVEAL_CARD
 #if 0
 	typedef member_select_iterator<reveal_array_type::const_iterator,
 		reveal_strategy::dealer_final_vector,
@@ -374,29 +317,18 @@ strategy::dump_dealer_final_table(ostream& o) const {
 #endif
 	const const_iterator
 		b(reveal.begin()), e(reveal.end());
-#else
-	typedef dealer_final_matrix::const_iterator	const_iterator;
-	const const_iterator
-		b(dealer_final_given_revealed.begin()),
-		e(dealer_final_given_revealed.end());
-#endif
 	const_iterator i(b);
 	o << header << endl;
 	for ( ; i!=e; ++i) {
 		o << play.dealer_hit[play_map::d_initial_card_map[i-b]].name << '\t';
-#if RESTRUCTURE_STRATEGY_BY_REVEAL_CARD
 		copy(i->dealer_final_given_revealed_pre_peek.begin(),
 			i->dealer_final_given_revealed_pre_peek.end(), osi);
-#else
-		copy(i->begin(), i->end(), osi);
-#endif
 		o << endl;
 	}
 }
 	o << endl;
 {
 	o << "Dealer's final state odds (post-peek):\n";
-#if RESTRUCTURE_STRATEGY_BY_REVEAL_CARD
 #if 0
 	typedef member_select_iterator<reveal_array_type::const_iterator,
 		reveal_strategy::dealer_final_vector,
@@ -407,22 +339,12 @@ strategy::dump_dealer_final_table(ostream& o) const {
 #endif
 	const const_iterator
 		b(reveal.begin()), e(reveal.end());
-#else
-	typedef dealer_final_matrix::const_iterator	const_iterator;
-	const const_iterator
-		b(dealer_final_given_revealed_post_peek.begin()),
-		e(dealer_final_given_revealed_post_peek.end());
-#endif
 	const_iterator i(b);
 	o << header << endl;
 	for ( ; i!=e; ++i) {
 		o << play.dealer_hit[play_map::d_initial_card_map[i-b]].name << '\t';
-#if RESTRUCTURE_STRATEGY_BY_REVEAL_CARD
 		copy(i->dealer_final_given_revealed_post_peek.begin(),
 			i->dealer_final_given_revealed_post_peek.end(), osi);
-#else
-		copy(i->begin(), i->end(), osi);
-#endif
 		o << endl;
 	}
 }
@@ -430,7 +352,6 @@ strategy::dump_dealer_final_table(ostream& o) const {
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-#if RESTRUCTURE_STRATEGY_BY_REVEAL_CARD
 void
 reveal_strategy::compute_showdown_odds(const dealer_final_vector& dfv,
 		const edge_type& bjp, outcome_vector& stand,
@@ -477,61 +398,6 @@ reveal_strategy::compute_player_stand_odds(const edge_type bjp) {
 	compute_showdown_odds(dealer_final_given_revealed_post_peek, bjp,
 		player_stand_post_peek, player_stand_edges_post_peek);
 }
-#endif
-
-//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-#if !RESTRUCTURE_STRATEGY_BY_REVEAL_CARD
-/**
-	\pre already called compute_dealer_final_table() to
-		compute dealer_final_given_revealed, pre/post-peek.
-	\post populates values of ::player_stand and ::player_stand_edges
-	\param bjp blackjack-payoff used to weigh player's blackjack edge
- */
-void
-strategy::compute_showdown_odds(const dealer_final_matrix& dfm,
-		const edge_type& bjp, 
-		outcome_matrix& stand, player_stand_edges_matrix& edges) {
-	// first, clear values back to 0
-	outcome_matrix::iterator mi(stand.begin()), me(stand.end());
-	for ( ; mi!=me; ++mi) {
-		fill(mi->begin(), mi->end(), outcome_odds());
-	}
-	// represents: <=16, 17, 18, 19, 20, 21, BJ, bust
-//	static const size_t d_bj_ind = dealer_states -3;
-	static const size_t p_bj_ind = player_states -2;
-	size_t j;
-	for (j=0; j < card_values; ++j) {	// dealer's revealed card, initial state
-		const dealer_final_vector_type& dfv(dfm[j]);	// pre-peek!
-		outcome_vector& ps(stand[j]);
-	size_t k;
-	// player blackjack and bust is separate
-	for (k=0; k < player_states; ++k) {	// player's final state
-		outcome_odds& o(ps[k]);
-		const play_map::outcome_array_type&
-			v(play_map::outcome_matrix[k]);
-	size_t d;
-	// -1: blackjack, push, and bust states separate
-	for (d=0; d < dealer_states; ++d) {	// dealer's final state
-		const probability_type& p(dfv[d]);
-		switch (v[d]) {
-		case WIN: o.win += p; break;
-		case LOSE: o.lose += p; break;
-		case PUSH: o.push += p; break;
-		}
-	}	// end for dealer_states
-	}	// end for player_states
-	}	// end for card_values
-	// now compute player edges
-	for (j=0; j<card_values; ++j) {	// dealer's reveal card
-		const outcome_vector& ps(stand[j]);
-		player_stand_edges_vector& ev(edges[j]);
-		transform(ps.begin(), ps.end(), ev.begin(), 
-			mem_fun_ref(&outcome_odds::edge));
-		// later, compensate for player blackjack, pays 3:2
-		ev[p_bj_ind] = ps[p_bj_ind].weighted_edge(bjp, 1.0);
-	}
-}	// end compute_showdown_odds
-#endif
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 /**
@@ -542,19 +408,10 @@ strategy::compute_showdown_odds(const dealer_final_matrix& dfm,
  */
 void
 strategy::compute_player_stand_odds(void) {
-#if RESTRUCTURE_STRATEGY_BY_REVEAL_CARD
 	for_each(reveal.begin(), reveal.end(), 
 		bind2nd(
 		mem_fun_ref(&reveal_strategy::compute_player_stand_odds), 
 		var.bj_payoff));
-#else
-	// pre-peek edges
-	compute_showdown_odds(dealer_final_given_revealed, var.bj_payoff,
-		player_stand, player_stand_edges);
-	// post-peek edges
-	compute_showdown_odds(dealer_final_given_revealed_post_peek, var.bj_payoff,
-		player_stand_post_peek, player_stand_edges_post_peek);
-#endif
 #if DUMP_DURING_EVALUATE
 	dump_player_stand_odds(cout) << endl;
 #endif
@@ -599,17 +456,8 @@ dump_outcome_vector(const outcome_vector& v, ostream& o) {
  */
 ostream&
 strategy::__dump_player_stand_odds(ostream& o,
-#if RESTRUCTURE_STRATEGY_BY_REVEAL_CARD
 		outcome_vector reveal_strategy::*mem,
-#else
-		const outcome_matrix& m, 
-#endif
-		const state_machine& d)
-#if RESTRUCTURE_STRATEGY_BY_REVEAL_CARD
-		const
-#endif
-		{
-#if RESTRUCTURE_STRATEGY_BY_REVEAL_CARD
+		const state_machine& d) const {
 #if 0
 	typedef	var_member_select_iterator<reveal_array_type::const_iterator,
 			const outcome_vector>
@@ -618,10 +466,6 @@ strategy::__dump_player_stand_odds(ostream& o,
 #else
 	typedef	reveal_array_type::const_iterator	const_iterator;
 	const const_iterator b(reveal.begin()), e(reveal.end());
-#endif
-#else
-	typedef	outcome_matrix::const_iterator		const_iterator;
-	const const_iterator b(m.begin()), e(m.end());
 #endif
 	const_iterator i(b);
 	o << "D\\P";
@@ -633,11 +477,7 @@ strategy::__dump_player_stand_odds(ostream& o,
 //	const precision_saver p(o, 3);
 	for ( ; i!=e; ++i) {
 		o << d[play_map::d_initial_card_map[i-b]].name << endl;
-#if RESTRUCTURE_STRATEGY_BY_REVEAL_CARD
 		dump_outcome_vector(i->*mem, o);
-#else
-		dump_outcome_vector(*i, o);
-#endif
 		o << endl;
 	}
 	return o;
@@ -646,19 +486,10 @@ strategy::__dump_player_stand_odds(ostream& o,
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ostream&
 strategy::__dump_player_stand_edges(ostream& o,
-#if RESTRUCTURE_STRATEGY_BY_REVEAL_CARD
 		reveal_strategy::player_stand_edges_vector
 			reveal_strategy::*mem, 
-#else
-		const player_stand_edges_matrix& m, 
-#endif
-		const state_machine& d)
-#if RESTRUCTURE_STRATEGY_BY_REVEAL_CARD
-		const
-#endif
-		{
+		const state_machine& d) const {
 	// dump the player's edges (win -lose)
-#if RESTRUCTURE_STRATEGY_BY_REVEAL_CARD
 #if 0
 	typedef	var_member_select_iterator<reveal_array_type::const_iterator,
 			reveal_strategy::player_stand_edges_vector>
@@ -667,10 +498,6 @@ strategy::__dump_player_stand_edges(ostream& o,
 #else
 	typedef	reveal_array_type::const_iterator	const_iterator;
 	const const_iterator b(reveal.begin()), e(reveal.end());
-#endif
-#else
-	typedef	player_stand_edges_matrix::const_iterator	const_iterator;
-	const const_iterator b(m.begin()), e(m.end());
 #endif
 	const_iterator i(b);
 	o << "D\\P";
@@ -683,11 +510,7 @@ strategy::__dump_player_stand_edges(ostream& o,
 	for ( ; i!=e; ++i) {
 		o << d[play_map::d_initial_card_map[i-b]].name << '\t';
 		copy(
-#if RESTRUCTURE_STRATEGY_BY_REVEAL_CARD
 			(i->*mem).begin(), (i->*mem).end(),
-#else
-			i->begin(), i->end(),
-#endif
 			ostream_iterator<probability_type>(o, "\t"));
 		o << endl;
 	}
@@ -696,7 +519,6 @@ strategy::__dump_player_stand_edges(ostream& o,
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ostream&
 strategy::dump_player_stand_odds(ostream& o) const {
-#if RESTRUCTURE_STRATEGY_BY_REVEAL_CARD
 {
 //	o << "Player's stand odds (win|push|lose):\n";
 	o << "Player's stand odds (pre-peek):\n";
@@ -710,26 +532,10 @@ strategy::dump_player_stand_odds(ostream& o) const {
 	o << "Player's stand edges (post-peek):\n";
 	__dump_player_stand_edges(o, &reveal_strategy::player_stand_edges_post_peek, play.dealer_hit);
 }
-#else
-{
-//	o << "Player's stand odds (win|push|lose):\n";
-	o << "Player's stand odds (pre-peek):\n";
-	__dump_player_stand_odds(o, player_stand, play.dealer_hit);
-	o << "Player's stand odds (post-peek):\n";
-	__dump_player_stand_odds(o, player_stand_post_peek, play.dealer_hit);
-}{
-	// dump the player's edges (win -lose)
-	o << "Player's stand edges (pre-peek):\n";
-	__dump_player_stand_edges(o, player_stand_edges, play.dealer_hit) << endl;
-	o << "Player's stand edges (post-peek):\n";
-	__dump_player_stand_edges(o, player_stand_edges_post_peek, play.dealer_hit);
-}
-#endif
 	return o;
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-#if RESTRUCTURE_STRATEGY_BY_REVEAL_CARD
 /**
 	This is the main strategy solver.  
 	No action is needed if outcome is a blackjack for either the
@@ -869,7 +675,6 @@ if (var.resplit) {
 	finalize_player_initial_edges();
 #endif
 }
-#endif	// RESTRUCTURE_STRATEGY_BY_REVEAL_CARD
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
@@ -880,161 +685,12 @@ if (var.resplit) {
  */
 void
 strategy::compute_action_expectations(void) {
-#if RESTRUCTURE_STRATEGY_BY_REVEAL_CARD
 	reveal_array_type::iterator i(reveal.begin()), e(reveal.end());
 	for ( ; i!=e; ++i) {
 		i->compute_action_expectations(play, card_odds);
 	}
-#else
-	const player_stand_edges_matrix&
-		pse(player_stand_edges_post_peek);
-	// recall, table is transposed
-// stand
-	size_t i, j;
-	for (i=0; i<p_action_states; ++i) {
-	for (j=0; j<card_values; ++j) {
-		const probability_type&
-			edge(pse[j][play_map::player_final_state_map(i)]);
-		player_actions[i][j].stand = edge;
-	}
-	}
-// double-down (hit-once, then stand)
-	// TODO: this could be computed at the same time with hits
-	// if done in reverse order
-	for (i=0; i<p_action_states; ++i) {
-	if (play.player_hit[i].size()) {
-		probability_vector before_hit(p_action_states, 0.0);
-		before_hit[i] = 1.0;	// unit vector
-		probability_vector after_hit;
-		play.player_hit.convolve(card_odds, before_hit, after_hit);
-		player_final_state_probability_vector fin;
-		reveal_strategy::player_final_state_probabilities(after_hit, fin);
-	for (j=0; j<card_values; ++j) {	// dealer shows
-		// static_assert
-		assert(size_t(player_final_state_probability_vector::Size)
-			== size_t(outcome_vector::Size));
-		probability_type& p(player_actions[i][j].double_down);
-		// perform inner_product, weighted expectations
 #if 0
-		p = 0.0;
-		size_t k;
-		for (k=0; k<player_states; ++k) {
-			const probability_type& edge(pse[j][k]);
-			p += fin[k] *edge;
-		}
-#else
-		p = inner_product(fin.begin(), fin.end(), pse[j].begin(), 0.0);
-#endif
-		p *= var.double_multiplier;	// because bet is doubled
-	}
-	} else {			// is terminal state, irrelevant
-	for (j=0; j<card_values; ++j) {
-		player_actions[i][j].double_down = -var.double_multiplier;
-	}
-	}
-	}
-// hit (and optimize choices, excluding splits)
-	// really, just a reverse topological sort of reachable states
-#if 0
-	vector<size_t> reorder;		// reordering for-loop: player states
-	reorder.reserve(p_action_states);
-	// backwards, starting from high hard value states
-	for (i=goal-1; i>goal-card_values; --i) {
-		reorder.push_back(i);
-	}
-	// backwards from soft states (Aces)
-	for (i=pair_offset-1; i>=player_soft; --i) {
-		reorder.push_back(i);
-	}
-	// backwards from low hard values
-	for (i=goal-card_values; i<p_action_states; --i) {
-		reorder.push_back(i);
-	}
-	// evaluate split states at their face value
-	for (i=p_action_states-1; i>=pair_offset; --i) {
-		reorder.push_back(i);
-	}
-#if 0
-	copy(reorder.begin(), reorder.end(), ostream_iterator<size_t>(cout, ","));
-	cout << endl;
-#endif
-#else
-	const vector<size_t>& reorder(play_map::reverse_topo_order);
-#endif
-	size_t r;
-	for (r=0; r<reorder.size(); ++r) {
-		const size_t ii = reorder[r];
-		const state_machine::node& ni(play.player_hit[ii]);
-		assert(ni.size());
-	for (j=0; j<card_values; ++j) {
-		expectations& p(player_actions[ii][j]);
-		p.hit = 0.0;
-	size_t k;
-	for (k=0; k<card_values; ++k) {
-//		cout << "i,j=" << ii << ',' << j <<
-//			", card-index " << k << ", odds=" << card_odds[k];
-		if (play.player_hit[k].size()) {
-			// is not a terminal state
-			// compare hit vs. stand in action table
-			// which is assumed to be precomputed
-			const expectations& e(player_actions[ni[k]][j]);
-			const edge_type best =
-				(e.hit > e.stand) ? e.hit : e.stand;
-//			cout << ", best=" << best;
-			p.hit += card_odds[k] *best;
-		} else {
-			// is a terminal state
-			const probability_type& edge(pse[j]
-				[play_map::player_final_state_map(ni[k])]);
-//			cout << ", edge=" << edge;
-			p.hit += card_odds[k] *edge;
-		}
-//		cout << endl;
-	}
-		// p.optimize(surrender_penalty);
-	}
-	}
-// find optimal non-split decisions first, then back-patch
-	optimize_actions();
-// create hit-only (non-split, non-double) player state machines
-// compute table for calculating spread of player's final state, 
-// given dealer's reveal card, and player's optimal hit strategy.
-// again hit-stand only
-	optimize_player_hit_tables();
-	compute_player_hit_stand_edges();
-#if DUMP_DURING_EVALUATE
-	dump_player_hit_stand_edges(cout) << endl;
-#endif
-	// OK up to here
-	reset_split_edges();	// zero-out
-	// the following computed edges are post-peek
-if (var.split) {
-	const bool DAS = var.double_after_split && var.some_double();
-if (var.resplit) {
-//	cout << "Resplitting allowed." <<  endl;
-	// need to work backwards from post-split edges
-	compute_player_initial_nonsplit_edges(DAS, var.resplit, false);
-	compute_player_split_edges(DAS, var.resplit);	// iterate
-	compute_player_initial_nonsplit_edges(DAS, var.resplit, false);
-	compute_player_split_edges(DAS, var.resplit);	// iterate
-	compute_player_initial_nonsplit_edges(var.some_double(), true, var.surrender_late);
-} else {
-//	cout << "Single split allowed." <<  endl;
-	compute_player_initial_nonsplit_edges(DAS, false, false);
-	compute_player_split_edges(DAS, false);	// iterate
-	compute_player_initial_nonsplit_edges(var.some_double(), true, var.surrender_late);
-}
-#if DUMP_DURING_EVALUATE
-	dump_player_split_edges(cout) << endl;
-#endif
-} else {
-//	cout << "No split allowed." <<  endl;
-	// no splitting allowed!
-	compute_player_initial_nonsplit_edges(var.some_double(), false, var.surrender_late);
-}
-#endif
 	// to account for player's blackjack
-#if 0
 	finalize_player_initial_edges();
 #endif
 // next: compute conditional edges given dealer reveal card
@@ -1052,29 +708,11 @@ if (var.resplit) {
 	TODO: factor of 2x for playing two hands?
  */
 void
-#if RESTRUCTURE_STRATEGY_BY_REVEAL_CARD
-reveal_strategy::reset_split_edges(const play_map& play)
-#else
-strategy::reset_split_edges(void)
-#endif
-{
-#if RESTRUCTURE_STRATEGY_BY_REVEAL_CARD
-	edge_type
-#else
-	player_initial_edges_vector
-#endif
-	*player_split_edges =
+reveal_strategy::reset_split_edges(const play_map& play) {
+	edge_type *player_split_edges =
 		&player_initial_edges_post_peek[pair_offset];
-#if RESTRUCTURE_STRATEGY_BY_REVEAL_CARD
 	*player_split_edges =
 		player_hit_stand_edges[play.p_initial_card_map[reveal_card]];
-#else
-	size_t i;
-	for (i=0; i<card_values; ++i) {
-		player_split_edges[i] =
-			player_hit_stand_edges[play.p_initial_card_map[i]];
-	}
-#endif
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -1090,35 +728,19 @@ strategy::reset_split_edges(void)
 	\param s resplit allowed
  */
 void
-#if RESTRUCTURE_STRATEGY_BY_REVEAL_CARD
 reveal_strategy::compute_player_split_edges(const play_map& play,
 		const deck_distribution& card_odds,
-		const bool d, const bool s)
-#else
-strategy::compute_player_split_edges(const bool d, const bool s)
-#endif
-{
-#if RESTRUCTURE_STRATEGY_BY_REVEAL_CARD
+		const bool d, const bool s) {
 	const variation& var(play.var);
 	const player_stand_edges_vector&
 		pse(player_stand_edges_post_peek);
 	edge_type *player_split_edges =
 		&player_initial_edges_post_peek[pair_offset];
-#else
-	const player_stand_edges_matrix&
-		pse(player_stand_edges_post_peek);
-	player_initial_edges_vector *player_split_edges =
-		&player_initial_edges_post_peek[pair_offset];
-#endif
 	const state_machine& split_table(s ? play.player_resplit : play.last_split);
 	size_t i;
 	for (i=0; i<card_values; ++i) {
 	// the single-card state after split
 	const size_t p = pair_offset +i;
-#if !RESTRUCTURE_STRATEGY_BY_REVEAL_CARD
-	size_t j;
-	for (j=0; j<card_values; ++j) {	// for each dealer reveal card
-#endif
 		// need to take weighted sum over initial states
 		// depending on initial card and spread of next states.
 		edge_type expected_edge = 0.0;
@@ -1129,60 +751,30 @@ strategy::compute_player_split_edges(const bool d, const bool s)
 		// initial edges may not have double-downs, splits, nor surrenders
 		// since player is forced to take the next card in each hand
 		const size_t state = split_table[i][k];
-#if RESTRUCTURE_STRATEGY_BY_REVEAL_CARD
 		edge_type edge = player_initial_edges_post_peek[state];
-#else
-		edge_type edge = player_initial_edges_post_peek[state][j];
-#endif
 		// similar to expectation::best(d, i==k, r)
 		// already accounted for player_resplit vs. final_split
 		if ((i == ACE) && !var.hit_split_aces) {
 			// each aces takes exactly one more card only
-#if RESTRUCTURE_STRATEGY_BY_REVEAL_CARD
 			edge = pse[play_map::player_final_state_map(state)];
-#else
-			edge = pse[j][play_map::player_final_state_map(state)];
-#endif
 //			cout << "1-card-ACE[D" << j << ",F" << state << "]: " << edge << endl;
 		}
 		expected_edge += o * edge;
 	}	// inner product
-#if RESTRUCTURE_STRATEGY_BY_REVEAL_CARD
 		expectations& sum(player_actions[p]);
-#else
-		expectations& sum(player_actions[p][j]);
-#endif
 		sum.split = 2.0 *expected_edge;	// b/c two hands are played
 		sum.optimize(-var.surrender_penalty);
-#if !RESTRUCTURE_STRATEGY_BY_REVEAL_CARD
-	}	// end for each dealer reveal card
-#endif
 	}	// end for each player paired card
 
 	// update the split entries for the initial-edges
 	for (i=0; i<card_values; ++i) {
 	// the single-card state after split
 	const size_t p = pair_offset +i;
-#if RESTRUCTURE_STRATEGY_BY_REVEAL_CARD
 	const expectations& sum(player_actions[p]);
 	// player may decide whether or not to split
 	player_split_edges[i] =
 		sum.value(sum.best(d, s, false), -var.surrender_penalty);
-#else
-	size_t j;
-	for (j=0; j<card_values; ++j) {	// for each dealer reveal card
-		const expectations& sum(player_actions[p][j]);
-		// player may decide whether or not to split
-		player_split_edges[i][j] =
-			sum.value(sum.best(d, s, false), -var.surrender_penalty);
 	}
-#endif
-	}
-#if !RESTRUCTURE_STRATEGY_BY_REVEAL_CARD
-#if DUMP_DURING_EVALUATE
-	dump_player_split_edges(cout) << endl;
-#endif
-#endif
 }	// end compute_player_split_edges()
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -1196,21 +788,13 @@ strategy::dump_player_split_edges(ostream& o) const {
 		o << '\t' << card_name[j];
 	}
 	o << endl;
-#if !RESTRUCTURE_STRATEGY_BY_REVEAL_CARD
-	const player_initial_edges_vector *player_split_edges =
-		&player_initial_edges_post_peek[pair_offset];
-#endif
 	for (j=0 ; j<card_values; ++j) {
 		o << card_name[j] << ',' << card_name[j];
 		size_t i;
 		for (i=0; i<card_values; ++i) {
-#if RESTRUCTURE_STRATEGY_BY_REVEAL_CARD
 			const edge_type *player_split_edges =
 				&reveal[i].player_initial_edges_post_peek[pair_offset];
 			o << '\t' << player_split_edges[j];
-#else
-			o << '\t' << player_split_edges[j][i];
-#endif
 		}
 		o << endl;
 	}
@@ -1218,7 +802,6 @@ strategy::dump_player_split_edges(ostream& o) const {
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-#if RESTRUCTURE_STRATEGY_BY_REVEAL_CARD
 /**
 	Create player optimal hit state machines.
 	Tables can be used to solve for distribution of expected
@@ -1262,7 +845,6 @@ reveal_strategy::optimize_player_hit_tables(const play_map& play,
 		unit[i] = 0.0;	// reset
 	}
 }	// end optimize_player_hit_tables()
-#endif
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
@@ -1276,49 +858,10 @@ reveal_strategy::optimize_player_hit_tables(const play_map& play,
  */
 void
 strategy::optimize_player_hit_tables(void) {
-#if RESTRUCTURE_STRATEGY_BY_REVEAL_CARD
 	size_t j;
 	for (j=0; j<card_values; ++j) {	// for each reveal card
 		reveal[j].optimize_player_hit_tables(play, card_odds);
 	}
-#else
-	size_t j;
-	for (j=0; j<card_values; ++j) {	// for each reveal card
-		player_opt_hit[j] = play.player_hit;	// copy entire state machine
-		// using default assignment operator of util::array
-		size_t i;
-		for (i=0; i<p_action_states; ++i) {
-			const expectations& e(player_actions[i][j]);
-			// don't count surrender, split, double
-			const player_choice b(e.best(false, false, false));
-			// or just compare e.hit vs. e.stand
-			if (b == STAND) {
-				// is either STAND or DOUBLE
-				player_opt_hit[j][i].out_edges.clear();
-				// make all stands terminal states
-			}
-		}
-#if 0
-		player_opt_hit[j].dump(cout) << endl;
-#endif
-	}
-#if DUMP_DURING_EVALUATE
-	dump_player_hit_tables(cout);
-#endif
-	// now compute player_final_state_probability
-	probability_vector unit(p_action_states, 0.0);
-	probability_vector result;
-	for (j=0; j<card_values; ++j) {
-		size_t i;
-		for (i=0; i<p_action_states; ++i) {
-			unit[i] = 1.0;
-			player_opt_hit[j].solve(card_odds, unit, result);
-			reveal_strategy::player_final_state_probabilities(result,
-				player_final_state_probability[j][i]);
-			unit[i] = 0.0;	// reset
-		}
-	}
-#endif
 #if DUMP_DURING_EVALUATE
 	dump_player_final_state_probabilities(cout);
 #endif
@@ -1332,11 +875,7 @@ strategy::dump_player_hit_tables(ostream& o) const {
 		// dump for debugging only
 		o << "Dealer shows " << card_name[j] <<
 			", player hit state machine:" << endl;
-#if RESTRUCTURE_STRATEGY_BY_REVEAL_CARD
 		reveal[j].player_opt_hit.dump(o) << endl;
-#else
-		player_opt_hit[j].dump(o) << endl;
-#endif
 	}
 	return o;
 }
@@ -1369,33 +908,13 @@ ostream&
 strategy::dump_player_final_state_probabilities(ostream& o) const {
 	size_t j;
 	for (j=0; j<card_values; ++j) {
-#if RESTRUCTURE_STRATEGY_BY_REVEAL_CARD
 		reveal[j].dump_player_final_state_probabilities(o);
-#else
-		o << "Dealer shows " << card_name[j] <<
-			", player\'s final state spread (hit/stand only):" << endl;
-		o << "player";
-		size_t i;
-		for (i=0; i<player_states; ++i) {
-			o << '\t' << play_map::player_final_states[i];
-		}
-		o << endl;
-		for (i=0; i<p_action_states; ++i) {
-			const player_final_state_probability_vector&
-				v(player_final_state_probability[j][i]);
-			o << player_opt_hit[j][i].name << '\t';
-			copy(v.begin(), v.end(),
-				ostream_iterator<probability_type>(o, "\t"));
-			o << endl;
-		}
-#endif
 		o << endl;
 	}
 	return o;
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-#if RESTRUCTURE_STRATEGY_BY_REVEAL_CARD
 void
 reveal_strategy::__compute_player_hit_stand_edges(
 //	const size_t r,		// reveal_card
@@ -1443,97 +962,13 @@ reveal_strategy::__compute_player_hit_stand_edges(
  */
 void
 reveal_strategy::compute_player_hit_stand_edges(const double& surr_pen) {
-#if 1
 	// hit-edges are post-peek, b/c using post-peek stand edges
 	// pre-peek is meaningless for hit/stand
 	__compute_player_hit_stand_edges(	// reveal_card, 
 		player_stand_edges_post_peek, 
 		player_final_state_probability, player_actions, 
 		-surr_pen, player_hit_stand_edges);
-#else
-	__compute_player_hit_stand_edges(player_stand_edges, 
-		player_final_state_probability, player_actions, 
-		-surr_pen, player_hit_stand_edges);
-	__compute_player_hit_stand_edges(player_stand_edges_post_peek, 
-		player_final_state_probability, player_actions, 
-		-surr_pen, player_hit_stand_edges_post_peek);
-#endif
 }
-#endif
-
-//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-#if !RESTRUCTURE_STRATEGY_BY_REVEAL_CARD
-/**
-	Given player's optimal hit/stand strategies, compute the edges given
-	a dealer's reveal card, and the player's current state.  
-	Computed by taking inner-product of player's final state spreads
-	and the corresponding player-stand-edges.  
-	TODO: need pre-peek and post-peek edges
- */
-void
-strategy::__compute_player_hit_stand_edges(
-	const player_stand_edges_matrix& pse, 
-	const player_final_states_probability_matrix& fsp,
-	const expectations_matrix& actions,
-	const edge_type& surr, 
-	player_hit_stand_edges_matrix& phe)
-{
-	static const edge_type eps = 
-		sqrt(std::numeric_limits<edge_type>::epsilon());
-#if 0
-	// using post-peek conditions
-	const player_stand_edges_matrix&
-		pse(player_stand_edges_post_peek);
-#endif
-	size_t i;
-	for (i=0; i<card_values; ++i) {
-		const player_stand_edges_vector& edges(pse[i]);
-	size_t j;
-	for (j=0; j<p_action_states; ++j) {
-		// probability-weighted sum of edge values for each state
-		const edge_type e = inner_product(edges.begin(), edges.end(), 
-			fsp[i][j].begin(), 0.0);
-		phe[j][i] = e;
-		const expectations& x(actions[j][i]);
-		// take the better edge between hit/stand
-		const edge_type sh =
-			x.value(x.best(false, false, false), surr);
-		const edge_type d = fabs(sh-e);
-		// identity: sanity check for numerical noise
-		if (d > eps) {
-			cout << "p=" << j << ", d=" << i <<
-				", sh=" << sh << ", e=" << e <<
-				", diff=" << d << endl;
-			assert(d <= eps);
-		}
-	}
-	}
-}
-#endif
-
-//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-#if !RESTRUCTURE_STRATEGY_BY_REVEAL_CARD
-/**
-	Hit edges should only be post-peek, when the player action
-	(decision to hit at all vs. stand) is relevant.
- */
-void
-strategy::compute_player_hit_stand_edges(void) {
-#if 1
-	// hit-edges are post-peek, b/c/ using post-peek stand edges
-	__compute_player_hit_stand_edges(player_stand_edges_post_peek, 
-		player_final_state_probability, player_actions, 
-		-var.surrender_penalty, player_hit_stand_edges);
-#else
-	__compute_player_hit_stand_edges(player_stand_edges, 
-		player_final_state_probability, player_actions, 
-		-var.surrender_penalty, player_hit_stand_edges);
-	__compute_player_hit_stand_edges(player_stand_edges_post_peek, 
-		player_final_state_probability, player_actions, 
-		-var.surrender_penalty, player_hit_stand_edges_post_peek);
-#endif
-}
-#endif
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ostream&
@@ -1550,11 +985,7 @@ strategy::dump_player_hit_stand_edges(ostream& o) const {
 		o << play.player_hit[j].name;
 		size_t i;
 		for (i=0; i<card_values; ++i) {
-#if RESTRUCTURE_STRATEGY_BY_REVEAL_CARD
 			o << '\t' << reveal[i].player_hit_stand_edges[j];
-#else
-			o << '\t' << player_hit_stand_edges[j][i];
-#endif
 		}
 		o << endl;
 	}
@@ -1577,49 +1008,23 @@ strategy::dump_player_hit_stand_edges(ostream& o) const {
 		and also overall pre-peek edges.  
  */
 void
-#if RESTRUCTURE_STRATEGY_BY_REVEAL_CARD
 reveal_strategy::compute_player_initial_nonsplit_edges(
 		const double& surr_pen,
 		const bool D, const bool S, const bool R)
-#else
-strategy::compute_player_initial_nonsplit_edges(
-		const bool D, const bool S, const bool R)
-#endif
-{
-#if !RESTRUCTURE_STRATEGY_BY_REVEAL_CARD
-	const double& surr_pen(var.surrender_penalty);
-#endif
-//	const player_initial_edges_vector *player_split_edges =
+{ //	const player_initial_edges_vector *player_split_edges =
 //		&player_initial_edges_post_peek[p_action_states];
 	size_t i;
 	for (i=0; i<pair_offset; ++i) {		// exclude splits first
-#if !RESTRUCTURE_STRATEGY_BY_REVEAL_CARD
-	size_t j;
-	for (j=0; j<card_values; ++j) {		// for dealer-reveal card
-		expectations c(player_actions[i][j]);	// yes, copy
-		c.hit = player_hit_stand_edges[i][j];
-#else
 		expectations c(player_actions[i]);	// yes, copy
 		c.hit = player_hit_stand_edges[i];
-#endif
 		c.optimize(-surr_pen);
 		// since splits are folded into non-pair states
 		const pair<player_choice, player_choice>
 //			splits are computed in a separate section of the table
 			p(c.best_two(D, S, R));
 		const edge_type e = c.value(p.first, -surr_pen);
-#if RESTRUCTURE_STRATEGY_BY_REVEAL_CARD
 		player_initial_edges_post_peek[i] = e;
-#else
-		player_initial_edges_post_peek[i][j] = e;
 	}
-#endif
-	}
-#if !RESTRUCTURE_STRATEGY_BY_REVEAL_CARD
-#if DUMP_DURING_EVALUATE
-	dump_player_initial_edges(cout) << endl;
-#endif
-#endif
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -1679,11 +1084,7 @@ strategy::dump_player_initial_edges(ostream& o) const {
 		o << play.player_hit[j].name;
 		size_t i;
 		for (i=0; i<card_values; ++i) {
-#if RESTRUCTURE_STRATEGY_BY_REVEAL_CARD
 			o << '\t' << reveal[i].player_initial_edges_post_peek[j];
-#else
-			o << '\t' << player_initial_edges_post_peek[j][i];
-#endif
 		}
 		o << endl;
 	}
@@ -1692,7 +1093,6 @@ strategy::dump_player_initial_edges(ostream& o) const {
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-#if RESTRUCTURE_STRATEGY_BY_REVEAL_CARD
 /**
 	Just sorts actions based on expected outcome to optimize player choice.  
  */
@@ -1703,7 +1103,6 @@ reveal_strategy::optimize_actions(const double& surr_pen) {
 		player_actions[i].optimize(surr_pen);
 	}
 }
-#endif
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
@@ -1711,24 +1110,13 @@ reveal_strategy::optimize_actions(const double& surr_pen) {
  */
 void
 strategy::optimize_actions(void) {
-#if RESTRUCTURE_STRATEGY_BY_REVEAL_CARD
 	size_t j;
 	for (j=0; j<card_values; ++j) {
 		reveal[j].optimize_actions(-var.surrender_penalty);
 	}
-#else
-	size_t i;
-	for (i=0; i<p_action_states; ++i) {
-	size_t j;
-	for (j=0; j<card_values; ++j) {
-		player_actions[i][j].optimize(-var.surrender_penalty);
-	}
-	}
-#endif
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-#if RESTRUCTURE_STRATEGY_BY_REVEAL_CARD
 /**
 	After having computed initial edges, evaluate the 
 	player's expectation, given only the dealer's reveal card.  
@@ -1773,7 +1161,6 @@ if (reveal_card == ACE) {
 		+(1.0 -pa)*player_edge_given_reveal_post_peek;
 }
 }
-#endif
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
@@ -1786,55 +1173,11 @@ if (reveal_card == ACE) {
  */
 void
 strategy::compute_reveal_edges(void) {
-#if RESTRUCTURE_STRATEGY_BY_REVEAL_CARD
 	size_t r;	// index of dealer's reveal card
 	for (r=0; r<card_values; ++r) {
 		reveal[r].compute_reveal_edges(
 			card_odds, player_initial_state_odds);
 	}
-#else
-size_t r;	// index of dealer's reveal card
-for (r=0; r<card_values; ++r) {
-	edge_type& x(player_edges_given_reveal_post_peek[r]);
-	x = 0.0;
-	size_t i;	// index of player's initial state
-	// inner product
-	for (i=0; i<p_action_states; ++i) {
-		const probability_type& p(player_initial_state_odds[i]);
-	if (p > 0.0) {
-		const edge_type& e(player_initial_edges_post_peek[i][r]);
-#if 0
-		cout << "reveal edge (" << i << "," << r << "): " <<
-			e << " @ " << p << endl;
-#endif
-		x += p *e;
-	}
-	}
-#if 0
-	cout << "reveal edge (*," << r << "): " << x << endl;
-#endif
-}
-	// copy first, then correct for ACE, TEN revealed
-	player_edges_given_reveal_pre_peek =
-		player_edges_given_reveal_post_peek;
-#if 1
-	// weigh by odds of blackjack
-	const probability_type& pt = card_odds[TEN];
-	const probability_type& pa = card_odds[ACE];
-	const probability_type bjo = pt*pa;
-	const probability_type bjc = 1.0 -bjo;
-	player_edges_given_reveal_pre_peek[ACE] =
-		// dealer has blackjack, account for player blackjack
-		-pt * bjc
-		// dealer doesn't have blackjack, post-peek component
-		+(1.0 -pt)*player_edges_given_reveal_post_peek[ACE];
-	player_edges_given_reveal_pre_peek[TEN] =
-		// dealer has blackjack, account for player blackjack
-		-pa * bjc
-		// dealer doesn't have blackjack, post-peek component
-		+(1.0 -pa)*player_edges_given_reveal_post_peek[TEN];
-#endif
-#endif
 #if DUMP_DURING_EVALUATE
 	dump_reveal_edges(cout) << endl;
 #endif
@@ -1849,33 +1192,23 @@ strategy::dump_reveal_edges(ostream& o) const {
 	o << "Player edges given dealer's revealed card (pre-peek):\n";
 	copy(card_name, card_name+TEN+1, ostream_iterator<char>(o, "\t"));
 	o << endl;
-#if RESTRUCTURE_STRATEGY_BY_REVEAL_CARD
 	typedef	member_select_iterator<reveal_array_type::const_iterator,
 		const edge_type,
 		&reveal_strategy::player_edge_given_reveal_pre_peek>
 						const_iterator;
 	const const_iterator i(reveal.begin()), e(reveal.end());
 	copy(i, e, osi);
-#else
-	copy(player_edges_given_reveal_pre_peek.begin(),
-		player_edges_given_reveal_pre_peek.end(), osi);
-#endif
 	o << endl;
 }{
 	o << "Player edges given dealer's revealed card (post-peek):\n";
 	copy(card_name, card_name+TEN+1, ostream_iterator<char>(o, "\t"));
 	o << endl;
-#if RESTRUCTURE_STRATEGY_BY_REVEAL_CARD
 	typedef	member_select_iterator<reveal_array_type::const_iterator,
 		const edge_type,
 		&reveal_strategy::player_edge_given_reveal_post_peek>
 						const_iterator;
 	const const_iterator i(reveal.begin()), e(reveal.end());
 	copy(i, e, osi);
-#else
-	copy(player_edges_given_reveal_post_peek.begin(),
-		player_edges_given_reveal_post_peek.end(), osi);
-#endif
 	o << endl;
 }
 	return o;
@@ -1905,7 +1238,6 @@ strategy::dump_reveal_edges(ostream& o) const {
  */
 void
 strategy::compute_overall_edge(void) {
-#if RESTRUCTURE_STRATEGY_BY_REVEAL_CARD
 	typedef	member_select_iterator<reveal_array_type::const_iterator,
 		const edge_type,
 		&reveal_strategy::player_edge_given_reveal_pre_peek>
@@ -1913,11 +1245,6 @@ strategy::compute_overall_edge(void) {
 	const const_iterator i(reveal.begin());
 	_overall_edge =
 		inner_product(card_odds.begin(), card_odds.end(), i, 0.0);
-#else
-	_overall_edge =
-		inner_product(card_odds.begin(), card_odds.end(), 
-			player_edges_given_reveal_pre_peek.begin(), 0.0);
-#endif
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -1929,11 +1256,7 @@ strategy::compute_overall_edge(void) {
  */
 edge_type
 strategy::lookup_pre_peek_initial_edge(const size_t p, const size_t d) const {
-#if RESTRUCTURE_STRATEGY_BY_REVEAL_CARD
 	const edge_type& post(reveal[d].player_initial_edges_post_peek[p]);
-#else
-	const edge_type& post(player_initial_edges_post_peek[p][d]);
-#endif
 	switch (d) {
 	// conditioned on probability of the hole card making 
 	// a dealer natural (blackjack)
@@ -1967,11 +1290,7 @@ strategy::lookup_pre_peek_initial_edge(const size_t p, const size_t d) const {
 const expectations&
 strategy::lookup_player_action_expectations(
 		const size_t p, const size_t d) const {
-#if RESTRUCTURE_STRATEGY_BY_REVEAL_CARD
 	return reveal[d].player_actions[p];
-#else
-	return player_actions[p][d];
-#endif
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -1980,14 +1299,7 @@ strategy::lookup_player_action_expectations(
 	Is a member function to access surrender_penalty.
  */
 ostream&
-strategy::dump_expectations(
-#if RESTRUCTURE_STRATEGY_BY_REVEAL_CARD
-		const size_t state,
-#else
-		const expectations_vector& v,
-#endif
-		ostream& o) const {
-#if RESTRUCTURE_STRATEGY_BY_REVEAL_CARD
+strategy::dump_expectations(const size_t state, ostream& o) const {
 	dump_optimal_actions(state, o, 3, "\t");
 #if 0
 	typedef	member_select_iterator<reveal_array_type::const_iterator,
@@ -1998,21 +1310,12 @@ strategy::dump_expectations(
 	typedef	reveal_array_type::const_iterator	const_iterator;
 #endif
 	const const_iterator b(reveal.begin()), e(reveal.end());
-	// need i->player_actions[state]
-#else
-	dump_optimal_actions(v, o, 3, "\t");
-	typedef	expectations_vector::const_iterator	const_iterator;
-	const const_iterator b(v.begin()), e(v.end());
-#endif
+	// need i->player_actions[state], std::accumulate
 	expectations z(0,0,0,0);
-#if RESTRUCTURE_STRATEGY_BY_REVEAL_CARD
 	const_iterator i(b);
 	for ( ; i!=e; ++i) {
 		z += i->player_actions[state];
 	}
-#else
-	z = accumulate(b, e, z);
-#endif
 	size_t j;
 #if 0
 #define	EFORMAT(x)	setw(5) << int(x*1000)
@@ -2021,11 +1324,7 @@ strategy::dump_expectations(
 #else
 #define	EFORMAT(x)	setw(6) << x
 #endif
-#if RESTRUCTURE_STRATEGY_BY_REVEAL_CARD
 #define	EXPECTATION_REF		const expectations& ex(reveal[reveal_print_ordering[j]].player_actions[state]);
-#else
-#define	EXPECTATION_REF		const expectations& ex(v[reveal_print_ordering[j]]);
-#endif
 	o << "stand";
 	for (j=0; j<card_values; ++j) {
 		EXPECTATION_REF
@@ -2097,12 +1396,7 @@ if (z.split > -2.0 *card_values) {
 	terminal states, clean that up.
  */
 ostream&
-strategy::dump_optimal_actions(
-#if RESTRUCTURE_STRATEGY_BY_REVEAL_CARD
-		const size_t state,
-#else
-		const expectations_vector& v,
-#endif
+strategy::dump_optimal_actions(const size_t state,
 		ostream& o, const size_t n, const char* delim) const {
 	assert(n<=5);
 	size_t j;
@@ -2120,18 +1414,8 @@ strategy::dump_optimal_actions(
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ostream&
-strategy::dump_optimal_edges(
-#if RESTRUCTURE_STRATEGY_BY_REVEAL_CARD
-		const size_t state,
-#else
-		const expectations_vector& v,
-#endif
-		ostream& o) const {
-#if RESTRUCTURE_STRATEGY_BY_REVEAL_CARD
+strategy::dump_optimal_edges(const size_t state, ostream& o) const {
 	dump_optimal_actions(state, o, 3, "\t");
-#else
-	dump_optimal_actions(v, o, 3, "\t");
-#endif
 #if 0
 #define	EFORMAT(x)	setw(5) << int(x*1000)
 // setprecision?
@@ -2174,13 +1458,7 @@ strategy::dump_optimal_edges(
 ostream&
 strategy::dump_action_expectations(ostream& o) const {
 	o << "Player's action expectations (edges):\n";
-#if RESTRUCTURE_STRATEGY_BY_REVEAL_CARD
 	size_t i = 0;
-#else
-	const expectations_matrix::const_iterator
-		b(player_actions.begin()), e(player_actions.end());
-	expectations_matrix::const_iterator i(b);
-#endif
 	// ostream_iterator<expectations> osi(o, "\t");
 	o << "P\\D";
 	size_t j;
@@ -2188,21 +1466,11 @@ strategy::dump_action_expectations(ostream& o) const {
 		o << '\t' << card_name[reveal_print_ordering[j]];
 	}
 	o << '\n' << endl;
-#if RESTRUCTURE_STRATEGY_BY_REVEAL_CARD
 	for ( ; i < p_action_states; ++i) {
 		o << play.player_hit[i].name;
 		dump_expectations(i, o);
 		o << endl;
 	}
-#else
-//	const precision_saver p(o, 3);
-	for ( ; i!=e; ++i) {
-		o << play.player_hit[i-b].name;
-//		o << endl;
-		dump_expectations(*i, o);
-		o << endl;
-	}
-#endif
 	return o;
 }
 
@@ -2210,11 +1478,6 @@ strategy::dump_action_expectations(ostream& o) const {
 ostream&
 strategy::dump_optimal_actions(ostream& o) const {
 	o << "Player's optimal action:\n";
-#if !RESTRUCTURE_STRATEGY_BY_REVEAL_CARD
-	const expectations_matrix::const_iterator
-		b(player_actions.begin()), e(player_actions.end());
-	expectations_matrix::const_iterator i(b);
-#endif
 	// ostream_iterator<expectations> osi(o, "\t");
 	static const char delim1[] = "   ";
 	static const char delim2[] = "  ";
@@ -2225,7 +1488,6 @@ strategy::dump_optimal_actions(ostream& o) const {
 	}
 	o << '\n' << endl;
 //	const precision_saver p(o, 3);
-#if RESTRUCTURE_STRATEGY_BY_REVEAL_CARD
 	size_t i = 0;
 	for ( ; i < p_action_states; ++i) {
 		o << play.player_hit[i].name << "\t";
@@ -2233,14 +1495,6 @@ strategy::dump_optimal_actions(ostream& o) const {
 //		dump_optimal_edges(*i, o);	// still too much detail
 		dump_optimal_actions(i, o, 2, delim2);
 	}
-#else
-	for ( ; i!=e; ++i) {
-		o << play.player_hit[i-b].name << "\t";
-//		o << endl;
-//		dump_optimal_edges(*i, o);	// still too much detail
-		dump_optimal_actions(*i, o, 2, delim2);
-	}
-#endif
 	return o;
 }
 
