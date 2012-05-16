@@ -669,11 +669,13 @@ if (opt.show_edges) {
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
+	TODO: for evaluating a situation only update calculation
+	for the given delear reveal card.
+ */
 void
 grader::update_dynamic_strategy(void) {
 	// only now do we need to update probabilities
-	// TODO: track whether or not already up-to-date
-	// if so, don't re-evaluate
 	dynamic_strategy.set_card_distribution(C.get_card_counts());
 	dynamic_strategy.evaluate();
 }

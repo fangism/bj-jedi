@@ -214,9 +214,16 @@ struct reveal_strategy {
 	edge_type			player_edge_given_reveal_pre_peek;
 	edge_type			player_edge_given_reveal_post_peek;
 
+	/**
+		Semaphore for signaling need to re-calculate
+		after distribution has been updated.  
+	 */
+	bool					need_update;
 public:
 	// default ctor,dtor
+	reveal_strategy();
 
+private:
 	void
 	compute_dealer_final_table(const play_map&, const deck_distribution&);
 
@@ -265,6 +272,11 @@ public:
 
 	void
 	compute_reveal_edges(const deck_distribution&, 
+		const player_state_probability_vector&);
+
+public:
+	void
+	evaluate(const play_map&, const deck_distribution&, 
 		const player_state_probability_vector&);
 
 	ostream&
@@ -318,7 +330,8 @@ private:
 		Semaphore for signaling need to re-calculate
 		after distribution has been updated.  
 	 */
-	bool					need_update;
+	bool					initial_need_update;
+	bool					overall_need_update;
 public:
 	explicit
 	strategy(const play_map&);
@@ -335,18 +348,15 @@ public:
 	void
 	evaluate(void);
 
+	void
+	evaluate(const size_t);
+
 private:
 	void
 	update_player_initial_state_odds(void);
 
 	void
 	check_odds(void) const;
-
-	void
-	optimize_actions(void);
-
-	void
-	optimize_player_hit_tables(void);
 
 	ostream&
 	dump_expectations(const size_t state, ostream&) const;
@@ -357,28 +367,6 @@ private:
 
 	ostream&
 	dump_optimal_edges(const size_t state, ostream&) const;
-
-	void
-	reset_split_edges(void);
-
-#if 0
-	// account for player's blackjack
-	void
-	finalize_player_initial_edges(void);
-#endif
-
-	// TODO: privatize most compute methods
-	void
-	compute_dealer_final_table(void);
-
-	void
-	compute_player_stand_odds(void);
-
-	void
-	compute_action_expectations(void);
-
-	void
-	compute_reveal_edges(void);
 
 	void
 	compute_overall_edge(void);
@@ -438,12 +426,7 @@ public:
 
 	const expectations&
 	lookup_player_action_expectations(const size_t, const size_t) const;
-#if 0
-	ostream&
-	dump_variation(ostream& o) const {
-		return var.dump(o);
-	}
-#endif
+
 	int
 	command(const string_list&) const;
 

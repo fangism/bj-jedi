@@ -88,8 +88,13 @@ strategy::action_key[] = "-SHDPR";
 void
 strategy::set_card_distribution(const deck_distribution& o) {
 	card_odds = o;
-	need_update = true;
-//	update_player_initial_state_odds();
+	initial_need_update = true;
+	overall_need_update = true;
+	size_t i = 0;
+	for ( ; i<card_values; ++i) {
+		reveal[i].need_update = true;
+	}
+//	update_player_initial_state_odds();	// lazy update, only when needed
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -120,6 +125,7 @@ strategy::set_card_distribution(const extended_deck_count_type& o) {
  */
 void
 strategy::update_player_initial_state_odds(void) {
+if (initial_need_update) {
 	fill(player_initial_state_odds.begin(),
 		player_initial_state_odds.end(), 0.0);
 	size_t i;
@@ -146,6 +152,8 @@ for (i=0; i<card_values; ++i) {
 #if DUMP_DURING_EVALUATE
 	dump_player_initial_state_odds(cout) << endl;
 #endif
+	initial_need_update = false;
+}
 }	// end update_player_initial_state_odds
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -163,20 +171,40 @@ strategy::dump_player_initial_state_odds(ostream& o) const {
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+void
+reveal_strategy::evaluate(
+	const play_map& play, const deck_distribution& card_odds, 
+	const player_state_probability_vector& player_initial_state_odds) {
+if (need_update) {
+	const variation& var(play.var);
+	compute_dealer_final_table(play, card_odds);
+	compute_player_stand_odds(var.bj_payoff);
+	compute_action_expectations(play, card_odds);
+	compute_reveal_edges(card_odds, player_initial_state_odds);
+	need_update = false;
+}
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
 	To be called after card distribution is set.  
+	Evaluate's all cases of reveal cards.
  */
 void
 strategy::evaluate(void) {
-if (need_update) {
 	update_player_initial_state_odds();
-	compute_dealer_final_table();
-	compute_player_stand_odds();
-	compute_action_expectations();
-	compute_reveal_edges();
+	size_t i = 0;
+	for ( ; i<card_values; ++i) {
+		evaluate(i);
+	}
 	compute_overall_edge();
-	need_update = false;
 }
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+void
+strategy::evaluate(const size_t c) {
+	update_player_initial_state_odds();
+	reveal[c].evaluate(play, card_odds, player_initial_state_odds);
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -196,11 +224,17 @@ reveal_strategy::player_final_state_probabilities(const probability_vector& s,
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+reveal_strategy::reveal_strategy() :
+		need_update(true) {
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 strategy::strategy(const play_map& v) : 
 	var(v.var),
 	play(v), 
 	card_odds(standard_deck_distribution),
-	need_update(true) {
+	initial_need_update(true),
+	overall_need_update(true) {
 	// each sub-strategy needs to know it's corresponding reveal card
 	size_t j = 0;
 	for ( ; j<card_values; ++j) {
@@ -211,6 +245,12 @@ strategy::strategy(const play_map& v) :
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
+	Given dealer's reveal card, calculate spread of dealer's final state.
+	Include odds of dealer blackjack.
+	\post computes dealer_final_given_revealed, and _post_peek.
+	\pre dealer_hit state-machine already computed.
+ */
 void
 reveal_strategy::compute_dealer_final_table(const play_map& play, 
 		const deck_distribution& card_odds) {
@@ -268,35 +308,6 @@ if (j == ACE) {
 	}
 }
 }
-
-//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/**
-	Given dealer's reveal card, calculate spread of dealer's final state.
-	Include odds of dealer blackjack.
-	\post computes dealer_final_given_revealed, and _post_peek.
-	\pre dealer_hit state-machine already computed.
- */
-void
-strategy::compute_dealer_final_table(void) {
-	// 17, 18, 19, 20, 21, BJ, bust, push
-	deck_distribution cards_no_ten(card_odds);
-	deck_distribution cards_no_ace(card_odds);
-	cards_no_ten[TEN] = 0.0;
-	cards_no_ace[ACE] = 0.0;
-// no need to normalize if accounting for dealer blackjack here
-//	normalize(cards_no_ten);
-//	normalize(cards_no_ace);
-	// use cards_no_ten for the case where dealer does NOT have blackjack
-	// use cards_no_ace when dealer draws 10, and is not blackjack
-	//	this is called 'peek'
-	size_t j;
-	for (j=0 ; j<card_values; ++j) {
-		reveal[j].compute_dealer_final_table(play, card_odds);
-	}
-#if DUMP_DURING_EVALUATE
-	dump_dealer_final_table(cout) << endl;
-#endif
-}	// end compute_dealer_final_table()
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ostream&
@@ -389,6 +400,12 @@ reveal_strategy::compute_showdown_odds(const dealer_final_vector& dfv,
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
+	\pre dealer_final_given_revealed computed (pre/post-peek)
+	\post computes player_stand (odds-given-reveal) and
+		player_stand_edges (weighted expected outcome).
+	TODO: evaluate peek for 10 and peek for Ace separately, independently
+ */
 void
 reveal_strategy::compute_player_stand_odds(const edge_type bjp) {
 	// pre-peek edges
@@ -400,24 +417,6 @@ reveal_strategy::compute_player_stand_odds(const edge_type bjp) {
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-/**
-	\pre dealer_final_given_revealed computed (pre/post-peek)
-	\post computes player_stand (odds-given-reveal) and
-		player_stand_edges (weighted expected outcome).
-	TODO: evaluate peek for 10 and peek for Ace separately, independently
- */
-void
-strategy::compute_player_stand_odds(void) {
-	for_each(reveal.begin(), reveal.end(), 
-		bind2nd(
-		mem_fun_ref(&reveal_strategy::compute_player_stand_odds), 
-		var.bj_payoff));
-#if DUMP_DURING_EVALUATE
-	dump_player_stand_odds(cout) << endl;
-#endif
-}
-
-//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ostream&
 operator << (ostream& o, const outcome_odds& r) {
 	o << r.win << '|' << r.push << '|' << r.lose;
@@ -580,32 +579,7 @@ reveal_strategy::compute_action_expectations(const play_map& play,
 		player_actions[i].double_down = -var.double_multiplier;
 	}
 	}
-#if 0
-// TODO: this reordering only needs to be computed once
-// should really be done in the play_map
-// hit (and optimize choices, excluding splits)
-	// really, just a reverse topological sort of reachable states
-	vector<size_t> reorder;		// reordering for-loop: player states
-	reorder.reserve(p_action_states);
-	// backwards, starting from high hard value states
-	for (i=goal-1; i>goal-card_values; --i) {
-		reorder.push_back(i);
-	}
-	// backwards from soft states (Aces)
-	for (i=pair_offset-1; i>=player_soft; --i) {
-		reorder.push_back(i);
-	}
-	// backwards from low hard values
-	for (i=goal-card_values; i<p_action_states; --i) {
-		reorder.push_back(i);
-	}
-	// evaluate split states at their face value
-	for (i=p_action_states-1; i>=pair_offset; --i) {
-		reorder.push_back(i);
-	}
-#else
 	const vector<size_t>& reorder(play_map::reverse_topo_order);
-#endif
 
 	size_t r;
 	for (r=0; r<reorder.size(); ++r) {
@@ -671,33 +645,7 @@ if (var.resplit) {
 	compute_player_initial_nonsplit_edges(var.surrender_penalty, var.some_double(), false, var.surrender_late);
 }
 	// to account for player's blackjack
-#if 0
-	finalize_player_initial_edges();
-#endif
 }
-
-//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/**
-	This is the main strategy solver.  
-	No action is needed if outcome is a blackjack for either the
-	dealer or player, thus decisions are based on post-peek edges,
-	(i.e. after dealer has checked for blackjack).
- */
-void
-strategy::compute_action_expectations(void) {
-	reveal_array_type::iterator i(reveal.begin()), e(reveal.end());
-	for ( ; i!=e; ++i) {
-		i->compute_action_expectations(play, card_odds);
-	}
-#if 0
-	// to account for player's blackjack
-	finalize_player_initial_edges();
-#endif
-// next: compute conditional edges given dealer reveal card
-#if DUMP_DURING_EVALUATE
-	dump_action_expectations(cout);
-#endif
-}	// end compute_action_expectations()
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
@@ -844,27 +792,6 @@ reveal_strategy::optimize_player_hit_tables(const play_map& play,
 			player_final_state_probability[i]);
 		unit[i] = 0.0;	// reset
 	}
-}	// end optimize_player_hit_tables()
-
-//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/**
-	Create player optimal hit state machines.
-	Tables can be used to solve for distribution of expected
-	player terminal states.  
-	Decisions used to compute this table are *only* hit or stand, 
-	no double-down or splits.
-	Use this table to evaluate expected outcomes.  
-	\pre player states are already optimized for stand,hit,double.
- */
-void
-strategy::optimize_player_hit_tables(void) {
-	size_t j;
-	for (j=0; j<card_values; ++j) {	// for each reveal card
-		reveal[j].optimize_player_hit_tables(play, card_odds);
-	}
-#if DUMP_DURING_EVALUATE
-	dump_player_final_state_probabilities(cout);
-#endif
 }	// end optimize_player_hit_tables()
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -1028,24 +955,6 @@ reveal_strategy::compute_player_initial_nonsplit_edges(
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-#if 0
-/**
-	After dealer has checked for blackjack, and doesn't have it, 
-	if the player has blackjack, she automatically wins +payoff.  
- */
-void
-strategy::finalize_player_initial_edges(void) {
-#if 0
-	fill(player_initial_edges[goal].begin(), 
-		player_initial_edges[goal].end(), var.bj_payoff);
-#endif
-#if DUMP_DURING_EVALUATE
-	dump_player_initial_edges(cout) << endl;
-#endif
-}
-#endif
-
-//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
 	TODO: pre-peek
  */
@@ -1065,7 +974,7 @@ strategy::dump_player_initial_edges(ostream& o) const {
 		o << play.player_hit[j].name;
 		size_t i;
 		for (i=0; i<card_values; ++i) {
-			o << '\t' << player_initial_edges_pre_peek[j][i];
+			o << '\t' << reveal[i].player_initial_edges_pre_peek[j];
 		}
 		o << endl;
 	}
@@ -1101,18 +1010,6 @@ reveal_strategy::optimize_actions(const double& surr_pen) {
 	size_t i;
 	for (i=0; i<p_action_states; ++i) {
 		player_actions[i].optimize(surr_pen);
-	}
-}
-
-//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/**
-	Just sorts actions based on expected outcome to optimize player choice.  
- */
-void
-strategy::optimize_actions(void) {
-	size_t j;
-	for (j=0; j<card_values; ++j) {
-		reveal[j].optimize_actions(-var.surrender_penalty);
 	}
 }
 
@@ -1160,27 +1057,6 @@ if (reveal_card == ACE) {
 		// dealer doesn't have blackjack, post-peek component
 		+(1.0 -pa)*player_edge_given_reveal_post_peek;
 }
-}
-
-//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/**
-	After having computed initial edges, evaluate the 
-	player's expectation, given only the dealer's reveal card.  
-	\pre player actions have been optimized, 
-		player_initial_edges_post_peek computed, 
-		player_initial_edges_pre_peek computed.
-	TODO: distinguish between pre-peek and post-peek edges.
- */
-void
-strategy::compute_reveal_edges(void) {
-	size_t r;	// index of dealer's reveal card
-	for (r=0; r<card_values; ++r) {
-		reveal[r].compute_reveal_edges(
-			card_odds, player_initial_state_odds);
-	}
-#if DUMP_DURING_EVALUATE
-	dump_reveal_edges(cout) << endl;
-#endif
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -1238,6 +1114,7 @@ strategy::dump_reveal_edges(ostream& o) const {
  */
 void
 strategy::compute_overall_edge(void) {
+if (overall_need_update) {
 	typedef	member_select_iterator<reveal_array_type::const_iterator,
 		const edge_type,
 		&reveal_strategy::player_edge_given_reveal_pre_peek>
@@ -1245,6 +1122,8 @@ strategy::compute_overall_edge(void) {
 	const const_iterator i(reveal.begin());
 	_overall_edge =
 		inner_product(card_odds.begin(), card_odds.end(), i, 0.0);
+	overall_need_update = false;
+}
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
