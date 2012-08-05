@@ -301,6 +301,12 @@ private:
 					player_final_state_probability_vector;
 
 	/**
+		Precise distribution of cards (integer) remaining.
+	 */
+	deck_count_type			card_count;
+	/**
+		This is just a cached set of probabilities based on
+		the card_count.
 		the probability vector for card values, A through 10.
 		entries are 0-indexed, with 0 = Ace, 1 = 2, etc.
 	 */
@@ -337,9 +343,6 @@ public:
 	strategy(const play_map&);
 
 	void
-	set_card_distribution(const deck_distribution&);
-
-	void
 	set_card_distribution(const deck_count_type&);
 
 	void
@@ -352,6 +355,9 @@ public:
 	evaluate(const size_t);
 
 private:
+	void
+	set_card_distribution(const deck_distribution&);
+
 	void
 	update_player_initial_state_odds(void);
 

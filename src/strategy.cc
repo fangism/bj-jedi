@@ -100,6 +100,7 @@ strategy::set_card_distribution(const deck_distribution& o) {
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void
 strategy::set_card_distribution(const deck_count_type& o) {
+	card_count = o;
 	deck_distribution t;
 	copy(o.begin(), o.end(), t.begin());	// convert int to real
 	normalize(t);
@@ -109,6 +110,7 @@ strategy::set_card_distribution(const deck_count_type& o) {
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void
 strategy::set_card_distribution(const extended_deck_count_type& o) {
+	// TODO: convert extended to non-extended count
 	deck_count_type t;
 	copy(o.begin(), o.begin() +t.size(), t.begin());	// convert int to real
 	t[TEN] += o[cards::JACK] +o[cards::QUEEN] +o[cards::KING];

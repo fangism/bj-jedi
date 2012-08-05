@@ -42,6 +42,14 @@ struct play_options {
 	 */
 	bool				use_dynamic_strategy;
 	/**
+		Even more computationally intense.
+		If true, then compute a dynamic strategy
+		based on non-replacement drawing from the deck.
+		Each card drawn changes the distribution!
+		Computation follows a complete optimal decision tree.
+	 */
+	bool				use_exact_strategy;
+	/**
 		If all player hands are busted/surrendered, 
 		don't bother playing.
 		Default: true
@@ -76,6 +84,11 @@ struct play_options {
 		Notify when dynamic strategy differs and is better.
 	 */
 	bool				notify_dynamic;
+	/**
+		Notify when exact strategy differs from either
+		basic or dynamic strategy.
+	 */
+	bool				notify_exact;
 	/**
 		Show detailed count when notifying.
 	 */
@@ -114,6 +127,11 @@ struct play_options {
 		dynamic strategy differed from basic strategy.
 	 */
 	bool				bookmark_dynamic;
+	/**
+		If true, bookmark all situations where exact strategy
+		differs from basic or dynamic strategy.
+	 */
+	bool				bookmark_exact;
 	/**
 		If true, prompt for count before reshuffling.
 	 */

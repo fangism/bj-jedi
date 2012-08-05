@@ -16,7 +16,7 @@ using blackjack::variation;
 using blackjack::play_map;
 using blackjack::strategy;
 using blackjack::edge_type;
-using cards::standard_deck_distribution;
+using cards::standard_deck_count;
 using util::normalize;
 
 /**
@@ -38,7 +38,7 @@ main(int, char*[]) {
 //	v.one_card_on_split_aces = false;
 	play_map pm(v);
 	strategy S(pm);
-	S.set_card_distribution(standard_deck_distribution);
+	S.set_card_distribution(standard_deck_count);
 	S.evaluate();
 	S.dump(cout);
 	cout << endl;

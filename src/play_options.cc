@@ -40,6 +40,7 @@ play_options::play_options() :
 	continuous_shuffle(false),
 	pick_cards(false),
 	use_dynamic_strategy(true), 
+	use_exact_strategy(false), 
 	dealer_plays_only_against_live(true),
 	always_show_status(true),
 	always_show_dynamic_edge(false),
@@ -48,6 +49,7 @@ play_options::play_options() :
 	always_suggest(false),
 	notify_when_wrong(true),
 	notify_dynamic(true),
+	notify_exact(true),
 	notify_with_count(true),
 	show_edges(true),
 	auto_play(false),
@@ -56,6 +58,7 @@ play_options::play_options() :
 	count_used_cards(true),
 	bookmark_wrong(true),
 	bookmark_dynamic(true),
+	bookmark_exact(true),
 	quiz_count_before_shuffle(true),
 	quiz_count_frequency(5),
 	bet(1.0) {
@@ -70,6 +73,7 @@ play_options::dump(ostream& o) const {
 	o << "continuous shuffle: " << yn(continuous_shuffle) << endl;
 	o << "user picks cards: " << yn(pick_cards) << endl;
 	o << "use dynamic strategy: " << yn(use_dynamic_strategy) << endl;
+	o << "use exact strategy: " << yn(use_exact_strategy) << endl;
 	o << "dealer plays only vs. live player: " <<
 		yn(dealer_plays_only_against_live) << endl;
 	o << "always show bankroll and bet: " << yn(always_show_status) << endl;
@@ -82,12 +86,16 @@ play_options::dump(ostream& o) const {
 	o << "notify when wrong: " << yn(notify_when_wrong) << endl;
 	o << "notify when dynamic strategy beats basic: " <<
 		yn(notify_dynamic) << endl;
+	o << "notify when exact strategy beats basic: " <<
+		yn(notify_exact) << endl;
 	o << "notify with count: " << yn(notify_with_count) << endl;
 	o << "show edge values with analysis: " << yn(show_edges) << endl;
 	o << "automatically play optimally: " << yn(auto_play) << endl;
 	o << "bookmark wrong decisions: " << yn(bookmark_wrong) << endl;
 	o << "bookmark when dynamic strategy != basic: " <<
 		yn(bookmark_dynamic) << endl;
+	o << "bookmark when exact strategy != basic: " <<
+		yn(bookmark_exact) << endl;
 	o << "quiz count before reshuffle: " <<
 		yn(quiz_count_before_shuffle) << endl;
 	o << "quiz count every N hands: " << quiz_count_frequency << endl;
@@ -292,6 +300,10 @@ DEFINE_OPTION_MEMBER_COMMAND(
 	"[bool]: advise and grade using count-based strategy")
 
 DEFINE_OPTION_MEMBER_COMMAND(
+	use_exact_strategy, "use-exact-strategy",
+	"[bool]: advise and grade using count-based strategy")
+
+DEFINE_OPTION_MEMBER_COMMAND(
 	dealer_plays_only_against_live, "dealer-only-plays-live",
 	"[bool]: dealer plays only when player is live")
 
@@ -324,6 +336,10 @@ DEFINE_OPTION_MEMBER_COMMAND(
 	"[bool]: alert player when dynamic strategy beats basic")
 
 DEFINE_OPTION_MEMBER_COMMAND(
+	notify_exact, "notify-exact",
+	"[bool]: alert player when exact strategy beats basic")
+
+DEFINE_OPTION_MEMBER_COMMAND(
 	notify_with_count, "notify-with-count",
 	"[bool]: show count when notifying about strategy")
 
@@ -342,6 +358,10 @@ DEFINE_OPTION_MEMBER_COMMAND(
 DEFINE_OPTION_MEMBER_COMMAND(
 	bookmark_dynamic, "bookmark-dynamic",
 	"[bool]: bookmark when dynamic strategy beats basic strategy")
+
+DEFINE_OPTION_MEMBER_COMMAND(
+	bookmark_exact, "bookmark-exact",
+	"[bool]: bookmark when exact strategy beats basic strategy")
 
 DEFINE_OPTION_MEMBER_COMMAND(
 	quiz_count_before_shuffle, "quiz-count-before-shuffle",

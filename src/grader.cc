@@ -628,6 +628,7 @@ do {
 	\param d, p, r, whether or not double,split,surrender are allowed
 	\return best choice based on basic (first)
 		and dynamic strategy (second)
+	TODO: compute exact strategy here
  */
 pair<expectations, expectations>
 grader::assess_action(const size_t ps, const size_t dlr, ostream& o,
@@ -651,8 +652,18 @@ grader::assess_action(const size_t ps, const size_t dlr, ostream& o,
 	const pair<player_choice, player_choice> dr(de.best_two(d, p, r));
 	// ostr << "dynamic strategy recommends: " <<
 	//	action_names[dr.first] << endl;
+#if 0
+	// if computing exact strategy
+	expectations ee;
+	if (opt.notify_exact) {
+		// TODO: compute exact edge
+		card_state cc(C);	// copy
+		compute_exact_strategy(ps, dlr, d, p, r, cc, ee);
+	}
+#endif
 if (opt.show_edges) {
 	o << "\tedges:\tbasic\tdynamic" << endl;
+	// TODO: _3
 	expectations::dump_choice_actions_2(o,
 		be, de, -var.surrender_penalty, d, p, r, "\t");
 }
