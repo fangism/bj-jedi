@@ -187,7 +187,10 @@ grader::deal_hand(void) {
 	}
 	const double& bet(opt.bet);
 	double& bankroll(stats.bankroll);
+
 {	// accumulate some statistics
+	// TODO: edge stats should be optional, since updating dynamic edge
+	// is compute-intensive
 	stats.initial_bets += bet;
 	stats.total_bets += bet;
 	update_dynamic_strategy();

@@ -40,6 +40,7 @@ using cards::state_machine;
 	Represents the edge of a given situation with probability
 	of winning, losing, tying.
 	Sum of probabilities should be 1.0.
+	TODO: array of size 3, using enum in enums.hh.
  */
 struct outcome_odds {
 	probability_type		win;

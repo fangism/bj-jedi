@@ -21,6 +21,9 @@ using std::make_pair;
 const edge_type&
 expectations::value(const player_choice c, 
 		const edge_type& surrender) const {
+#if INDEX_ACTION_EDGES
+	return c == SURRENDER ? surrender : action_edge(c);
+#else
 	switch (c) {
 	case STAND:	return stand;
 	case HIT:	return hit;
@@ -29,7 +32,8 @@ expectations::value(const player_choice c,
 	case SURRENDER:	return surrender;
 	default:	cerr << "Invalid player choice." << endl; assert(0);
 	}
-	return stand;
+#endif
+	return stand();
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -42,10 +46,10 @@ void
 expectations::optimize(const edge_type& surrender) {
 	typedef	std::multimap<edge_type, player_choice>	sort_type;
 	sort_type s;
-	s.insert(make_pair(stand, STAND));
-	s.insert(make_pair(hit, HIT));
-	s.insert(make_pair(double_down, DOUBLE));
-	s.insert(make_pair(split, SPLIT));
+	s.insert(make_pair(stand(), STAND));
+	s.insert(make_pair(hit(), HIT));
+	s.insert(make_pair(double_down(), DOUBLE));
+	s.insert(make_pair(split(), SPLIT));
 	s.insert(make_pair(surrender, SURRENDER));
 	sort_type::const_iterator i(s.begin()), e(s.end());
 	// sort by order of preference
@@ -63,6 +67,7 @@ expectations::optimize(const edge_type& surrender) {
 	\param s whether split is a valid option
 	\param r whether surrender is a valid option
 	Invalid options are skipped in the response.  
+	TODO: pass choice mask bitfield
  */
 pair<player_choice, player_choice>
 expectations::best_two(
@@ -116,10 +121,10 @@ ostream&
 expectations::dump_choice_actions(ostream& o,
 		const edge_type& surr) const {
 //	const util::precision_saver p(o, 4);
-	return o << "stand: " << stand
-	<< "\nhit  : " << hit
-	<< "\ndbl  : " << double_down
-	<< "\nsplit: " << split
+	return o << "stand: " << stand()
+	<< "\nhit  : " << hit()
+	<< "\ndbl  : " << double_down()
+	<< "\nsplit: " << split()
 	<< "\nsurr.: " << surr << endl;
 }
 
@@ -137,13 +142,13 @@ expectations::dump_choice_actions_2(ostream& o,
 		const char* _indent) {
 //	const util::precision_saver p(o, 4);
 	const char* indent = _indent ? _indent : "";
-	o << indent << "stand: " << e1.stand << '\t' << e2.stand
-		<< '\n' << indent << "hit  : " << e1.hit << '\t' << e2.hit;
+	o << indent << "stand: " << e1.stand() << '\t' << e2.stand()
+		<< '\n' << indent << "hit  : " << e1.hit() << '\t' << e2.hit();
 	if (d) {
-		o << '\n' << indent << "dbl  : " << e1.double_down << '\t' << e2.double_down;
+		o << '\n' << indent << "dbl  : " << e1.double_down() << '\t' << e2.double_down();
 	}
 	if (p) {
-		o << '\n' << indent << "split: " << e1.split << '\t' << e2.split;
+		o << '\n' << indent << "split: " << e1.split() << '\t' << e2.split();
 	}
 	if (r) {
 		o << '\n' << indent << "surr.: " << surr << '\t' << surr;

@@ -25,6 +25,7 @@ using std::ostream;
 typedef	util::array<int, card_values>		count_signature_type;
 
 /**
+	Weighting coefficients for standard hi-lo count.
 	A,T count as +1
 	2-6 count as -1
  */

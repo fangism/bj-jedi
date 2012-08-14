@@ -556,7 +556,7 @@ reveal_strategy::compute_action_expectations(const play_map& play,
 	for (i=0; i<p_action_states; ++i) {
 		const probability_type&
 			edge(pse[play_map::player_final_state_map(i)]);
-		player_actions[i].stand = edge;
+		player_actions[i].stand() = edge;
 	}
 // double-down (hit-once, then stand)
 	// TODO: this could be computed at the same time with hits
@@ -573,12 +573,12 @@ reveal_strategy::compute_action_expectations(const play_map& play,
 		// static_assert
 		assert(size_t(player_final_state_probability_vector::Size)
 			== size_t(outcome_vector::Size));
-		probability_type& p(player_actions[i].double_down);
+		probability_type& p(player_actions[i].double_down());
 		// perform inner_product, weighted expectations
 		p = inner_product(fin.begin(), fin.end(), pse.begin(), 0.0);
 		p *= var.double_multiplier;	// because bet is doubled
 	} else {			// is terminal state, irrelevant
-		player_actions[i].double_down = -var.double_multiplier;
+		player_actions[i].double_down() = -var.double_multiplier;
 	}
 	}
 	const vector<size_t>& reorder(play_map::reverse_topo_order);
@@ -589,7 +589,7 @@ reveal_strategy::compute_action_expectations(const play_map& play,
 		const state_machine::node& ni(play.player_hit[ii]);
 		assert(ni.size());
 		expectations& p(player_actions[ii]);
-		p.hit = 0.0;
+		p.hit() = 0.0;
 	size_t k;
 	for (k=0; k<card_values; ++k) {
 //		cout << "i=" << ii <<
@@ -600,15 +600,15 @@ reveal_strategy::compute_action_expectations(const play_map& play,
 			// which is assumed to be precomputed
 			const expectations& e(player_actions[ni[k]]);
 			const edge_type best =
-				(e.hit > e.stand) ? e.hit : e.stand;
+				(e.hit() > e.stand()) ? e.hit() : e.stand();
 //			cout << ", best=" << best;
-			p.hit += card_odds[k] *best;
+			p.hit() += card_odds[k] *best;
 		} else {
 			// is a terminal state
 			const probability_type& edge(pse
 				[play_map::player_final_state_map(ni[k])]);
 //			cout << ", edge=" << edge;
-			p.hit += card_odds[k] *edge;
+			p.hit() += card_odds[k] *edge;
 		}
 //		cout << endl;
 	}
@@ -712,7 +712,7 @@ reveal_strategy::compute_player_split_edges(const play_map& play,
 		expected_edge += o * edge;
 	}	// inner product
 		expectations& sum(player_actions[p]);
-		sum.split = 2.0 *expected_edge;	// b/c two hands are played
+		sum.split() = 2.0 *expected_edge;	// b/c two hands are played
 		sum.optimize(-var.surrender_penalty);
 	}	// end for each player paired card
 
@@ -945,7 +945,7 @@ reveal_strategy::compute_player_initial_nonsplit_edges(
 	size_t i;
 	for (i=0; i<pair_offset; ++i) {		// exclude splits first
 		expectations c(player_actions[i]);	// yes, copy
-		c.hit = player_hit_stand_edges[i];
+		c.hit() = player_hit_stand_edges[i];
 		c.optimize(-surr_pen);
 		// since splits are folded into non-pair states
 		const pair<player_choice, player_choice>
@@ -1209,35 +1209,35 @@ strategy::dump_expectations(const size_t state, ostream& o) const {
 	o << "stand";
 	for (j=0; j<card_values; ++j) {
 		EXPECTATION_REF
-		o << '\t' << EFORMAT(ex.stand);
+		o << '\t' << EFORMAT(ex.stand());
 		if (ex.best() == STAND) o << '*';
 	}
 	o << endl;
-if (z.hit > -1.0 * card_values) {
+if (z.hit() > -1.0 * card_values) {
 	o << "hit";
 	for (j=0; j<card_values; ++j) {
 		EXPECTATION_REF
-		o << '\t' << EFORMAT(ex.hit);
+		o << '\t' << EFORMAT(ex.hit());
 		if (ex.best() == HIT) o << '*';
 	}
 	o << endl;
 }
-if (z.double_down > -2.0 *card_values) {
+if (z.double_down() > -2.0 *card_values) {
 	// TODO: pass double_multiplier?
 	o << "double";
 	for (j=0; j<card_values; ++j) {
 		EXPECTATION_REF
-		o << '\t' << EFORMAT(ex.double_down);
+		o << '\t' << EFORMAT(ex.double_down());
 		if (ex.best() == DOUBLE) o << '*';
 	}
 	o << endl;
 }
 // for brevity, could omit non-splittable states...
-if (z.split > -2.0 *card_values) {
+if (z.split() > -2.0 *card_values) {
 	o << "split";
 	for (j=0; j<card_values; ++j) {
 		EXPECTATION_REF
-		o << '\t' << EFORMAT(ex.split);
+		o << '\t' << EFORMAT(ex.split());
 		if (ex.best() == SPLIT) o << '*';
 	}
 	o << endl;
@@ -1310,10 +1310,10 @@ strategy::dump_optimal_edges(const size_t state, ostream& o) const {
 		EXPECTATION_REF
 		o << '\t';
 		switch (ex.best()) {
-		case STAND: o << EFORMAT(ex.stand); break;
-		case HIT: o << EFORMAT(ex.hit); break;
-		case DOUBLE: o << EFORMAT(ex.double_down); break;
-		case SPLIT: o << EFORMAT(ex.split); break;
+		case STAND: o << EFORMAT(ex.stand()); break;
+		case HIT: o << EFORMAT(ex.hit()); break;
+		case DOUBLE: o << EFORMAT(ex.double_down()); break;
+		case SPLIT: o << EFORMAT(ex.split()); break;
 		case SURRENDER: o << EFORMAT(-var.surrender_penalty); break;
 		default: break;
 		}

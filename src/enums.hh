@@ -16,6 +16,8 @@ enum player_choice {
 	HIT = 2,
 	DOUBLE = 3,
 	SPLIT = 4,
+	__FIRST_EVAL_ACTION = STAND,		// index offset into array
+	__NUM_EVAL_ACTIONS = SPLIT -STAND +1,
 	SURRENDER = 5,
 	// for interactive mode-only
 	BOOKMARK = 6,	// save away
@@ -37,6 +39,7 @@ enum outcome {
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
 	State machine table offsets.
+	TODO: allow some of these to be variables to analyze game variants
  */
 enum table_offsets {
 	goal = 21,
