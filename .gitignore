@@ -1,5 +1,6 @@
 ignore
 *.tar.*
+*.swp
 Makefile.in
 Makefile
 configure
