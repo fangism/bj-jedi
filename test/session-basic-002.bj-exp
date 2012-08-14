@@ -40,6 +40,7 @@ show used cards count: yes
 continuous shuffle: no
 user picks cards: no
 use dynamic strategy: no
+use exact strategy: no
 dealer plays only vs. live player: yes
 always show bankroll and bet: yes
 always show dynamic edge: no
@@ -48,11 +49,13 @@ always show count at action: no
 always suggest best action: no
 notify when wrong: yes
 notify when dynamic strategy beats basic: yes
+notify when exact strategy beats basic: yes
 notify with count: yes
 show edge values with analysis: yes
 automatically play optimally: no
 bookmark wrong decisions: yes
 bookmark when dynamic strategy != basic: yes
+bookmark when exact strategy != basic: yes
 quiz count before reshuffle: yes
 quiz count every N hands: 5
 current bet: 1.000
