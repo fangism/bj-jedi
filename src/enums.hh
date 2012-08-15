@@ -28,16 +28,6 @@ enum player_choice {
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
-	Dealer vs. player showdown outcomes.  
- */
-enum outcome {
-	WIN = 0,
-	PUSH = 1,
-	LOSE = 2
-};
-
-//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/**
 	State machine table offsets.
 	TODO: allow some of these to be variables to analyze game variants
  */

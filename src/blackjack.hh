@@ -6,7 +6,7 @@
 #include <vector>
 #include <string>
 #include <map>
-#include "enums.hh"
+#include "outcome.hh"
 #include "variation.hh"
 
 namespace blackjack {

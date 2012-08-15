@@ -3,6 +3,7 @@
 #ifndef	__BOC2_DECK_HH__
 #define	__BOC2_DECK_HH__
 
+#include "num.hh"
 #include "util/array.hh"
 
 namespace cards {

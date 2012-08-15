@@ -20,6 +20,8 @@ libbj_la_SOURCES = \
 	grader.cc grader.hh \
 	hand.cc hand.hh \
 	lobby.cc lobby.hh \
+	num.hh \
+	outcome.cc outcome.hh \
 	play_options.cc play_options.hh \
 	statistics.cc statistics.hh \
 	strategy.cc strategy.hh \
