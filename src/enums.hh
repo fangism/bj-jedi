@@ -31,9 +31,9 @@ enum player_choice {
 	Dealer vs. player showdown outcomes.  
  */
 enum outcome {
-	WIN,
-	PUSH,
-	LOSE
+	WIN = 0,
+	PUSH = 1,
+	LOSE = 2
 };
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

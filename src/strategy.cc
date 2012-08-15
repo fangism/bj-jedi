@@ -385,11 +385,15 @@ reveal_strategy::compute_showdown_odds(const dealer_final_vector& dfv,
 	// -1: blackjack, push, and bust states separate
 	for (d=0; d < dealer_states; ++d) {	// dealer's final state
 		const probability_type& p(dfv[d]);
+#if INDEXED_WLP
+		o.prob(v[d]) += p;		// adds to win/push/lose
+#else
 		switch (v[d]) {
-		case WIN: o.win += p; break;
-		case LOSE: o.lose += p; break;
-		case PUSH: o.push += p; break;
+		case WIN: o.win() += p; break;
+		case LOSE: o.lose() += p; break;
+		case PUSH: o.push() += p; break;
 		}
+#endif
 	}	// end for dealer_states
 	}	// end for player_states
 }{
@@ -421,10 +425,10 @@ reveal_strategy::compute_player_stand_odds(const edge_type bjp) {
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 ostream&
 operator << (ostream& o, const outcome_odds& r) {
-	o << r.win << '|' << r.push << '|' << r.lose;
+	o << r.win() << '|' << r.push() << '|' << r.lose();
 #if 0
 	// confirm sum
-	o << '=' << r.win +r.push +r.lose;
+	o << '=' << r.win() +r.push() +r.lose();
 #endif
 	return o;
 }
@@ -436,17 +440,17 @@ dump_outcome_vector(const outcome_vector& v, ostream& o) {
 	outcome_vector::const_iterator i(b);
 	o << "win";
 	for (; i!=e; ++i) {
-		o << '\t' << i->win;
+		o << '\t' << i->win();
 	}
 	o << endl;
 	o << "push";
 	for (i=b; i!=e; ++i) {
-		o << '\t' << i->push;
+		o << '\t' << i->push();
 	}
 	o << endl;
 	o << "lose";
 	for (i=b; i!=e; ++i) {
-		o << '\t' << i->lose;
+		o << '\t' << i->lose();
 	}
 	return o << endl;
 }
