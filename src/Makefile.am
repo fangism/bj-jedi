@@ -13,6 +13,7 @@ libbj_la_SOURCES = \
 	card_state.cc card_state.hh \
 	config.h \
 	counter.cc counter.hh \
+	devel_switches.hh \
 	deck.cc deck.hh \
 	deck_state.cc deck_state.hh \
 	enums.hh \
@@ -22,6 +23,7 @@ libbj_la_SOURCES = \
 	lobby.cc lobby.hh \
 	num.hh \
 	outcome.cc outcome.hh \
+	player_action.cc player_action.hh \
 	play_options.cc play_options.hh \
 	statistics.cc statistics.hh \
 	strategy.cc strategy.hh \

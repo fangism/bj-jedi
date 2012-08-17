@@ -5,19 +5,26 @@
 
 #include <iosfwd>
 #include <utility>			// for std::pair
-#include "deck.hh"
+#include "num.hh"
 #include "enums.hh"
+#include "devel_switches.hh"
 
 namespace blackjack {
 using std::pair;
 using std::istream;
 using std::ostream;
 using cards::edge_type;
+#if BITMASK_ACTION_OPTIONS
+struct action_mask;
+#endif
 
 /**
 	Define to 1 to store action expectation edges as an array.
+	Rationale: direct indexing faster than switch-case construct.
+	Goal: 1
+	Status: tested
  */
-#define	INDEX_ACTION_EDGES		1
+#define	INDEX_ACTION_EDGES			1
 
 // TODO: this could be encoded compactly with 4 chars or so
 typedef	player_choice			action_preference[__NUM_EVAL_ACTIONS];
@@ -146,16 +153,37 @@ struct expectations {
 	value(const player_choice c, const edge_type& s) const;
 
 	pair<player_choice, player_choice>
-	best_two(const bool d = true,
+	best_two(
+#if BITMASK_ACTION_OPTIONS
+		const action_mask& m
+#else
+		const bool d = true,
 		const bool s = true,
-		const bool r = true) const;
+		const bool r = true
+#endif
+		) const;
 
 	player_choice
-	best(const bool d = true,
+	best(
+#if BITMASK_ACTION_OPTIONS
+		const action_mask& m
+#else
+		const bool d = true,
 		const bool s = true,
-		const bool r = true) const {
+		const bool r = true
+#endif
+		) const {
+#if BITMASK_ACTION_OPTIONS
+		return best_two(m).first;
+#else
 		return best_two(d, s, r).first;
+#endif
 	}
+
+#if BITMASK_ACTION_OPTIONS
+	player_choice
+	best(void) const;
+#endif
 
 	expectations
 	operator + (const expectations& e) const {
@@ -205,7 +233,12 @@ struct expectations {
 	ostream&
 	dump_choice_actions_2(ostream&, const expectations&,
 		const expectations&, const edge_type&, 
-		const bool, const bool, const bool, const char* = NULL);
+#if BITMASK_ACTION_OPTIONS
+		const action_mask&,
+#else
+		const bool, const bool, const bool,
+#endif
+		const char* = NULL);
 
 };	// end struct expectations
 

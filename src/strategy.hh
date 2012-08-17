@@ -223,14 +223,25 @@ private:
 
 	void
 	compute_player_initial_nonsplit_edges(
+#if BITMASK_ACTION_OPTIONS
+		const play_map&,
+		const action_mask&
+#else
 		const double&,
-		const bool d, const bool s, const bool r);
+		const bool d, const bool s, const bool r
+#endif
+		);
 
 	// private:
 	void
 	compute_player_split_edges(
 		const play_map&, const deck_distribution&,
-		const bool d, const bool s);
+#if BITMASK_ACTION_OPTIONS
+		const action_mask&
+#else
+		const bool d, const bool s
+#endif
+		);
 
 	void
 	compute_reveal_edges(const deck_distribution&, 

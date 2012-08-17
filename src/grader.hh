@@ -17,6 +17,9 @@
 namespace blackjack {
 class variation;
 struct play_options;
+#if BITMASK_ACTION_OPTIONS
+class action_mask;
+#endif
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
@@ -196,7 +199,12 @@ private:
 
 	pair<expectations, expectations>
 	assess_action(const size_t, const size_t, ostream&, 
-		const bool, const bool, const bool);
+#if BITMASK_ACTION_OPTIONS
+		const action_mask&
+#else
+		const bool, const bool, const bool
+#endif
+		);
  
 };	// end class grader
 

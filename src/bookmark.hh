@@ -8,6 +8,7 @@
 
 #include "hand.hh"
 #include "deck_state.hh"
+#include "player_action.hh"
 
 namespace blackjack {
 
@@ -21,14 +22,23 @@ struct bookmark {
 	hand				player_hand;
 	// for now, just save everything, only ::cards is needed
 	deck_state			cards;
+#if BITMASK_ACTION_OPTIONS
+	action_mask			player_options;
+#else
 	bool				may_double;
 	bool				may_split;
 	bool				may_surrender;
+#endif
 
 	bookmark();
 
 	bookmark(const size_t, const hand&, const deck_state&,
-		const bool, const bool, const bool);
+#if BITMASK_ACTION_OPTIONS
+		const action_mask&
+#else
+		const bool, const bool, const bool
+#endif
+		);
 
 	~bookmark();
 

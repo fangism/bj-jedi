@@ -9,6 +9,7 @@
 #include <cstdlib>
 #include <ctime>
 #include "grader.hh"
+#include "player_action.hh"
 #include "play_options.hh"
 #include "util/string.tcc"	// for string_to_num
 #include "util/command.tcc"
@@ -444,9 +445,11 @@ switch (pc) {
 		ph.stand();
 		break;
 	case DOUBLE:
+		// TODO: prompt if pick_cards
 		ph.double_down(draw_up_card());
 		break;
 	case HIT:
+		// TODO: prompt if pick_cards
 		ph.hit_player(draw_up_card());
 		// don't bother prompting if hits 21 (auto-stand)
 		break;
@@ -454,8 +457,10 @@ switch (pc) {
 		const size_t split_card = ph.state - pair_offset;
 		// ph.presplit();
 		// 21 should not be considered blackjack when splitting
+		// TODO: prompt if pick_cards
 		ph.deal_player(split_card, draw_up_card(), false);
 		hand nh(play);	// new hand
+		// TODO: prompt if pick_cards
 		nh.deal_player(split_card, draw_up_card(), false);
 		player_hands.push_back(nh);
 		// show new hands and other split hand for counting purposes
@@ -498,21 +503,31 @@ do {
 		(player_hands.size() < player_hands.capacity());
 	// TODO: check for resplit limit
 	const bool r = ph.surrenderable() && !already_split();
+#if BITMASK_ACTION_OPTIONS
+	action_mask m(STAND, HIT);
+	if (d)	m += DOUBLE;
+	if (p)	m += SPLIT;
+	if (r)	m += SURRENDER;
+#define	ACTION_OPTIONS		m
+#else
+#define	ACTION_OPTIONS		d, p, r
+#endif
 	// only first hand is surrenderrable, normally
 	dump_situation(j);
 	if (opt.always_show_count_at_action) {
 		show_count();
 	}
 	// snapshot of current state, in case of bookmark
-	const bookmark bm(dealer_reveal, ph, C, d, p, r);
+	const bookmark bm(dealer_reveal, ph, C, ACTION_OPTIONS);
 	ostringstream oss;
 	oss.flags(ostr.flags());
 	oss.precision(ostr.precision());
 	const pair<expectations, expectations>
 		ace(assess_action(ph.state, card_value_map[dealer_reveal],
-			oss, d, p, r));
+			oss, ACTION_OPTIONS));
 	const pair<player_choice, player_choice>
-		acp(ace.first.best(d, p, r), ace.second.best(d, p, r));
+		acp(ace.first.best(ACTION_OPTIONS),
+			ace.second.best(ACTION_OPTIONS));
 	const player_choice ac =
 		opt.use_dynamic_strategy ? acp.second : acp.first;
 	const player_choice ac2 =	// the other one
@@ -520,7 +535,11 @@ do {
 	if (opt.always_suggest) {
 		ostr << oss.str() << endl;
 	}
-	pc = prompt_player_action(istr, ostr, d, p, r, opt.auto_play);
+#if BITMASK_ACTION_OPTIONS
+	pc = m.prompt(istr, ostr, opt.auto_play);
+#else
+	pc = prompt_player_action(istr, ostr, ACTION_OPTIONS, opt.auto_play);
+#endif
 	bool bookmarked = false;
 	bool notified = false;
 	bool detailed = false;
@@ -635,13 +654,19 @@ do {
  */
 pair<expectations, expectations>
 grader::assess_action(const size_t ps, const size_t dlr, ostream& o,
-		const bool d, const bool p, const bool r) {
+#if BITMASK_ACTION_OPTIONS
+		const action_mask& m
+#else
+		const bool d, const bool p, const bool r
+#endif
+		) {
 	// basic:
 	const expectations& be(basic_strategy
 		.lookup_player_action_expectations(ps, dlr));
 	// ostr << "edges per action (basic):" << endl;
 	// be.dump_choice_actions(ostr, -var.surrender_penalty);
-	const pair<player_choice, player_choice> br(be.best_two(d, p, r));
+	const pair<player_choice, player_choice>
+		br(be.best_two(ACTION_OPTIONS));
 	// ostr << "basic strategy recommends: " <<
 	//	action_names[br.first] << endl;
 	// dynamic: need to recompute given recently seen cards
@@ -652,7 +677,8 @@ grader::assess_action(const size_t ps, const size_t dlr, ostream& o,
 		.lookup_player_action_expectations(ps, dlr));
 	// ostr << "edges per action (dynamic):" << endl;
 	// de.dump_choice_actions(ostr, -var.surrender_penalty);
-	const pair<player_choice, player_choice> dr(de.best_two(d, p, r));
+	const pair<player_choice, player_choice>
+		dr(de.best_two(ACTION_OPTIONS));
 	// ostr << "dynamic strategy recommends: " <<
 	//	action_names[dr.first] << endl;
 #if 0
@@ -668,7 +694,7 @@ if (opt.show_edges) {
 	o << "\tedges:\tbasic\tdynamic" << endl;
 	// TODO: _3
 	expectations::dump_choice_actions_2(o,
-		be, de, -var.surrender_penalty, d, p, r, "\t");
+		be, de, -var.surrender_penalty, ACTION_OPTIONS, "\t");
 }
 	o << "\tadvise:\t" << action_names[br.first]
 		<< '\t' << action_names[dr.first];
@@ -707,74 +733,6 @@ grader::dump_situation(const size_t j) const {
 	ostr << ", ";
 	player_hands[j].dump_player(ostr) << endl;
 	return ostr;
-}
-
-//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/**
-	\param d if double-down is permitted.
-	\param p is splitting is permitted.
-	\param r if surrendering is permitted.
-	\param a if should just automatically play (OPTIM)
- */
-player_choice
-prompt_player_action(istream& i, ostream& o, 
-		const bool d, const bool p, const bool r, const bool a) {
-	player_choice c = NIL;
-do {
-//	int ch;
-	string line;
-	do {
-		// prompt for legal choices
-		o << "action? [hs";
-		if (d) o << 'd';
-		if (p) o << 'p';
-		if (r) o << 'r';
-		o << "bc?!]> ";
-		if (!a) {
-//		ch = getchar();
-		// TODO: ncurses getch();
-		// i >> line;
-		getline(i, line);
-		}
-	} while (line.empty() && i && !a);
-	if (a) {
-		o << '!' << endl;
-		return OPTIM;
-	}
-	switch (line[0])
-//	switch (ch)
-	{
-	case 'h':
-	case 'H':
-		c = HIT; break;
-	case 'd':
-	case 'D':
-		if (d) { c = DOUBLE; } break;
-	case 'p':
-	case 'P':
-		if (p) { c = SPLIT; } break;
-	case 's':
-	case 'S':
-		c = STAND; break;
-	case 'r':
-	case 'R':
-		if (r) { c = SURRENDER; } break;
-	case 'b':
-	case 'B':
-		c = BOOKMARK; break;	// show count
-	case 'c':
-	case 'C':
-		c = COUNT; break;	// show count
-	case '?':
-		c = HINT; break;
-		// caller should provide detailed hint with edges
-		// for both basic and dynamic strategies
-	case '!':
-		c = OPTIM; break;
-	default: break;
-	}
-} while (c == NIL && i);
-	return c;
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

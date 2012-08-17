@@ -32,6 +32,15 @@ Exact odds per situation could be computed using recursion/probability.
 	Computing this is taxing --
 		probability-annotated decision/outcome tree.
 
+permissible actions table (action_masks):
+	different variations may restrict player options for certain hands,
+		such as double-on-10,11-only, 
+		allow surrender against 10,A only.
+	Maintain two tables to represent such restrictions,
+		and for calculations, take the initial permissible actions
+		as the intersection (bitwise-AND) of the two action masks.
+	This will not cover everything.  Splits are considered separately.
+
 card randomization:
 alternatively, std::shuffle entire sequence up front
 	this avoids repeated call to RNG,
