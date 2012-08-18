@@ -94,6 +94,19 @@ do {
 	return c;
 }
 
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+#if BITMASK_ACTION_OPTIONS
+ostream&
+action_mask::dump_debug(ostream& o) const {
+	return o << "s,h,d,p,r=" <<
+		can_stand() << ',' <<
+		can_hit() << ',' <<
+		can_double_down() << ',' <<
+		can_split() << ',' <<
+		can_surrender();
+}
+#endif
+
 //=============================================================================
 }	// end namespace blackjack
 

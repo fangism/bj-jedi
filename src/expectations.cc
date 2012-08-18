@@ -100,11 +100,14 @@ expectations::best_two(
 	const bool d = m.can_double_down();
 	const bool s = m.can_split();
 	const bool r = m.can_surrender();
+#if DEBUG_OPT
+	m.dump_debug(cout << "best_two: ") << endl;
+#endif
 #else
 	const bool h = true;
-#endif
-	DEBUG_OPT_PRINT(cout, "best_two: h,d,p,r=" <<
+	DEBUG_OPT_PRINT(cout, "best_two: s,h,d,p,r=1," <<
 		h << ',' << d << ',' << s << ',' << r << endl);
+#endif
 	player_choice ret[2];
 	const player_choice* i(&actions[0]), *e(&actions[4]);
 	player_choice* p = ret;

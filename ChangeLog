@@ -1,5 +1,9 @@
 # "ChangeLog"
 
+2012-08-17	David Fang		<fangism@users.sourceforge.net>
+	Use outcome and action enums as indices to arrays and bitfields, 
+		for ease of sane maintenance.
+
 2012-05-13	David Fang		<fangism@users.sourceforge.net>
 	Restructure strategy to calculate per dealer-reveal card.
 	This will allow for incremental computation.

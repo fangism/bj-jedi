@@ -80,9 +80,13 @@ using util::var_member_select_iterator;
 #if BITMASK_ACTION_OPTIONS
 #define	DP_WRAP(x, y)		action_mask(action_mask::dp_tag(), x, y)
 #define	DPR_WRAP(x, y, z)	action_mask(action_mask::dpr_tag(), x, y, z)
+#define	STAND_HIT_ONLY		action_mask::stand_hit
+#define	ALL_OPTIONS		action_mask::all
 #else
 #define	DP_WRAP(x, y)		x, y
 #define	DPR_WRAP(x, y, z)	x, y, z
+#define	STAND_HIT_ONLY		false, false, false
+#define	ALL_OPTIONS		true, true, true
 #endif
 
 //=============================================================================
@@ -628,6 +632,7 @@ if (var.split) {
 #define	RESPLIT_OPTION_ARG	RESPLIT_DPR
 #define	SPLIT_OPTION_ARG	SPLIT_DPR
 #endif
+// cannot surrender after splitting, but that would be interesting...
 if (var.resplit) {
 	DEBUG_SPLIT_PRINT(cout, "Resplitting allowed." << endl);
 	DEBUG_SPLIT_PRINT(cout, "  nonsplit_edges 1" << endl);
@@ -804,7 +809,7 @@ reveal_strategy::optimize_player_hit_tables(const play_map& play,
 	for (i=0; i<p_action_states; ++i) {
 		const expectations& e(player_actions[i]);
 		// don't count surrender, split, double
-		const player_choice b(e.best(DPR_WRAP(false, false, false)));
+		const player_choice b(e.best(STAND_HIT_ONLY));
 		// or just compare e.hit vs. e.stand
 		if (b == STAND) {
 			// is either STAND or DOUBLE
@@ -903,7 +908,7 @@ reveal_strategy::__compute_player_hit_stand_edges(
 		// take the better edge between hit/stand
 		// (no surr, double, split)
 		const edge_type sh =
-			x.value(x.best(DPR_WRAP(false, false, false)), surr);
+			x.value(x.best(STAND_HIT_ONLY), surr);
 		const edge_type d = fabs(sh-e);
 		// identity: sanity check for numerical noise
 		if (d > eps) {
@@ -1306,7 +1311,7 @@ if (z.split() > -2.0 *card_values) {
 		EXPECTATION_REF
 		o << '\t';
 		const pair<player_choice, player_choice>
-			opt(ex.best_two(DPR_WRAP(true, true, true)));
+			opt(ex.best_two(ALL_OPTIONS));
 		o << EFORMAT(ex.margin(opt.first, opt.second,
 			-var.surrender_penalty));
 	}
@@ -1373,7 +1378,7 @@ strategy::dump_optimal_edges(const size_t state, ostream& o) const {
 		EXPECTATION_REF
 		o << '\t';
 		const pair<player_choice, player_choice>
-			opt(ex.best_two(DPR_WRAP(true, true, true)));
+			opt(ex.best_two(ALL_OPTIONS));
 		o << EFORMAT(ex.margin(opt.first, opt.second,
 			-var.surrender_penalty));
 	}

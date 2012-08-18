@@ -11,6 +11,6 @@
 	Goal: 1
 	Status: testing
  */
-#define	BITMASK_ACTION_OPTIONS			0
+#define	BITMASK_ACTION_OPTIONS			1
 
 #endif	// __BOC2_DEVEL_SWITCHES_HH__

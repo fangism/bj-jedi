@@ -35,10 +35,11 @@ public:
 
 	action_mask() : _bits(0) { }
 
-// protected:
+protected:
 	explicit
 	action_mask(const size_t m) : _bits(m) { }
 
+public:
 	explicit
 	action_mask(const player_choice p1) :
 		_bits(1 << p1) { }
@@ -50,14 +51,14 @@ public:
 		const player_choice p3) :
 		_bits((1 << p1) | (1 << p2) | (1 << p3)) { }
 
-	action_mask(const dp_tag, const bool d, const bool p) {
-		*this = *this +HIT +STAND;
+	action_mask(const dp_tag, const bool d, const bool p) :
+		_bits(stand_hit._bits) {
 		if (d) *this += DOUBLE;
 		if (p) *this += SPLIT;
 	}
 
-	action_mask(const dpr_tag, const bool d, const bool p, const bool r) {
-		*this = *this +HIT +STAND;
+	action_mask(const dpr_tag, const bool d, const bool p, const bool r) :
+		_bits(stand_hit._bits) {
 		if (d) *this += DOUBLE;
 		if (p) *this += SPLIT;
 		if (r) *this += SURRENDER;
@@ -130,6 +131,9 @@ public:
 
 	player_choice
 	prompt(istream&, ostream&, const bool) const;
+
+	ostream&
+	dump_debug(ostream&) const;
 
 };	// end struct action_mask
 #else
