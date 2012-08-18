@@ -223,11 +223,10 @@ private:
 
 	void
 	compute_player_initial_nonsplit_edges(
-#if BITMASK_ACTION_OPTIONS
 		const play_map&,
+#if BITMASK_ACTION_OPTIONS
 		const action_mask&
 #else
-		const double&,
 		const bool d, const bool s, const bool r
 #endif
 		);

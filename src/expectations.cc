@@ -7,7 +7,16 @@
 #include "player_action.hh"
 #include "util/iosfmt_saver.hh"
 
+#define	DEBUG_OPT				0
+
+#if DEBUG_OPT
+#define	DEBUG_OPT_PRINT(o, x)			o << x
+#else
+#define	DEBUG_OPT_PRINT(o, x)
+#endif
+
 namespace blackjack {
+using std::cout;
 using std::cerr;
 using std::endl;
 using std::multimap;
@@ -94,6 +103,8 @@ expectations::best_two(
 #else
 	const bool h = true;
 #endif
+	DEBUG_OPT_PRINT(cout, "best_two: h,d,p,r=" <<
+		h << ',' << d << ',' << s << ',' << r << endl);
 	player_choice ret[2];
 	const player_choice* i(&actions[0]), *e(&actions[4]);
 	player_choice* p = ret;
@@ -136,7 +147,7 @@ expectations::best_two(
 	if (p != pe) {
 	if (ret[0] == HIT) {
 		ret[1] = STAND;
-	} else if (p[1] == STAND) {
+	} else if (p[0] == STAND) {
 		ret[1] = HIT;
 	}
 	// else ???

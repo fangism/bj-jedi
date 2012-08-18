@@ -624,46 +624,44 @@ if (var.split) {
 	const action_mask sm(action_mask::dpr_tag(), SPLIT_DPR);
 #define	RESPLIT_OPTION_ARG	rm
 #define	SPLIT_OPTION_ARG	sm
-#define	NONSPLIT_ARG1		play
 #else
 #define	RESPLIT_OPTION_ARG	RESPLIT_DPR
 #define	SPLIT_OPTION_ARG	SPLIT_DPR
-#define	NONSPLIT_ARG1		var.surrender_penalty
 #endif
 if (var.resplit) {
 	DEBUG_SPLIT_PRINT(cout, "Resplitting allowed." << endl);
 	DEBUG_SPLIT_PRINT(cout, "  nonsplit_edges 1" << endl);
 	// need to work backwards from post-split edges
-	compute_player_initial_nonsplit_edges(NONSPLIT_ARG1,
+	compute_player_initial_nonsplit_edges(play,
 		RESPLIT_OPTION_ARG);
 	DEBUG_SPLIT_PRINT(cout, "  split_edges 1" << endl);
 	compute_player_split_edges(play, card_odds,
 		DP_WRAP(DAS, var.resplit));	// iterate
 	DEBUG_SPLIT_PRINT(cout, "  nonsplit_edges 2" << endl);
-	compute_player_initial_nonsplit_edges(NONSPLIT_ARG1,
+	compute_player_initial_nonsplit_edges(play,
 		RESPLIT_OPTION_ARG);
 	DEBUG_SPLIT_PRINT(cout, "  split_edges 2" << endl);
 	compute_player_split_edges(play, card_odds,
 		DP_WRAP(DAS, var.resplit));	// iterate
 	DEBUG_SPLIT_PRINT(cout, "  nonsplit_edges 3" << endl);
-	compute_player_initial_nonsplit_edges(NONSPLIT_ARG1,
+	compute_player_initial_nonsplit_edges(play,
 		SPLIT_OPTION_ARG);
 } else {
 	DEBUG_SPLIT_PRINT(cout, "Single split allowed." << endl);
 	DEBUG_SPLIT_PRINT(cout, "  nonsplit_edges 1" << endl);
-	compute_player_initial_nonsplit_edges(NONSPLIT_ARG1,
+	compute_player_initial_nonsplit_edges(play,
 		DPR_WRAP(DAS, false, false));
 	DEBUG_SPLIT_PRINT(cout, "  split_edges 1" << endl);
 	compute_player_split_edges(play, card_odds,
 		DP_WRAP(DAS, false));	// iterate
 	DEBUG_SPLIT_PRINT(cout, "  nonsplit_edges 2" << endl);
-	compute_player_initial_nonsplit_edges(NONSPLIT_ARG1,
+	compute_player_initial_nonsplit_edges(play,
 		SPLIT_OPTION_ARG);
 }
 } else {
 	DEBUG_SPLIT_PRINT(cout, "No split allowed." << endl);
 	// no splitting allowed!
-	compute_player_initial_nonsplit_edges(NONSPLIT_ARG1,
+	compute_player_initial_nonsplit_edges(play,
 		DPR_WRAP(var.some_double(), false, var.surrender_late));
 }
 	// to account for player's blackjack
@@ -973,35 +971,35 @@ strategy::dump_player_hit_stand_edges(ostream& o) const {
  */
 void
 reveal_strategy::compute_player_initial_nonsplit_edges(
-#if BITMASK_ACTION_OPTIONS
 		const play_map& play,
+#if BITMASK_ACTION_OPTIONS
 		const action_mask& m
 #else
-		const double& surr_pen,
 		const bool D, const bool S, const bool R
 #endif
 		)
-{ //	const player_initial_edges_vector *player_split_edges =
+{
+//	const player_initial_edges_vector *player_split_edges =
 //		&player_initial_edges_post_peek[p_action_states];
-#if BITMASK_ACTION_OPTIONS
 	const double& surr_pen(play.var.surrender_penalty);
-#endif
 	size_t i;
 	for (i=0; i<pair_offset; ++i) {		// exclude splits first
 		expectations c(player_actions[i]);	// yes, copy
 		c.hit() = player_hit_stand_edges[i];
 		c.optimize(-surr_pen);
 		// since splits are folded into non-pair states
+		const bool t = play.player_hit[i].is_terminal();
 		const pair<player_choice, player_choice>
 //			splits are computed in a separate section of the table
 #if BITMASK_ACTION_OPTIONS
-			p(c.best_two(play.player_hit[i].is_terminal() ?
-				action_mask::stand : m));
+			p(c.best_two(t ? action_mask::stand : m));
 #else
-			p(c.best_two(DPR_WRAP(D, S, R)));
+			p(t ? c.best_two(false, false, false) :
+				c.best_two(D, S, R));
 #endif
 		const edge_type e = c.value(p.first, -surr_pen);
-		DEBUG_SPLIT_PRINT(cout, "i=" << i << ", e=" << e << endl);
+		DEBUG_SPLIT_PRINT(cout, "p.first=" << p.first << ", t=" << t
+			<< ", i=" << i << ", e=" << e << endl);
 		player_initial_edges_post_peek[i] = e;
 	}
 }
