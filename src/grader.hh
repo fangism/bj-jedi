@@ -163,10 +163,10 @@ private:
 	offer_insurance(const bool);
 
 	size_t
-	draw_up_card(void);
+	draw_up_card(const char*);
 
 	size_t
-	draw_hole_card(void);
+	draw_hole_card(const char*);
 
 	void
 	reveal_hole_card(const size_t);

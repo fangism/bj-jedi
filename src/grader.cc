@@ -139,13 +139,19 @@ grader::show_count(void) const {
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 size_t
-grader::draw_up_card(void) {
+grader::draw_up_card(const char* prompt) {
+	if (opt.pick_cards && prompt) {
+		ostr << prompt << endl;
+	}
 	return C.option_draw(opt.pick_cards, istr, ostr);
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 size_t
-grader::draw_hole_card(void) {
+grader::draw_hole_card(const char* prompt) {
+	if (opt.pick_cards && prompt) {
+		ostr << prompt << endl;
+	}
 	C.option_draw_hole_card(opt.pick_cards, istr, ostr);
 	return C.peek_hole_card();
 }
@@ -205,27 +211,17 @@ grader::deal_hand(void) {
 	stats.dynamic_priori.edge_sum += dyn_edge;
 	stats.dynamic_priori.weighted_edge_sum += wdyn_edge;
 }
-	const bool pick_cards = opt.pick_cards;
-	if (pick_cards) {
-		ostr << "choose player cards." << endl;
-	}
 	hand iph(play);
 	player_hands.push_back(iph);
-	const size_t p1 = draw_up_card();
-	const size_t p2 = draw_up_card();
+	const size_t p1 = draw_up_card("choose player's first card.");
+	const size_t p2 = draw_up_card("choose player's second card.");
 	hand& pih(player_hands.front());
 	pih.deal_player(p1, p2, true);
-	if (pick_cards) {
-		ostr << "choose dealer up-card." << endl;
-	}
-	dealer_reveal = draw_up_card();
+	dealer_reveal = draw_up_card("choose dealer's up-card.");
 	const size_t dealer_reveal_value = card_value_map[dealer_reveal];
 	dealer_hand.initial_card_dealer(dealer_reveal);
 	// TODO: first query whether hold card makes dealer blackjack
 	// so prompt for this after checking, if peeking for blackjack
-	if (pick_cards) {
-		ostr << "choose dealer hole-card." << endl;
-	}
 {	// accumulate more statistics after initial deal
 	++stats.initial_state_histogram[pih.state][dealer_reveal_value];
 	const edge_type post_basic_edge =
@@ -246,7 +242,7 @@ grader::deal_hand(void) {
 	// TODO: option-draw hole card 2-stage prompt
 	// if peek, ask if dealer has blackjack
 	// if not, then draw among remaining non-blackjack cards
-	const size_t hole_card = draw_hole_card();
+	const size_t hole_card = draw_hole_card("choose dealer's hole-card.");
 	const size_t hole_card_value = card_value_map[hole_card];
 	ostr << "dealer: " << card_name[dealer_reveal] << endl;
 	// TODO: if early_surrender (rare) ...
@@ -333,7 +329,7 @@ if (live || !opt.dealer_plays_only_against_live) {
 	// should dealer play when there are no live hands?
 	reveal_hole_card(hole_card);	// calls dump_dealer
 	while (!play.is_dealer_terminal(dealer_hand.state)) {
-		dealer_hand.hit_dealer(draw_up_card());
+		dealer_hand.hit_dealer(draw_up_card("choose dealer's next card."));
 		dealer_took_card = true;
 	}
 	if (dealer_took_card) {
@@ -445,23 +441,23 @@ switch (pc) {
 		ph.stand();
 		break;
 	case DOUBLE:
-		// TODO: prompt if pick_cards
-		ph.double_down(draw_up_card());
+		ph.double_down(draw_up_card("choose player's double-down card."));
 		break;
 	case HIT:
 		// TODO: prompt if pick_cards
-		ph.hit_player(draw_up_card());
+		ph.hit_player(draw_up_card("choose player's next card."));
 		// don't bother prompting if hits 21 (auto-stand)
 		break;
 	case SPLIT: {
 		const size_t split_card = ph.state - pair_offset;
 		// ph.presplit();
 		// 21 should not be considered blackjack when splitting
-		// TODO: prompt if pick_cards
-		ph.deal_player(split_card, draw_up_card(), false);
+		ph.deal_player(split_card,
+			draw_up_card("choose player's second card."), false);
+		// TODO: variation that allows splitting un-paired hands!
 		hand nh(play);	// new hand
-		// TODO: prompt if pick_cards
-		nh.deal_player(split_card, draw_up_card(), false);
+		nh.deal_player(split_card,
+			draw_up_card("choose player's second card."), false);
 		player_hands.push_back(nh);
 		// show new hands and other split hand for counting purposes
 		dump_situation(j);
