@@ -537,7 +537,8 @@ strategy::dump_player_stand_odds(ostream& o) const {
 void
 reveal_strategy::compute_action_expectations(const play_map& play,
 		const deck_distribution& card_odds) {
-	DEBUG_SPLIT_PRINT(cout, "dealer showing: " << card_name[reveal_card] << endl);
+	DEBUG_SPLIT_PRINT(cout,
+		"dealer showing: " << card_name[reveal_card] << endl);
 	// pre-peek conditions are not revelant here
 	const variation& var(play.var);
 	const player_stand_edges_vector&
@@ -616,6 +617,11 @@ reveal_strategy::compute_action_expectations(const play_map& play,
 	compute_player_hit_stand_edges(var.surrender_penalty);
 	// OK up to here
 	reset_split_edges(play);	// zero-out
+#if ACTION_MASKS_GIVEN_STATE
+	const action_mask& dm(play.initial_actions_given_dealer[reveal_card]);
+	const action_mask drm(dm & play.post_split_actions);
+	const action_mask dfm(drm -SPLIT);	// final, no more split
+#endif
 	// the following computed edges are post-peek
 if (var.split) {
 	const bool DAS = var.double_after_split && var.some_double();
@@ -638,36 +644,81 @@ if (var.resplit) {
 	DEBUG_SPLIT_PRINT(cout, "  nonsplit_edges 1" << endl);
 	// need to work backwards from post-split edges
 	compute_player_initial_nonsplit_edges(play,
-		RESPLIT_OPTION_ARG);
+#if ACTION_MASKS_GIVEN_STATE
+		dfm	// up to 4
+#else
+		RESPLIT_OPTION_ARG
+#endif
+		);
 	DEBUG_SPLIT_PRINT(cout, "  split_edges 1" << endl);
 	compute_player_split_edges(play, card_odds,
-		DP_WRAP(DAS, var.resplit));	// iterate
+#if ACTION_MASKS_GIVEN_STATE
+		dfm	// up to 4
+#else
+		DP_WRAP(DAS, var.resplit)
+#endif
+		);	// iterate
 	DEBUG_SPLIT_PRINT(cout, "  nonsplit_edges 2" << endl);
 	compute_player_initial_nonsplit_edges(play,
-		RESPLIT_OPTION_ARG);
+#if ACTION_MASKS_GIVEN_STATE
+		drm
+#else
+		RESPLIT_OPTION_ARG
+#endif
+		);
 	DEBUG_SPLIT_PRINT(cout, "  split_edges 2" << endl);
 	compute_player_split_edges(play, card_odds,
-		DP_WRAP(DAS, var.resplit));	// iterate
+#if ACTION_MASKS_GIVEN_STATE
+		drm
+#else
+		DP_WRAP(DAS, var.resplit)
+#endif
+		);	// iterate
 	DEBUG_SPLIT_PRINT(cout, "  nonsplit_edges 3" << endl);
 	compute_player_initial_nonsplit_edges(play,
-		SPLIT_OPTION_ARG);
+#if ACTION_MASKS_GIVEN_STATE
+		dm
+#else
+		SPLIT_OPTION_ARG
+#endif
+		);
 } else {
 	DEBUG_SPLIT_PRINT(cout, "Single split allowed." << endl);
 	DEBUG_SPLIT_PRINT(cout, "  nonsplit_edges 1" << endl);
 	compute_player_initial_nonsplit_edges(play,
-		DPR_WRAP(DAS, false, false));
+#if ACTION_MASKS_GIVEN_STATE
+		dfm
+#else
+		DPR_WRAP(DAS, false, false)
+#endif
+		);
 	DEBUG_SPLIT_PRINT(cout, "  split_edges 1" << endl);
 	compute_player_split_edges(play, card_odds,
-		DP_WRAP(DAS, false));	// iterate
+#if ACTION_MASKS_GIVEN_STATE
+		dfm
+#else
+		DP_WRAP(DAS, false)
+#endif
+		);	// iterate
 	DEBUG_SPLIT_PRINT(cout, "  nonsplit_edges 2" << endl);
 	compute_player_initial_nonsplit_edges(play,
-		SPLIT_OPTION_ARG);
+#if ACTION_MASKS_GIVEN_STATE
+		dm
+#else
+		SPLIT_OPTION_ARG
+#endif
+		);
 }
 } else {
 	DEBUG_SPLIT_PRINT(cout, "No split allowed." << endl);
 	// no splitting allowed!
 	compute_player_initial_nonsplit_edges(play,
-		DPR_WRAP(var.some_double(), false, var.surrender_late));
+#if ACTION_MASKS_GIVEN_STATE
+		dm
+#else
+		DPR_WRAP(var.some_double(), false, var.surrender_late)
+#endif
+	);
 }
 	// to account for player's blackjack
 }
@@ -716,7 +767,7 @@ reveal_strategy::compute_player_split_edges(const play_map& play,
 		&player_initial_edges_post_peek[pair_offset];
 #if BITMASK_ACTION_OPTIONS
 	const bool s = m.can_split();
-	const bool d = m.can_double_down();
+//	const bool d = m.can_double_down();
 #endif
 	const state_machine& split_table(s ? play.player_resplit : play.last_split);
 	size_t i;
@@ -757,7 +808,11 @@ reveal_strategy::compute_player_split_edges(const play_map& play,
 	player_split_edges[i] =
 		sum.value(
 #if BITMASK_ACTION_OPTIONS
+#if ACTION_MASKS_GIVEN_STATE
+			sum.best(m & play.initial_actions_per_state[p]),
+#else
 			sum.best(m),
+#endif
 #else
 			sum.best(DPR_WRAP(d, s, false)),
 #endif
@@ -994,10 +1049,26 @@ reveal_strategy::compute_player_initial_nonsplit_edges(
 		c.optimize(-surr_pen);
 		// since splits are folded into non-pair states
 		const bool t = play.player_hit[i].is_terminal();
-		const pair<player_choice, player_choice>
 //			splits are computed in a separate section of the table
 #if BITMASK_ACTION_OPTIONS
+#if DEBUG_SPLIT
+			const action_mask mm(m & play.initial_actions_per_state[i]);
+			const action_mask mref(t ? action_mask::stand : m);
+			if (mm != mref) {
+				cout << "ERROR: in state " << i << ", mm != mref" << endl;
+				cout << "\tgot: ";
+				mm.dump_debug(cout) << " vs. ";
+				mref.dump_debug(cout) << endl;
+				play.initial_actions_per_state[i].dump_debug(
+					cout << "\tinitial: ") << endl;
+			}
+#endif
+		const pair<player_choice, player_choice>
+#if ACTION_MASKS_GIVEN_STATE
+			p(c.best_two(m & play.initial_actions_per_state[i]));
+#else
 			p(c.best_two(t ? action_mask::stand : m));
+#endif
 #else
 			p(t ? c.best_two(false, false, false) :
 				c.best_two(D, S, R));

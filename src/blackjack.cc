@@ -103,12 +103,89 @@ play_map::init_reverse_topo_order =
 //-----------------------------------------------------------------------------
 // class play_map method definitions
 play_map::play_map(const variation& v) : var(v),
-		dealer_hit(), player_hit(), player_resplit(), last_split() {
+		dealer_hit(), player_hit(), player_resplit(), last_split()
+#if ACTION_MASKS_GIVEN_STATE
+		,
+		post_hit_actions(action_mask::stand_hit),
+		// some variations allow surrender-after-hit!
+		post_double_down_actions(action_mask::stand),
+		// some variations allow surrender-after-double-down!
+		post_split_actions(action_mask::stand_hit)
+#endif
+		{
 	set_dealer_policy();
 	compute_player_hit_state();
 	compute_player_split_state();
 //	compute_final_outcomes();	// is now static global
+#if ACTION_MASKS_GIVEN_STATE
+	initialize_action_masks();
+#endif
 }
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+#if ACTION_MASKS_GIVEN_STATE
+void
+play_map::initialize_action_masks(void) {
+	if (var.double_after_split)
+		post_split_actions += DOUBLE;
+	if (var.resplit)
+		post_split_actions += SPLIT;
+	// for now, no surrender after split...
+	// don't handle split-aces variations here
+	// TODO: once-card-on-split-aces
+	action_mask default_init = action_mask::stand_hit;
+	if (var.some_double())
+		default_init += DOUBLE;
+	if (var.surrender_late)
+		default_init += SURRENDER;
+	action_mask default_init_split(default_init);
+	if (var.split)
+		default_init_split += SPLIT;
+	std::fill(initial_actions_per_state.begin(),
+		initial_actions_per_state.end(), default_init);
+	// splittable states
+	std::fill(&initial_actions_per_state[pair_offset],
+		&initial_actions_per_state[pair_offset+card_values],
+		default_init_split);
+	// terminal states: stand only
+	size_t i = 0;
+	for ( ; i<p_action_states; ++i) {
+		if (player_hit[i].is_terminal()) {
+			initial_actions_per_state[i] = action_mask::stand;
+		}
+	}
+	std::fill(initial_actions_given_dealer.begin(),
+		initial_actions_given_dealer.end(), default_init);
+	// restrict double-downs, e.g. only on player 10,11
+	// 'other' includes A,x soft-hands
+	if (var.double_H9) {
+		initial_actions_per_state[9] += DOUBLE;
+	} else {
+		initial_actions_per_state[9] -= DOUBLE;
+	}
+	if (var.double_H10) {
+		initial_actions_per_state[10] += DOUBLE;
+		initial_actions_per_state[pair_offset +5] += DOUBLE;
+	} else {
+		initial_actions_per_state[10] -= DOUBLE;
+		initial_actions_per_state[pair_offset +5] -= DOUBLE;
+	}
+	if (var.double_H11) {
+		initial_actions_per_state[11] += DOUBLE;
+	} else {
+		initial_actions_per_state[11] -= DOUBLE;
+	}
+	// TODO: restrictions given dealer reveal
+	// restrict surrenders, e.g. only vs. dealer A,10
+#if DUMP_DURING_EVALUATE
+	i = 0;
+	for ( ; i<p_action_states; ++i) {
+		initial_actions_per_state[i].dump_debug(
+			cout << "initial state " << i << ": ") << endl;
+	}
+#endif
+}
+#endif
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 size_t

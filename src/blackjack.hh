@@ -10,6 +10,15 @@
 #include "variation.hh"
 #include "player_action.hh"
 
+/**
+	Define to 1 to use per-state actions masks.
+	Initial action mask should be the intersection (AND)
+	of the allowable actions given the hand and 
+	allowable actions given dealer's reveal card.
+	Actions may be further restricted by other rule variations.
+ */
+#define	ACTION_MASKS_GIVEN_STATE		1
+
 namespace blackjack {
 using std::map;
 using std::pair;
@@ -55,6 +64,22 @@ public:
 	/// transition table for splits, with no re-split
 	state_machine			last_split;
 
+#if ACTION_MASKS_GIVEN_STATE
+	typedef array<action_mask, p_action_states>
+					initial_actions_per_state_type;
+	typedef	array<action_mask, card_values>
+					initial_actions_given_dealer_type;
+	initial_actions_per_state_type	initial_actions_per_state;
+	initial_actions_given_dealer_type
+					initial_actions_given_dealer;
+	/// after a player hits, actions options are restricted
+	action_mask			post_hit_actions;
+	/// after a player doubles-down, actions options are restricted
+	action_mask			post_double_down_actions;
+	/// after a player splits, action options are restricted
+	action_mask			post_split_actions;
+#endif
+
 	/// in the dealer/player final states, who wins
 	typedef	array<outcome, dealer_states>		outcome_array_type;
 	typedef	array<outcome_array_type, player_states>
@@ -62,6 +87,7 @@ public:
 	static const outcome_matrix_type&	outcome_matrix;
 private:
 	// TODO: support rule variations in outcome matrix
+	// e.g., player-loses-ties, player-blackjack-always-wins
 	static outcome_matrix_type	__outcome_matrix;
 	static const int		init_outcome_matrix;
 
@@ -80,6 +106,11 @@ public:
 	player_final_state_map(const size_t);
 
 private:
+#if ACTION_MASKS_GIVEN_STATE
+	void
+	initialize_action_masks(void);
+#endif
+
 	void
 	set_dealer_policy(void);
 

@@ -99,6 +99,16 @@ public:
 	}
 
 	bool
+	operator == (const action_mask& m) const {
+		return _bits == m._bits;
+	}
+
+	bool
+	operator != (const action_mask& m) const {
+		return _bits != m._bits;
+	}
+
+	bool
 	action_permitted(const player_choice p) const {
 		return _bits & (1 << p);
 	}

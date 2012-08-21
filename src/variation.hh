@@ -37,6 +37,7 @@ struct variation {
 	bool			surrender_early;
 	/// option to surrender after checking for blackjack (common)
 	bool			surrender_late;
+	// TODO: surrender restrictions (vs. dealer 10,A only)
 #if 0
 	/// option to surrender at any point
 	bool			surrender_any_time;
