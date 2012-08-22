@@ -77,17 +77,10 @@ using util::strings::string_to_num;
 using util::member_select_iterator;
 using util::var_member_select_iterator;
 
-#if BITMASK_ACTION_OPTIONS
 #define	DP_WRAP(x, y)		action_mask(action_mask::dp_tag(), x, y)
 #define	DPR_WRAP(x, y, z)	action_mask(action_mask::dpr_tag(), x, y, z)
 #define	STAND_HIT_ONLY		action_mask::stand_hit
 #define	ALL_OPTIONS		action_mask::all
-#else
-#define	DP_WRAP(x, y)		x, y
-#define	DPR_WRAP(x, y, z)	x, y, z
-#define	STAND_HIT_ONLY		false, false, false
-#define	ALL_OPTIONS		true, true, true
-#endif
 
 //=============================================================================
 // Blackjack specific routines
@@ -629,15 +622,10 @@ if (var.split) {
 #define	RESPLIT_DPR	RESPLIT_DP, false
 #define	SPLIT_DP	DAS, false
 #define	SPLIT_DPR	var.some_double(), true, var.surrender_late
-#if BITMASK_ACTION_OPTIONS
 	const action_mask rm(action_mask::dpr_tag(), RESPLIT_DPR);
 	const action_mask sm(action_mask::dpr_tag(), SPLIT_DPR);
 #define	RESPLIT_OPTION_ARG	rm
 #define	SPLIT_OPTION_ARG	sm
-#else
-#define	RESPLIT_OPTION_ARG	RESPLIT_DPR
-#define	SPLIT_OPTION_ARG	SPLIT_DPR
-#endif
 // cannot surrender after splitting, but that would be interesting...
 if (var.resplit) {
 	DEBUG_SPLIT_PRINT(cout, "Resplitting allowed." << endl);
@@ -754,21 +742,14 @@ reveal_strategy::reset_split_edges(const play_map& play) {
 void
 reveal_strategy::compute_player_split_edges(const play_map& play,
 		const deck_distribution& card_odds,
-#if BITMASK_ACTION_OPTIONS
-		const action_mask& m
-#else
-		const bool d, const bool s
-#endif
-		) {
+		const action_mask& m) {
 	const variation& var(play.var);
 	const player_stand_edges_vector&
 		pse(player_stand_edges_post_peek);
 	edge_type *player_split_edges =
 		&player_initial_edges_post_peek[pair_offset];
-#if BITMASK_ACTION_OPTIONS
 	const bool s = m.can_split();
 //	const bool d = m.can_double_down();
-#endif
 	const state_machine& split_table(s ? play.player_resplit : play.last_split);
 	size_t i;
 	for (i=0; i<card_values; ++i) {
@@ -807,14 +788,10 @@ reveal_strategy::compute_player_split_edges(const play_map& play,
 	// player may decide whether or not to split
 	player_split_edges[i] =
 		sum.value(
-#if BITMASK_ACTION_OPTIONS
 #if ACTION_MASKS_GIVEN_STATE
 			sum.best(m & play.initial_actions_per_state[p]),
 #else
 			sum.best(m),
-#endif
-#else
-			sum.best(DPR_WRAP(d, s, false)),
 #endif
 			-var.surrender_penalty);
 	}
@@ -1032,12 +1009,7 @@ strategy::dump_player_hit_stand_edges(ostream& o) const {
 void
 reveal_strategy::compute_player_initial_nonsplit_edges(
 		const play_map& play,
-#if BITMASK_ACTION_OPTIONS
-		const action_mask& m
-#else
-		const bool D, const bool S, const bool R
-#endif
-		)
+		const action_mask& m)
 {
 //	const player_initial_edges_vector *player_split_edges =
 //		&player_initial_edges_post_peek[p_action_states];
@@ -1050,7 +1022,6 @@ reveal_strategy::compute_player_initial_nonsplit_edges(
 		// since splits are folded into non-pair states
 		const bool t = play.player_hit[i].is_terminal();
 //			splits are computed in a separate section of the table
-#if BITMASK_ACTION_OPTIONS
 #if DEBUG_SPLIT
 			const action_mask mm(m & play.initial_actions_per_state[i]);
 			const action_mask mref(t ? action_mask::stand : m);
@@ -1068,10 +1039,6 @@ reveal_strategy::compute_player_initial_nonsplit_edges(
 			p(c.best_two(m & play.initial_actions_per_state[i]));
 #else
 			p(c.best_two(t ? action_mask::stand : m));
-#endif
-#else
-			p(t ? c.best_two(false, false, false) :
-				c.best_two(D, S, R));
 #endif
 		const edge_type e = c.value(p.first, -surr_pen);
 		DEBUG_SPLIT_PRINT(cout, "p.first=" << p.first << ", t=" << t

@@ -47,12 +47,10 @@ expectations::value(const player_choice c,
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-#if BITMASK_ACTION_OPTIONS
 player_choice
 expectations::best(void) const {
 	return best(action_mask::all);
 }
-#endif
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
@@ -88,25 +86,13 @@ expectations::optimize(const edge_type& surrender) {
 	TODO: pass choice mask bitfield
  */
 pair<player_choice, player_choice>
-expectations::best_two(
-#if BITMASK_ACTION_OPTIONS
-	const action_mask& m
-#else
-	const bool d, const bool s, const bool r
-#endif
-	) const {
-#if BITMASK_ACTION_OPTIONS
+expectations::best_two(const action_mask& m) const {
 	const bool h = m.can_hit();
 	const bool d = m.can_double_down();
 	const bool s = m.can_split();
 	const bool r = m.can_surrender();
 #if DEBUG_OPT
 	m.dump_debug(cout << "best_two: ") << endl;
-#endif
-#else
-	const bool h = true;
-	DEBUG_OPT_PRINT(cout, "best_two: s,h,d,p,r=1," <<
-		h << ',' << d << ',' << s << ',' << r << endl);
 #endif
 	player_choice ret[2];
 	const player_choice* i(&actions[0]), *e(&actions[4]);
@@ -180,18 +166,12 @@ ostream&
 expectations::dump_choice_actions_2(ostream& o,
 		const expectations& e1, const expectations& e2,
 		const edge_type& surr, 
-#if BITMASK_ACTION_OPTIONS
 		const action_mask& m,
-#else
-		const bool d, const bool p, const bool r, 
-#endif
 		const char* _indent) {
 //	const util::precision_saver p(o, 4);
-#if BITMASK_ACTION_OPTIONS
 	const bool d = m.can_double_down();
 	const bool p = m.can_split();
 	const bool r = m.can_surrender();
-#endif
 	const char* indent = _indent ? _indent : "";
 	o << indent << "stand: " << e1.stand() << '\t' << e2.stand()
 		<< '\n' << indent << "hit  : " << e1.hit() << '\t' << e2.hit();

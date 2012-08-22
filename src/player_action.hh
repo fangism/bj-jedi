@@ -11,7 +11,6 @@ namespace blackjack {
 using std::istream;
 using std::ostream;
 
-#if BITMASK_ACTION_OPTIONS
 /**
 	Bitfield representing which actions are allowed.
 	A set bit means the associated action is allowed; 
@@ -168,12 +167,6 @@ public:
 	dump_debug(ostream&) const;
 
 };	// end struct action_mask
-#else
-extern
-player_choice
-prompt_player_action(istream&, ostream&, const bool, const bool, const bool,
-	const bool a = false);
-#endif
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 }	// end namespace blackjack

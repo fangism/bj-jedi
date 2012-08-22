@@ -505,15 +505,11 @@ do {
 	const bool p = ph.splittable() &&
 		(player_hands.size() < player_hands.capacity());
 	const bool r = ph.surrenderable() && !already_split();
-#if BITMASK_ACTION_OPTIONS
 	action_mask m(STAND, HIT);
 	if (d)	m += DOUBLE;
 	if (p)	m += SPLIT;
 	if (r)	m += SURRENDER;
 #define	ACTION_OPTIONS		m
-#else
-#define	ACTION_OPTIONS		d, p, r
-#endif
 #endif
 	// only first hand is surrenderrable, normally
 	dump_situation(j);
@@ -544,10 +540,8 @@ do {
 	}
 #if HAND_PLAYER_OPTIONS
 	pc = ph.player_options.prompt(istr, ostr, opt.auto_play);
-#elif BITMASK_ACTION_OPTIONS
-	pc = m.prompt(istr, ostr, opt.auto_play);
 #else
-	pc = prompt_player_action(istr, ostr, ACTION_OPTIONS, opt.auto_play);
+	pc = m.prompt(istr, ostr, opt.auto_play);
 #endif
 	bool bookmarked = false;
 	bool notified = false;
@@ -663,12 +657,7 @@ do {
  */
 pair<expectations, expectations>
 grader::assess_action(const size_t ps, const size_t dlr, ostream& o,
-#if BITMASK_ACTION_OPTIONS
-		const action_mask& m
-#else
-		const bool d, const bool p, const bool r
-#endif
-		) {
+		const action_mask& m) {
 #if HAND_PLAYER_OPTIONS
 #undef	ACTION_OPTIONS
 #define	ACTION_OPTIONS		m

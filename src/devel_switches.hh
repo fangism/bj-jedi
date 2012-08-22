@@ -9,8 +9,8 @@
 	actions in a given player state.
 	Rationale: cleaner argument passing.
 	Goal: 1
-	Status: testing
+	Status: tested, perm'd
  */
-#define	BITMASK_ACTION_OPTIONS			1
+// #define	BITMASK_ACTION_OPTIONS			1
 
 #endif	// __BOC2_DEVEL_SWITCHES_HH__

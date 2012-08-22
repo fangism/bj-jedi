@@ -23,25 +23,14 @@ struct bookmark {
 	// for now, just save everything, only ::cards is needed
 	deck_state			cards;
 #if !HAND_PLAYER_OPTIONS
-#if BITMASK_ACTION_OPTIONS
 	action_mask			player_options;
-#else
-	bool				may_double;
-	bool				may_split;
-	bool				may_surrender;
-#endif
 #endif
 
 	bookmark();
 
 	bookmark(const size_t, const hand&, const deck_state&
 #if !HAND_PLAYER_OPTIONS
-		,
-#if BITMASK_ACTION_OPTIONS
-		const action_mask&
-#else
-		const bool, const bool, const bool
-#endif
+		, const action_mask&
 #endif
 		);
 

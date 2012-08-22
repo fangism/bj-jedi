@@ -9,12 +9,10 @@ using std::endl;
 using std::string;
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-#if BITMASK_ACTION_OPTIONS
 const action_mask action_mask::stand(STAND);
 const action_mask action_mask::stand_hit(STAND, HIT);
 const action_mask action_mask::all(stand_hit +DOUBLE +SPLIT +SURRENDER);
 const action_mask action_mask::no_stand(all -STAND);
-#endif
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
@@ -24,18 +22,11 @@ const action_mask action_mask::no_stand(all -STAND);
 	\param a if should just automatically play (OPTIM)
  */
 player_choice
-#if BITMASK_ACTION_OPTIONS
 action_mask::prompt(istream& i, ostream& o, const bool a) const
-#else
-prompt_player_action(istream& i, ostream& o, 
-		const bool d, const bool p, const bool r, const bool a)
-#endif
 	{
-#if BITMASK_ACTION_OPTIONS
 	const bool d = can_double_down();
 	const bool p = can_split();
 	const bool r = can_surrender();
-#endif
 	player_choice c = NIL;
 do {
 //	int ch;
@@ -96,7 +87,6 @@ do {
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-#if BITMASK_ACTION_OPTIONS
 ostream&
 action_mask::dump_debug(ostream& o) const {
 	return o << "s,h,d,p,r=" <<
@@ -106,7 +96,6 @@ action_mask::dump_debug(ostream& o) const {
 		can_split() << ',' <<
 		can_surrender();
 }
-#endif
 
 //=============================================================================
 }	// end namespace blackjack
