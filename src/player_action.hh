@@ -29,6 +29,7 @@ public:
 	static const action_mask		stand;
 	static const action_mask		stand_hit;
 	static const action_mask		all;
+	static const action_mask		no_stand;
 
 	struct dp_tag { };
 	struct dpr_tag { };
@@ -137,6 +138,11 @@ public:
 	bool
 	can_surrender(void) const {
 		return action_permitted(SURRENDER);
+	}
+
+	bool
+	has_multiple_choice(void) const {
+		return _bits & no_stand._bits;
 	}
 
 	player_choice

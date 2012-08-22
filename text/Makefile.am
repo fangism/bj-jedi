@@ -220,7 +220,8 @@ ACTION_EXPECTATIONS_TABLE_SCRIPT = \
 			-e '/^double/s| \\hline|*|' \
 			-e '/^split/s| \\hline|*|' \
 			-e '/^delta/s|$$| \\hline|' \
-			-e 's/delta/$$\\absdelta$$/g'; \
+			-e 's/delta/$$\\absdelta$$/g' \
+			-e '/^21/,/^A/s|\*$$| \\hline \\hline|' ; \
 	} > $@
 
 tables/player-action-expectations-basic-H17.tex: \

@@ -1305,6 +1305,9 @@ strategy::lookup_player_action_expectations(
  */
 ostream&
 strategy::dump_expectations(const size_t state, ostream& o) const {
+#if ACTION_MASKS_GIVEN_STATE
+	const action_mask& m(play.initial_actions_per_state[state]);
+#endif
 	dump_optimal_actions(state, o, 3, "\t");
 #if 0
 	typedef	member_select_iterator<reveal_array_type::const_iterator,
@@ -1330,6 +1333,7 @@ strategy::dump_expectations(const size_t state, ostream& o) const {
 #define	EFORMAT(x)	setw(6) << x
 #endif
 #define	EXPECTATION_REF		const expectations& ex(reveal[reveal_print_ordering[j]].player_actions[state]);
+// stand is always allowed
 	o << "stand";
 	for (j=0; j<card_values; ++j) {
 		EXPECTATION_REF
@@ -1337,6 +1341,9 @@ strategy::dump_expectations(const size_t state, ostream& o) const {
 		if (ex.best() == STAND) o << '*';
 	}
 	o << endl;
+#if ACTION_MASKS_GIVEN_STATE
+if (m.can_hit())
+#endif
 if (z.hit() > -1.0 * card_values) {
 	o << "hit";
 	for (j=0; j<card_values; ++j) {
@@ -1346,6 +1353,9 @@ if (z.hit() > -1.0 * card_values) {
 	}
 	o << endl;
 }
+#if ACTION_MASKS_GIVEN_STATE
+if (m.can_double_down())
+#endif
 if (z.double_down() > -2.0 *card_values) {
 	// TODO: pass double_multiplier?
 	o << "double";
@@ -1357,6 +1367,9 @@ if (z.double_down() > -2.0 *card_values) {
 	o << endl;
 }
 // for brevity, could omit non-splittable states...
+#if ACTION_MASKS_GIVEN_STATE
+if (m.can_split())
+#endif
 if (z.split() > -2.0 *card_values) {
 	o << "split";
 	for (j=0; j<card_values; ++j) {
@@ -1366,7 +1379,10 @@ if (z.split() > -2.0 *card_values) {
 	}
 	o << endl;
 }
-#if 1
+#if ACTION_MASKS_GIVEN_STATE
+if (m.can_surrender())
+#endif
+{
 	o << "surr.";
 	for (j=0; j<card_values; ++j) {
 		EXPECTATION_REF
@@ -1375,8 +1391,12 @@ if (z.split() > -2.0 *card_values) {
 		if (ex.best() == SURRENDER) o << '*';
 	}
 	o << endl;
-#endif
+}
 #if 1
+#if ACTION_MASKS_GIVEN_STATE
+if (m.has_multiple_choice())
+#endif
+{
 	o << "delta";
 	for (j=0; j<card_values; ++j) {
 		EXPECTATION_REF
@@ -1387,6 +1407,7 @@ if (z.split() > -2.0 *card_values) {
 			-var.surrender_penalty));
 	}
 	o << endl;
+}
 #endif
 
 #undef	EFORMAT
@@ -1403,6 +1424,9 @@ if (z.split() > -2.0 *card_values) {
 ostream&
 strategy::dump_optimal_actions(const size_t state,
 		ostream& o, const size_t n, const char* delim) const {
+#if ACTION_MASKS_GIVEN_STATE
+	const action_mask& m(play.initial_actions_per_state[state]);
+#endif
 	assert(n<=5);
 	size_t j;
 	for (j=0; j<card_values; ++j) {
@@ -1410,7 +1434,11 @@ strategy::dump_optimal_actions(const size_t state,
 		o << delim;
 		size_t k = 0;
 		for ( ; k<n; ++k) {
-			o << action_key[ex.actions[k]];
+			const player_choice a(ex.actions[k]);
+#if ACTION_MASKS_GIVEN_STATE
+			if (m.action_permitted(a))
+#endif
+			o << action_key[a];
 		}
 	}
 	o << endl;

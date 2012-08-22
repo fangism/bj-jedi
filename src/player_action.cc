@@ -13,6 +13,7 @@ using std::string;
 const action_mask action_mask::stand(STAND);
 const action_mask action_mask::stand_hit(STAND, HIT);
 const action_mask action_mask::all(stand_hit +DOUBLE +SPLIT +SURRENDER);
+const action_mask action_mask::no_stand(all -STAND);
 #endif
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
