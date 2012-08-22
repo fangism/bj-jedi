@@ -16,8 +16,12 @@
 	of the allowable actions given the hand and 
 	allowable actions given dealer's reveal card.
 	Actions may be further restricted by other rule variations.
+	Goal: 1
+	Rationale: cleaner definition of state transitions for 
+		analysis and interactive game.
+	Status: tested, perm'd
  */
-#define	ACTION_MASKS_GIVEN_STATE		1
+// #define	ACTION_MASKS_GIVEN_STATE		1
 
 namespace blackjack {
 using std::map;
@@ -64,7 +68,6 @@ public:
 	/// transition table for splits, with no re-split
 	state_machine			last_split;
 
-#if ACTION_MASKS_GIVEN_STATE
 	typedef array<action_mask, p_action_states>
 					initial_actions_per_state_type;
 	typedef	array<action_mask, card_values>
@@ -78,7 +81,6 @@ public:
 	action_mask			post_double_down_actions;
 	/// after a player splits, action options are restricted
 	action_mask			post_split_actions;
-#endif
 
 	/// in the dealer/player final states, who wins
 	typedef	array<outcome, dealer_states>		outcome_array_type;
@@ -106,10 +108,8 @@ public:
 	player_final_state_map(const size_t);
 
 private:
-#if ACTION_MASKS_GIVEN_STATE
 	void
 	initialize_action_masks(void);
-#endif
 
 	void
 	set_dealer_policy(void);

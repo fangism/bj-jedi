@@ -610,14 +610,13 @@ reveal_strategy::compute_action_expectations(const play_map& play,
 	compute_player_hit_stand_edges(var.surrender_penalty);
 	// OK up to here
 	reset_split_edges(play);	// zero-out
-#if ACTION_MASKS_GIVEN_STATE
 	const action_mask& dm(play.initial_actions_given_dealer[reveal_card]);
 	const action_mask drm(dm & play.post_split_actions);
 	const action_mask dfm(drm -SPLIT);	// final, no more split
-#endif
 	// the following computed edges are post-peek
 if (var.split) {
 	const bool DAS = var.double_after_split && var.some_double();
+#if 0
 #define	RESPLIT_DP	DAS, var.resplit
 #define	RESPLIT_DPR	RESPLIT_DP, false
 #define	SPLIT_DP	DAS, false
@@ -626,87 +625,37 @@ if (var.split) {
 	const action_mask sm(action_mask::dpr_tag(), SPLIT_DPR);
 #define	RESPLIT_OPTION_ARG	rm
 #define	SPLIT_OPTION_ARG	sm
+#endif
 // cannot surrender after splitting, but that would be interesting...
 if (var.resplit) {
 	DEBUG_SPLIT_PRINT(cout, "Resplitting allowed." << endl);
 	DEBUG_SPLIT_PRINT(cout, "  nonsplit_edges 1" << endl);
 	// need to work backwards from post-split edges
-	compute_player_initial_nonsplit_edges(play,
-#if ACTION_MASKS_GIVEN_STATE
-		dfm	// up to 4
-#else
-		RESPLIT_OPTION_ARG
-#endif
-		);
+	compute_player_initial_nonsplit_edges(play, dfm);
+		// resplit up to 4
 	DEBUG_SPLIT_PRINT(cout, "  split_edges 1" << endl);
-	compute_player_split_edges(play, card_odds,
-#if ACTION_MASKS_GIVEN_STATE
-		dfm	// up to 4
-#else
-		DP_WRAP(DAS, var.resplit)
-#endif
-		);	// iterate
+	compute_player_split_edges(play, card_odds, dfm);
+		// resplit up to 4
+	// iterate
 	DEBUG_SPLIT_PRINT(cout, "  nonsplit_edges 2" << endl);
-	compute_player_initial_nonsplit_edges(play,
-#if ACTION_MASKS_GIVEN_STATE
-		drm
-#else
-		RESPLIT_OPTION_ARG
-#endif
-		);
+	compute_player_initial_nonsplit_edges(play, drm);
 	DEBUG_SPLIT_PRINT(cout, "  split_edges 2" << endl);
-	compute_player_split_edges(play, card_odds,
-#if ACTION_MASKS_GIVEN_STATE
-		drm
-#else
-		DP_WRAP(DAS, var.resplit)
-#endif
-		);	// iterate
+	compute_player_split_edges(play, card_odds, drm);	// iterate
 	DEBUG_SPLIT_PRINT(cout, "  nonsplit_edges 3" << endl);
-	compute_player_initial_nonsplit_edges(play,
-#if ACTION_MASKS_GIVEN_STATE
-		dm
-#else
-		SPLIT_OPTION_ARG
-#endif
-		);
+	compute_player_initial_nonsplit_edges(play, dm);
 } else {
 	DEBUG_SPLIT_PRINT(cout, "Single split allowed." << endl);
 	DEBUG_SPLIT_PRINT(cout, "  nonsplit_edges 1" << endl);
-	compute_player_initial_nonsplit_edges(play,
-#if ACTION_MASKS_GIVEN_STATE
-		dfm
-#else
-		DPR_WRAP(DAS, false, false)
-#endif
-		);
+	compute_player_initial_nonsplit_edges(play, dfm);
 	DEBUG_SPLIT_PRINT(cout, "  split_edges 1" << endl);
-	compute_player_split_edges(play, card_odds,
-#if ACTION_MASKS_GIVEN_STATE
-		dfm
-#else
-		DP_WRAP(DAS, false)
-#endif
-		);	// iterate
+	compute_player_split_edges(play, card_odds, dfm);	// iterate
 	DEBUG_SPLIT_PRINT(cout, "  nonsplit_edges 2" << endl);
-	compute_player_initial_nonsplit_edges(play,
-#if ACTION_MASKS_GIVEN_STATE
-		dm
-#else
-		SPLIT_OPTION_ARG
-#endif
-		);
+	compute_player_initial_nonsplit_edges(play, dm);
 }
 } else {
 	DEBUG_SPLIT_PRINT(cout, "No split allowed." << endl);
 	// no splitting allowed!
-	compute_player_initial_nonsplit_edges(play,
-#if ACTION_MASKS_GIVEN_STATE
-		dm
-#else
-		DPR_WRAP(var.some_double(), false, var.surrender_late)
-#endif
-	);
+	compute_player_initial_nonsplit_edges(play, dm);
 }
 	// to account for player's blackjack
 }
@@ -787,12 +736,7 @@ reveal_strategy::compute_player_split_edges(const play_map& play,
 	const expectations& sum(player_actions[p]);
 	// player may decide whether or not to split
 	player_split_edges[i] =
-		sum.value(
-#if ACTION_MASKS_GIVEN_STATE
-			sum.best(m & play.initial_actions_per_state[p]),
-#else
-			sum.best(m),
-#endif
+		sum.value(sum.best(m & play.initial_actions_per_state[p]),
 			-var.surrender_penalty);
 	}
 }	// end compute_player_split_edges()
@@ -1035,11 +979,7 @@ reveal_strategy::compute_player_initial_nonsplit_edges(
 			}
 #endif
 		const pair<player_choice, player_choice>
-#if ACTION_MASKS_GIVEN_STATE
 			p(c.best_two(m & play.initial_actions_per_state[i]));
-#else
-			p(c.best_two(t ? action_mask::stand : m));
-#endif
 		const edge_type e = c.value(p.first, -surr_pen);
 		DEBUG_SPLIT_PRINT(cout, "p.first=" << p.first << ", t=" << t
 			<< ", i=" << i << ", e=" << e << endl);
@@ -1272,9 +1212,7 @@ strategy::lookup_player_action_expectations(
  */
 ostream&
 strategy::dump_expectations(const size_t state, ostream& o) const {
-#if ACTION_MASKS_GIVEN_STATE
 	const action_mask& m(play.initial_actions_per_state[state]);
-#endif
 	dump_optimal_actions(state, o, 3, "\t");
 #if 0
 	typedef	member_select_iterator<reveal_array_type::const_iterator,
@@ -1292,13 +1230,7 @@ strategy::dump_expectations(const size_t state, ostream& o) const {
 		z += i->player_actions[state];
 	}
 	size_t j;
-#if 0
-#define	EFORMAT(x)	setw(5) << int(x*1000)
-	const util::width_saver ws(o, 5);
-// setprecision?
-#else
 #define	EFORMAT(x)	setw(6) << x
-#endif
 #define	EXPECTATION_REF		const expectations& ex(reveal[reveal_print_ordering[j]].player_actions[state]);
 // stand is always allowed
 	o << "stand";
@@ -1308,9 +1240,7 @@ strategy::dump_expectations(const size_t state, ostream& o) const {
 		if (ex.best() == STAND) o << '*';
 	}
 	o << endl;
-#if ACTION_MASKS_GIVEN_STATE
 if (m.can_hit())
-#endif
 if (z.hit() > -1.0 * card_values) {
 	o << "hit";
 	for (j=0; j<card_values; ++j) {
@@ -1320,9 +1250,7 @@ if (z.hit() > -1.0 * card_values) {
 	}
 	o << endl;
 }
-#if ACTION_MASKS_GIVEN_STATE
 if (m.can_double_down())
-#endif
 if (z.double_down() > -2.0 *card_values) {
 	// TODO: pass double_multiplier?
 	o << "double";
@@ -1334,9 +1262,7 @@ if (z.double_down() > -2.0 *card_values) {
 	o << endl;
 }
 // for brevity, could omit non-splittable states...
-#if ACTION_MASKS_GIVEN_STATE
 if (m.can_split())
-#endif
 if (z.split() > -2.0 *card_values) {
 	o << "split";
 	for (j=0; j<card_values; ++j) {
@@ -1346,9 +1272,7 @@ if (z.split() > -2.0 *card_values) {
 	}
 	o << endl;
 }
-#if ACTION_MASKS_GIVEN_STATE
 if (m.can_surrender())
-#endif
 {
 	o << "surr.";
 	for (j=0; j<card_values; ++j) {
@@ -1360,9 +1284,7 @@ if (m.can_surrender())
 	o << endl;
 }
 #if 1
-#if ACTION_MASKS_GIVEN_STATE
 if (m.has_multiple_choice())
-#endif
 {
 	o << "delta";
 	for (j=0; j<card_values; ++j) {
@@ -1391,9 +1313,7 @@ if (m.has_multiple_choice())
 ostream&
 strategy::dump_optimal_actions(const size_t state,
 		ostream& o, const size_t n, const char* delim) const {
-#if ACTION_MASKS_GIVEN_STATE
 	const action_mask& m(play.initial_actions_per_state[state]);
-#endif
 	assert(n<=5);
 	size_t j;
 	for (j=0; j<card_values; ++j) {
@@ -1402,10 +1322,8 @@ strategy::dump_optimal_actions(const size_t state,
 		size_t k = 0;
 		for ( ; k<n; ++k) {
 			const player_choice a(ex.actions[k]);
-#if ACTION_MASKS_GIVEN_STATE
 			if (m.action_permitted(a))
-#endif
-			o << action_key[a];
+				o << action_key[a];
 		}
 	}
 	o << endl;
@@ -1416,13 +1334,7 @@ strategy::dump_optimal_actions(const size_t state,
 ostream&
 strategy::dump_optimal_edges(const size_t state, ostream& o) const {
 	dump_optimal_actions(state, o, 3, "\t");
-#if 0
-#define	EFORMAT(x)	setw(5) << int(x*1000)
-// setprecision?
-	const util::width_saver ws(o, 5);
-#else
 #define	EFORMAT(x)	setw(6) << x
-#endif
 	size_t j;
 	o << "edge";
 	for (j=0; j<card_values; ++j) {

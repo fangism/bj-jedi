@@ -103,27 +103,21 @@ play_map::init_reverse_topo_order =
 //-----------------------------------------------------------------------------
 // class play_map method definitions
 play_map::play_map(const variation& v) : var(v),
-		dealer_hit(), player_hit(), player_resplit(), last_split()
-#if ACTION_MASKS_GIVEN_STATE
-		,
+		dealer_hit(), player_hit(), player_resplit(), last_split(),
 		post_hit_actions(action_mask::stand_hit),
 		// some variations allow surrender-after-hit!
 		post_double_down_actions(action_mask::stand),
 		// some variations allow surrender-after-double-down!
 		post_split_actions(action_mask::stand_hit)
-#endif
 		{
 	set_dealer_policy();
 	compute_player_hit_state();
 	compute_player_split_state();
 //	compute_final_outcomes();	// is now static global
-#if ACTION_MASKS_GIVEN_STATE
 	initialize_action_masks();
-#endif
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-#if ACTION_MASKS_GIVEN_STATE
 void
 play_map::initialize_action_masks(void) {
 	if (var.double_after_split)
@@ -185,7 +179,6 @@ play_map::initialize_action_masks(void) {
 	}
 #endif
 }
-#endif
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 size_t
