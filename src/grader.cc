@@ -78,11 +78,13 @@ grader::~grader() { }
 	TODO: notify when wrong, based on count!
 	TODO: support bookmarking insurance?
 	Is non-const only because of updating statistics.
+	TODO: even-money offer is != insurance when payoff != 2:1
+		Most 6:5 games will not offer even-money.
  */
 bool
 grader::offer_insurance(const bool pbj) {
 	// if peek_ACE
-	const char* prompt = pbj ?  "even-money?" : "insurance?";
+	const char* prompt = pbj ?  "even-money" : "insurance";
 	bool done = false;
 	bool buy_insurance = false;
 	const double p = C.draw_ten_probability();
@@ -91,7 +93,7 @@ grader::offer_insurance(const bool pbj) {
 	string line;
 	do {
 	do {
-		ostr << prompt << " [ync?!]: ";
+		ostr << prompt << "? [ync?!]: ";
 		// istr >> line;
 		if (opt.auto_play) {
 			ostr << '!' << endl;
@@ -115,7 +117,7 @@ grader::offer_insurance(const bool pbj) {
 		if (line == "!") {
 			buy_insurance = advise;
 			ostr << (buy_insurance ? "Accepted" : "Declined")
-				<< " insurance." << endl;
+				<< " " << prompt << "." << endl;
 			done = true;
 		}
 	}

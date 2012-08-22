@@ -405,7 +405,7 @@ even-money? [ync?!]: !
 odds: 2.239 : 1
 pay : 2.000 : 1
 advise: no
-Declined insurance.
+Declined even-money.
 No dealer blackjack.
 dealer: AA (A,1)
 bankroll: 101.00, bet: 1.00

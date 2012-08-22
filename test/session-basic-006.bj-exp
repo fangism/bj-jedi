@@ -342,7 +342,7 @@ even-money? [ync?!]: !
 odds: 2.205 : 1
 pay : 2.000 : 1
 advise: no
-Declined insurance.
+Declined even-money.
 dealer: AT (BJ)
 Dealer has blackjack.
 Push.

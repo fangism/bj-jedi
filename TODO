@@ -1,6 +1,6 @@
 TODO list:
 
-compute 5-card charlie variations
+compute 5-card, 6-card charlie variations
 
 standard analysis:
 	add variance analysis
@@ -40,6 +40,15 @@ permissible actions table (action_masks):
 		and for calculations, take the initial permissible actions
 		as the intersection (bitwise-AND) of the two action masks.
 	This will not cover everything.  Splits are considered separately.
+
+even-money offer on 6:5 blackjack?
+	rare, but if offered, should *always* be taken
+
+side-bet analysis:
+	seen in the wild: 6-7-8, paired hand bonus, straight, 
+		flush, 3-of-a-kind.
+	Typically, never favorable to play these side bets, 
+		but with counting, may actually become favorable!
 
 card randomization:
 alternatively, std::shuffle entire sequence up front
