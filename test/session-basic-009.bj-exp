@@ -302,11 +302,12 @@ bankroll: 102.00, bet: 1.00
 ---------------- new hand ----------------
 dealer: 4
 [1/1] dealer: 4, player: QJ (T,T)
-action? [hsdrbc?!]> !
+action? [hsdprbc?!]> !
 	edges:	basic	dynamic
 	stand: 0.657	0.664
 	hit  : -0.855	-0.839
 	dbl  : -1.710	-1.679
+	split: 0.459	0.465
 	surr.: -0.500	-0.500
 	advise:	stand	stand
 auto: stand
@@ -790,11 +791,12 @@ bankroll: 98.00, bet: 1.00
 ---------------- new hand ----------------
 dealer: 5
 [1/1] dealer: 5, player: QT (T,T)
-action? [hsdrbc?!]> !
+action? [hsdprbc?!]> !
 	edges:	basic	dynamic
 	stand: 0.668	0.666
 	hit  : -0.855	-0.917
 	dbl  : -1.709	-1.834
+	split: 0.512	0.521
 	surr.: -0.500	-0.500
 	advise:	stand	stand
 auto: stand

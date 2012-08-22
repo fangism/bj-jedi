@@ -1,5 +1,10 @@
 # "ChangeLog"
 
+2012-08-22	David Fang		<fangism@users.sourceforge.net>
+	Move player_options from bookmark into struct hand.
+	Fixes failure to prompt with split option on T,T.
+	Dealing player hand now uses action_masks on each taken action.
+
 2012-08-17	David Fang		<fangism@users.sourceforge.net>
 	Use outcome and action enums as indices to arrays and bitfields, 
 		for ease of sane maintenance.

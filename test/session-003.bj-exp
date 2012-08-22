@@ -577,11 +577,12 @@ bankroll: 103.00, bet: 1.00
 ---------------- new hand ----------------
 dealer: 6
 [1/1] dealer: 6, player: TK (T,T)
-action? [hsdrbc?!]> !
+action? [hsdprbc?!]> !
 	edges:	basic	dynamic
 	stand: 0.678	0.661
 	hit  : -0.854	-0.834
 	dbl  : -1.709	-1.667
+	split: 0.565	0.590
 	surr.: -0.500	-0.500
 	advise:	stand	stand
 auto: stand
@@ -809,11 +810,12 @@ advise: no
 Declined insurance.
 No dealer blackjack.
 [1/1] dealer: A, player: QJ (T,T)
-action? [hsdrbc?!]> !
+action? [hsdprbc?!]> !
 	edges:	basic	dynamic
 	stand: 0.602	0.602
 	hit  : -0.854	-0.813
 	dbl  : -1.707	-1.626
+	split: 0.066	0.140
 	surr.: -0.500	-0.500
 	advise:	stand	stand
 auto: stand

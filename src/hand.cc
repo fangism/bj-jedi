@@ -4,6 +4,8 @@
 #include "hand.hh"
 #include "blackjack.hh"
 
+#define	DEBUG_HAND				0
+
 namespace blackjack {
 using std::cin;
 using std::cout;
@@ -45,6 +47,9 @@ hand::hit_player(const size_t p2) {
 	assert(p2 < card_symbols);
 	cards.push_back(card_name[p2]);
 	state = play->hit_player(state, card_value_map[p2]);
+#if HAND_PLAYER_OPTIONS
+	player_options &= play->post_hit_actions;
+#endif
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -61,14 +66,25 @@ hand::hit_dealer(const size_t p2) {
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
 	Assigns initial state based on player's first two cards.
+	\param p1,p2 first two player's cards
 	\param nat true if 21 should be considered natural blackjack
+	\param dr dealer's reveal card
  */
 void
-hand::deal_player(const size_t p1, const size_t p2, const bool nat) {
+hand::deal_player(const size_t p1, const size_t p2, const bool nat, 
+		const size_t dr) {
 	cards.clear();
 	cards.push_back(card_name[p1]);
 	cards.push_back(card_name[p2]);
 	state = play->deal_player(card_value_map[p1], card_value_map[p2], nat);
+#if HAND_PLAYER_OPTIONS
+#if DEBUG_HAND
+	play->initial_actions_per_state[state].dump_debug(cout << "state : ") << endl;
+	play->initial_actions_given_dealer[dr].dump_debug(cout << "dealer: ") << endl;
+#endif
+	player_options = play->initial_actions_per_state[state]
+		& play->initial_actions_given_dealer[dr];
+#endif
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -76,6 +92,33 @@ void
 hand::double_down(const size_t p2) {
 	hit_player(p2);
 	action = DOUBLED_DOWN;
+#if HAND_PLAYER_OPTIONS
+	player_options &= play->post_double_down_actions;
+	// yes, in rare cases, surrender is allowed
+#endif
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
+	TODO: support splitting un-paired hands!
+	TODO: split-21s-are-naturals?
+	Splits player's hand into two, using initial cards.  
+	\param s1 second card for first hand
+	\param s2 second card for second hand
+	\param dr dealer's reveal card
+ */
+void
+hand::split(hand& nh, const size_t s1, const size_t s2, const size_t dr) {
+	const size_t split_card = state - pair_offset;
+	// 21 should not be considered blackjack when splitting (variation)?
+	deal_player(split_card, s1, false, dr);
+#if HAND_PLAYER_OPTIONS
+	player_options &= play->post_split_actions;
+#endif
+	nh.deal_player(split_card, s2, false, dr);
+#if HAND_PLAYER_OPTIONS
+	nh.player_options &= play->post_split_actions;
+#endif
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -83,33 +126,6 @@ bool
 hand::splittable(void) const {
 	return (cards.size() == 2) && (cards[0] == cards[1]);
 }
-
-//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-#if 0
-/**
-	Split back to single-card.
-	Does not hit.
- */
-void
-hand::presplit(void) {
-	const size_t p1 = card_index(cards[0]);
-	initial_card_player(p1);
-}
-
-//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/**
-	\param p2 new up-card for player.
-	TODO: check for one-card on split-aces
- */
-void
-hand::split(const size_t p2) {
-	if (splittable()) {
-		presplit();
-		hit_player(p2);
-		// 21 here does not count as blackjack
-	}
-}
-#endif
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ostream&
@@ -120,6 +136,7 @@ hand::dump_player(ostream& o) const {
 	case SURRENDERED: o << " surrendered"; break;
 	default: break;
 	}
+	// TODO: show player_options.dump()
 	return o;
 }
 

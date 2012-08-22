@@ -297,11 +297,12 @@ dealer: Q
 player: QJ (T,T)
 No dealer blackjack.
 [1/1] dealer: Q, player: QJ (T,T)
-action? [hsdrbc?!]> !
+action? [hsdprbc?!]> !
 	edges:	basic	dynamic
 	stand: 0.555	0.563
 	hit  : -0.849	-0.836
 	dbl  : -1.698	-1.672
+	split: 0.051	0.064
 	surr.: -0.500	-0.500
 	advise:	stand	stand
 auto: stand
@@ -316,11 +317,12 @@ dealer: J
 player: JQ (T,T)
 No dealer blackjack.
 [1/1] dealer: J, player: JQ (T,T)
-action? [hsdrbc?!]> !
+action? [hsdprbc?!]> !
 	edges:	basic	dynamic
 	stand: 0.555	0.568
 	hit  : -0.849	-0.833
 	dbl  : -1.698	-1.665
+	split: 0.051	0.068
 	surr.: -0.500	-0.500
 	advise:	stand	stand
 auto: stand
@@ -609,11 +611,12 @@ advise: no
 Declined insurance.
 No dealer blackjack.
 [1/1] dealer: A, player: TJ (T,T)
-action? [hsdrbc?!]> !
+action? [hsdprbc?!]> !
 	edges:	basic	dynamic
 	stand: 0.602	0.568
 	hit  : -0.854	-0.833
 	dbl  : -1.707	-1.666
+	split: 0.066	0.023
 	surr.: -0.500	-0.500
 	advise:	stand	stand
 auto: stand

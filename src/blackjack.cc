@@ -155,7 +155,7 @@ play_map::initialize_action_masks(void) {
 		}
 	}
 	std::fill(initial_actions_given_dealer.begin(),
-		initial_actions_given_dealer.end(), default_init);
+		initial_actions_given_dealer.end(), default_init +SPLIT);
 	// restrict double-downs, e.g. only on player 10,11
 	// 'other' includes A,x soft-hands
 	if (var.double_H9) {

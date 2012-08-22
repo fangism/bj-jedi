@@ -6,11 +6,17 @@
 #include <iosfwd>
 #include <string>
 #include "enums.hh"		// for player_blackjack
+#include "player_action.hh"
 
 namespace blackjack {
 class play_map;
 using std::string;
 using std::ostream;
+
+/**
+	Define to 1 to keep player_options action_mask with hand struct.
+ */
+#define	HAND_PLAYER_OPTIONS		1
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
@@ -36,6 +42,10 @@ struct hand {
 	 */
 	typedef	string				player_cards;
 	player_cards				cards;
+#if HAND_PLAYER_OPTIONS
+	// move from struct bookmark
+	action_mask				player_options;
+#endif
 	/**
 		Enumerated state, from the state machine.
 		Also encodes the value of the hand, the total.
@@ -43,7 +53,11 @@ struct hand {
 	size_t					state;
 	play_state				action;
 
-	hand() : play(NULL), cards(), state(0), action(LIVE) { }
+	hand() : play(NULL), cards(),
+#if HAND_PLAYER_OPTIONS
+		player_options(action_mask::all),
+#endif
+		state(0), action(LIVE) { }
 
 	explicit
 	hand(const play_map& p) : play(&p), cards(), state(0), action(LIVE) { }
@@ -56,7 +70,7 @@ struct hand {
 	initial_card_dealer(const size_t);
 
 	void
-	deal_player(const size_t, const size_t, const bool);
+	deal_player(const size_t, const size_t, const bool, const size_t);
 
 	void
 	deal_dealer(const size_t, const size_t);
@@ -67,14 +81,6 @@ struct hand {
 
 	void
 	hit_dealer(const size_t);
-
-#if 0
-	void
-	presplit(void);
-
-	void
-	split(const size_t);
-#endif
 
 	void
 	double_down(const size_t);
@@ -100,6 +106,9 @@ struct hand {
 
 	bool
 	splittable(void) const;
+
+	void
+	split(hand&, const size_t, const size_t, const size_t);
 
 	bool
 	doubleable(void) const {

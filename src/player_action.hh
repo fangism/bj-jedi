@@ -70,10 +70,26 @@ public:
 		return action_mask(_bits & m._bits);
 	}
 
+#if 0
 	action_mask
 	operator | (const action_mask& m) const {
 		return action_mask(_bits | m._bits);
 	}
+#endif
+
+	action_mask&
+	operator &= (const action_mask& m) {
+		_bits &= m._bits;
+		return *this;
+	}
+
+#if 0
+	action_mask&
+	operator |= (const action_mask& m) {
+		_bits |= m._bits;
+		return *this;
+	}
+#endif
 
 	action_mask
 	operator + (const player_choice p) const {

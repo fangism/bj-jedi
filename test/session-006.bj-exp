@@ -180,11 +180,12 @@ bankroll: 94.50, bet: 1.00
 ---------------- new hand ----------------
 dealer: 5
 [1/1] dealer: 5, player: KJ (T,T)
-action? [hsdrbc?!]> !
+action? [hsdprbc?!]> !
 	edges:	basic	dynamic
 	stand: 0.668	0.666
 	hit  : -0.855	-0.853
 	dbl  : -1.709	-1.706
+	split: 0.512	0.491
 	surr.: -0.500	-0.500
 	advise:	stand	stand
 auto: stand
@@ -197,11 +198,12 @@ bankroll: 95.50, bet: 1.00
 ---------------- new hand ----------------
 dealer: 9
 [1/1] dealer: 9, player: KQ (T,T)
-action? [hsdrbc?!]> !
+action? [hsdprbc?!]> !
 	edges:	basic	dynamic
 	stand: 0.758	0.752
 	hit  : -0.851	-0.847
 	dbl  : -1.702	-1.693
+	split: 0.233	0.222
 	surr.: -0.500	-0.500
 	advise:	stand	stand
 auto: stand
@@ -213,11 +215,12 @@ bankroll: 96.50, bet: 1.00
 ---------------- new hand ----------------
 dealer: 9
 [1/1] dealer: 9, player: TQ (T,T)
-action? [hsdrbc?!]> !
+action? [hsdprbc?!]> !
 	edges:	basic	dynamic
 	stand: 0.758	0.749
 	hit  : -0.851	-0.844
 	dbl  : -1.702	-1.689
+	split: 0.233	0.213
 	surr.: -0.500	-0.500
 	advise:	stand	stand
 auto: stand
@@ -324,11 +327,12 @@ bankroll: 95.50, bet: 1.00
 ---------------- new hand ----------------
 dealer: 9
 [1/1] dealer: 9, player: JT (T,T)
-action? [hsdrbc?!]> !
+action? [hsdprbc?!]> !
 	edges:	basic	dynamic
 	stand: 0.758	0.750
 	hit  : -0.851	-0.858
 	dbl  : -1.702	-1.717
+	split: 0.233	0.201
 	surr.: -0.500	-0.500
 	advise:	stand	stand
 auto: stand

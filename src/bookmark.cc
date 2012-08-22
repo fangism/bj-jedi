@@ -17,26 +17,35 @@ using util::yn;
 // struct bookmark method definitions
 
 bookmark::bookmark() :
-		dealer_reveal(cards::ACE), player_hand(), cards(variation()), 
+		dealer_reveal(cards::ACE), player_hand(), cards(variation())
+#if !HAND_PLAYER_OPTIONS
+		, 
 #if BITMASK_ACTION_OPTIONS
 		player_options(action_mask::all)
 #else
 		may_double(true), may_split(true), may_surrender(true)
 #endif
+#endif
 		{
 }
-bookmark::bookmark(const size_t dr, const hand& h, const deck_state& c, 
+bookmark::bookmark(const size_t dr, const hand& h, const deck_state& c
+#if !HAND_PLAYER_OPTIONS
+		, 
 #if BITMASK_ACTION_OPTIONS
 		const action_mask& m
 #else
 		const bool d, const bool p, const bool r
 #endif
+#endif
 		) :
-		dealer_reveal(dr), player_hand(h), cards(c), 
+		dealer_reveal(dr), player_hand(h), cards(c)
+#if !HAND_PLAYER_OPTIONS
+		, 
 #if BITMASK_ACTION_OPTIONS
 		player_options(m)
 #else
 		may_double(d), may_split(p), may_surrender(r)
+#endif
 #endif
 		{
 }
@@ -54,10 +63,15 @@ bookmark::dump(ostream& o) const {
 	// don't distinguish face cards, only show remaining, not used cards
 	o << "dealer: " << card_name[dealer_reveal] << ", ";
 	player_hand.dump_player(o) << endl;
+#if HAND_PLAYER_OPTIONS
+#define	HAND	player_hand.
+#else
+#define	HAND
+#endif
 #if BITMASK_ACTION_OPTIONS
-	o << "options: double:" << yn(player_options.can_double_down());
-	o << ", split:" << yn(player_options.can_split());
-	o << ", surrender:" << yn(player_options.can_surrender()) << endl;
+	o << "options: double:" << yn(HAND player_options.can_double_down());
+	o << ", split:" << yn(HAND player_options.can_split());
+	o << ", surrender:" << yn(HAND player_options.can_surrender()) << endl;
 #else
 	o << "options: double:" << yn(may_double);
 	o << ", split:" << yn(may_split);

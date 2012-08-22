@@ -218,9 +218,9 @@ grader::deal_hand(void) {
 	const size_t p1 = draw_up_card("choose player's first card.");
 	const size_t p2 = draw_up_card("choose player's second card.");
 	hand& pih(player_hands.front());
-	pih.deal_player(p1, p2, true);
 	dealer_reveal = draw_up_card("choose dealer's up-card.");
 	const size_t dealer_reveal_value = card_value_map[dealer_reveal];
+	pih.deal_player(p1, p2, true, dealer_reveal_value);
 	dealer_hand.initial_card_dealer(dealer_reveal);
 	// TODO: first query whether hold card makes dealer blackjack
 	// so prompt for this after checking, if peeking for blackjack
@@ -255,11 +255,13 @@ grader::deal_hand(void) {
 	}
 	// if either player or dealer has blackjack, hand is over
 	// TODO: show odds pre-peak and post-peek
+	// TODO: consult outcome matrix for bj vs. bj (variations)
 	bool end = pbj;
 	if (dealer_reveal == ACE) {
 		pih.dump_player(ostr) << endl;
 		if (var.peek_on_Ace) {
 		const bool buy_insurance = offer_insurance(pbj);;
+		// TODO: handle even-money bet for !2:1 payoffs
 		// determine change in bankroll
 		// check for blackjack for player
 		const double half_bet = bet *0.5;
@@ -451,15 +453,11 @@ switch (pc) {
 		// don't bother prompting if hits 21 (auto-stand)
 		break;
 	case SPLIT: {
-		const size_t split_card = ph.state - pair_offset;
-		// ph.presplit();
-		// 21 should not be considered blackjack when splitting
-		ph.deal_player(split_card,
-			draw_up_card("choose player's second card."), false);
-		// TODO: variation that allows splitting un-paired hands!
 		hand nh(play);	// new hand
-		nh.deal_player(split_card,
-			draw_up_card("choose player's second card."), false);
+		ph.split(nh,
+			draw_up_card("choose player's second card."),
+			draw_up_card("choose player's second card."),
+			card_value_map[dealer_reveal]);
 		player_hands.push_back(nh);
 		// show new hands and other split hand for counting purposes
 		dump_situation(j);
@@ -493,13 +491,19 @@ grader::play_out_hand(const size_t j) {
 	player_choice pc = NIL;
 do {
 	do {
+	// TODO: check for resplit limit from variation
+#if HAND_PLAYER_OPTIONS
+#define	ACTION_OPTIONS		ph.player_options
+	if (player_hands.size() >= player_hands.capacity()) {
+		ACTION_OPTIONS -= SPLIT;
+	}
+#else
 	// these predicates can be further refined by
 	// variation/rules etc...
 	const bool d = ph.doubleable();
 	// TODO: check for double_after_split and other limitations
 	const bool p = ph.splittable() &&
 		(player_hands.size() < player_hands.capacity());
-	// TODO: check for resplit limit
 	const bool r = ph.surrenderable() && !already_split();
 #if BITMASK_ACTION_OPTIONS
 	action_mask m(STAND, HIT);
@@ -510,13 +514,18 @@ do {
 #else
 #define	ACTION_OPTIONS		d, p, r
 #endif
+#endif
 	// only first hand is surrenderrable, normally
 	dump_situation(j);
 	if (opt.always_show_count_at_action) {
 		show_count();
 	}
 	// snapshot of current state, in case of bookmark
-	const bookmark bm(dealer_reveal, ph, C, ACTION_OPTIONS);
+	const bookmark bm(dealer_reveal, ph, C
+#if !HAND_PLAYER_OPTIONS
+		, ACTION_OPTIONS
+#endif
+		);
 	ostringstream oss;
 	oss.flags(ostr.flags());
 	oss.precision(ostr.precision());
@@ -533,7 +542,9 @@ do {
 	if (opt.always_suggest) {
 		ostr << oss.str() << endl;
 	}
-#if BITMASK_ACTION_OPTIONS
+#if HAND_PLAYER_OPTIONS
+	pc = ph.player_options.prompt(istr, ostr, opt.auto_play);
+#elif BITMASK_ACTION_OPTIONS
 	pc = m.prompt(istr, ostr, opt.auto_play);
 #else
 	pc = prompt_player_action(istr, ostr, ACTION_OPTIONS, opt.auto_play);
@@ -658,6 +669,11 @@ grader::assess_action(const size_t ps, const size_t dlr, ostream& o,
 		const bool d, const bool p, const bool r
 #endif
 		) {
+#if HAND_PLAYER_OPTIONS
+#undef	ACTION_OPTIONS
+#define	ACTION_OPTIONS		m
+#endif
+
 	// basic:
 	const expectations& be(basic_strategy
 		.lookup_player_action_expectations(ps, dlr));
