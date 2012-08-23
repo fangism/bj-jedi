@@ -39,11 +39,12 @@ typedef	command_registry<LobbyCommand>		lobby_command_registry;
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 int
 lobby::main(void) {
+	static const string prompt("lobby> ");
 	const util::setf_saver __t1__(cout, std::ios_base::fixed);
 	const util::precision_saver __t2__(cout, 3);
 	// TODO: numerical format option commands
 	const value_saver<string>
-		tmp1(lobby_command_registry::prompt, "lobby> ");
+		tmp1(lobby_command_registry::prompt, prompt);
 	lobby_command_registry::interpret(*this);
 	return 0;
 }

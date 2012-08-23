@@ -11,6 +11,7 @@
 #include <iostream>
 #include <cstdio>			// for stdin, feof
 #include <cstdlib>			// for free()
+#include <unistd.h>			// for isatty()
 #include "util/readline_wrap.hh"
 #include "util/readline.h"
 #include "util/string.hh"
@@ -194,8 +195,19 @@ do {
 	// NOTE: some ASS-version of readline accepts a char* 
 	// for the prompt argument and trips an error here, 
 	// hence the const_cast
-	hold_line = hold_line_type(readline(
-		RL_CONST_CAST(_prompt.c_str())));
+	if (isatty(0)) {
+		hold_line = hold_line_type(readline(
+			RL_CONST_CAST(_prompt.c_str())));
+	} else {
+		// is redirected or piped
+		// avoid calling readline functions, rl_initialize()
+		cout << _prompt;
+		get_line_type get_line(static_cast<char_type*>(
+			malloc(sizeof(char_type) *READLINE_BUFFER_SIZE)));
+		fgets(&*get_line, READLINE_BUFFER_SIZE, stdin);
+		hold_line = get_line;	// transfer ownership
+		cout << get_line;	// echo
+	}
 #endif
 #else
 	cout << _prompt;
