@@ -454,10 +454,10 @@ switch (pc) {
 		break;
 	case SPLIT: {
 		hand nh(play);	// new hand
-		ph.split(nh,
-			draw_up_card("choose player's second card."),
-			draw_up_card("choose player's second card."),
-			card_value_map[dealer_reveal]);
+		// avoid sequence-point
+		const size_t s1 = draw_up_card("choose player's second card.");
+		const size_t s2 = draw_up_card("choose player's second card.");
+		ph.split(nh, s1, s2, card_value_map[dealer_reveal]);
 		player_hands.push_back(nh);
 		// show new hands and other split hand for counting purposes
 		dump_situation(j);
