@@ -20,9 +20,9 @@ struct action_mask;
 	Define to 1 to store action expectation edges as an array.
 	Rationale: direct indexing faster than switch-case construct.
 	Goal: 1
-	Status: tested
+	Status: tested, perm'd
  */
-#define	INDEX_ACTION_EDGES			1
+// #define	INDEX_ACTION_EDGES			1
 
 // TODO: this could be encoded compactly with 4 chars or so
 typedef	player_choice			action_preference[__NUM_EVAL_ACTIONS];
@@ -38,14 +38,7 @@ typedef	player_choice			action_preference[__NUM_EVAL_ACTIONS];
 	Omit surrender, assuming that its value is constant.
  */
 struct expectations {
-#if INDEX_ACTION_EDGES
 	edge_type			__action_edge[__NUM_EVAL_ACTIONS];
-#else
-	edge_type			_stand;
-	edge_type			_hit;
-	edge_type			_double_down;
-	edge_type			_split;
-#endif
 #if 0
 	static const edge_type		surrender;
 #endif
@@ -54,37 +47,23 @@ struct expectations {
 	 */
 	action_preference		actions;
 
-	expectations()
-#if !INDEX_ACTION_EDGES
-		: stand(0.0), hit(-1.0),
-		double_down(0.0), 
-		split(-2.0)
-#endif
-		{
-#if INDEX_ACTION_EDGES
+	expectations() {
 		stand() = 0.0;
 		hit() = -1.0;
 		double_down() = -2.0;
 		split() = -2.0;
-#endif
 		actions[0] = actions[1] = actions[2] = actions[3] = NIL;
 	}
 
 	expectations(const edge_type s, const edge_type h, 
 		const edge_type d, const edge_type p)
-#if !INDEX_ACTION_EDGES
-		: stand(s), hit(h), double_down(d), split(p)
-#endif
 		{
-#if INDEX_ACTION_EDGES
 		stand() = s;
 		hit() = h;
 		double_down() = d;
 		split() =  p;
-#endif
 	}
 
-#if INDEX_ACTION_EDGES
 	// accessors
 	edge_type&
 	action_edge(const player_choice p) {
@@ -121,31 +100,6 @@ struct expectations {
 	split(void) const { return action_edge(SPLIT); }
 
 	// surrender
-#else
-	edge_type&
-	stand(void) { return _stand; }
-
-	const edge_type&
-	stand(void) const { return _stand; }
-
-	edge_type&
-	hit(void) { return _hit; }
-
-	const edge_type&
-	hit(void) const { return _hit; }
-
-	edge_type&
-	double_down(void) { return _double_down; }
-
-	const edge_type&
-	double_down(void) const { return _double_down; }
-
-	edge_type&
-	split(void) { return _split; }
-
-	const edge_type&
-	split(void) const { return _split; }
-#endif
 
 	const edge_type&
 	value(const player_choice c, const edge_type& s) const;
@@ -165,30 +119,17 @@ struct expectations {
 	operator + (const expectations& e) const {
 		// TODO: use transform or valarray operator?
 		// TODO: define arithmetic operators in util::array?
-#if INDEX_ACTION_EDGES
 		return expectations(stand() +e.stand(), 
 			hit() +e.hit(), double_down() +e.double_down(), 
 			split() +e.split());
-#else
-		return expectations(stand +e.stand, 
-			hit +e.hit, double_down +e.double_down, 
-			split +e.split);
-#endif
 	}
 
 	expectations&
 	operator += (const expectations& e) {
-#if INDEX_ACTION_EDGES
 		stand() += e.stand();
 		hit() += e.hit();
 		double_down() += e.double_down();
 		split() += e.split();
-#else
-		stand += e.stand;
-		hit += e.hit;
-		double_down += e.double_down;
-		split += e.split;
-#endif
 		return *this;
 	}
 

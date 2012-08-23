@@ -31,19 +31,7 @@ using std::make_pair;
 const edge_type&
 expectations::value(const player_choice c, 
 		const edge_type& surrender) const {
-#if INDEX_ACTION_EDGES
 	return c == SURRENDER ? surrender : action_edge(c);
-#else
-	switch (c) {
-	case STAND:	return stand;
-	case HIT:	return hit;
-	case DOUBLE:	return double_down;
-	case SPLIT:	return split;
-	case SURRENDER:	return surrender;
-	default:	cerr << "Invalid player choice." << endl; assert(0);
-	}
-#endif
-	return stand();
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
