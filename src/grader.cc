@@ -492,45 +492,25 @@ grader::play_out_hand(const size_t j) {
 do {
 	do {
 	// TODO: check for resplit limit from variation
-#if HAND_PLAYER_OPTIONS
-#define	ACTION_OPTIONS		ph.player_options
+	action_mask& m(ph.player_options);
 	if (player_hands.size() >= player_hands.capacity()) {
-		ACTION_OPTIONS -= SPLIT;
+		m -= SPLIT;
 	}
-#else
-	// these predicates can be further refined by
-	// variation/rules etc...
-	const bool d = ph.doubleable();
-	// TODO: check for double_after_split and other limitations
-	const bool p = ph.splittable() &&
-		(player_hands.size() < player_hands.capacity());
-	const bool r = ph.surrenderable() && !already_split();
-	action_mask m(STAND, HIT);
-	if (d)	m += DOUBLE;
-	if (p)	m += SPLIT;
-	if (r)	m += SURRENDER;
-#define	ACTION_OPTIONS		m
-#endif
 	// only first hand is surrenderrable, normally
 	dump_situation(j);
 	if (opt.always_show_count_at_action) {
 		show_count();
 	}
 	// snapshot of current state, in case of bookmark
-	const bookmark bm(dealer_reveal, ph, C
-#if !HAND_PLAYER_OPTIONS
-		, ACTION_OPTIONS
-#endif
-		);
+	const bookmark bm(dealer_reveal, ph, C);
 	ostringstream oss;
 	oss.flags(ostr.flags());
 	oss.precision(ostr.precision());
 	const pair<expectations, expectations>
 		ace(assess_action(ph.state, card_value_map[dealer_reveal],
-			oss, ACTION_OPTIONS));
+			oss, m));
 	const pair<player_choice, player_choice>
-		acp(ace.first.best(ACTION_OPTIONS),
-			ace.second.best(ACTION_OPTIONS));
+		acp(ace.first.best(m), ace.second.best(m));
 	const player_choice ac =
 		opt.use_dynamic_strategy ? acp.second : acp.first;
 	const player_choice ac2 =	// the other one
@@ -538,11 +518,7 @@ do {
 	if (opt.always_suggest) {
 		ostr << oss.str() << endl;
 	}
-#if HAND_PLAYER_OPTIONS
 	pc = ph.player_options.prompt(istr, ostr, opt.auto_play);
-#else
-	pc = m.prompt(istr, ostr, opt.auto_play);
-#endif
 	bool bookmarked = false;
 	bool notified = false;
 	bool detailed = false;
@@ -658,18 +634,13 @@ do {
 pair<expectations, expectations>
 grader::assess_action(const size_t ps, const size_t dlr, ostream& o,
 		const action_mask& m) {
-#if HAND_PLAYER_OPTIONS
-#undef	ACTION_OPTIONS
-#define	ACTION_OPTIONS		m
-#endif
-
 	// basic:
 	const expectations& be(basic_strategy
 		.lookup_player_action_expectations(ps, dlr));
 	// ostr << "edges per action (basic):" << endl;
 	// be.dump_choice_actions(ostr, -var.surrender_penalty);
 	const pair<player_choice, player_choice>
-		br(be.best_two(ACTION_OPTIONS));
+		br(be.best_two(m));
 	// ostr << "basic strategy recommends: " <<
 	//	action_names[br.first] << endl;
 	// dynamic: need to recompute given recently seen cards
@@ -681,7 +652,7 @@ grader::assess_action(const size_t ps, const size_t dlr, ostream& o,
 	// ostr << "edges per action (dynamic):" << endl;
 	// de.dump_choice_actions(ostr, -var.surrender_penalty);
 	const pair<player_choice, player_choice>
-		dr(de.best_two(ACTION_OPTIONS));
+		dr(de.best_two(m));
 	// ostr << "dynamic strategy recommends: " <<
 	//	action_names[dr.first] << endl;
 #if 0
@@ -697,7 +668,7 @@ if (opt.show_edges) {
 	o << "\tedges:\tbasic\tdynamic" << endl;
 	// TODO: _3
 	expectations::dump_choice_actions_2(o,
-		be, de, -var.surrender_penalty, ACTION_OPTIONS, "\t");
+		be, de, -var.surrender_penalty, m, "\t");
 }
 	o << "\tadvise:\t" << action_names[br.first]
 		<< '\t' << action_names[dr.first];

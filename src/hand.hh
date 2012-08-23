@@ -15,8 +15,12 @@ using std::ostream;
 
 /**
 	Define to 1 to keep player_options action_mask with hand struct.
+	Rationale: a 'hand' represents the player's situation, 
+		including available choices.
+	Goal: 1 (moved here from struct bookmark)
+	Status: tested, perm'd
  */
-#define	HAND_PLAYER_OPTIONS		1
+// #define	HAND_PLAYER_OPTIONS		1
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
@@ -42,10 +46,8 @@ struct hand {
 	 */
 	typedef	string				player_cards;
 	player_cards				cards;
-#if HAND_PLAYER_OPTIONS
-	// move from struct bookmark
+	// player's actions may be limited by state
 	action_mask				player_options;
-#endif
 	/**
 		Enumerated state, from the state machine.
 		Also encodes the value of the hand, the total.
@@ -54,9 +56,7 @@ struct hand {
 	play_state				action;
 
 	hand() : play(NULL), cards(),
-#if HAND_PLAYER_OPTIONS
 		player_options(action_mask::all),
-#endif
 		state(0), action(LIVE) { }
 
 	explicit

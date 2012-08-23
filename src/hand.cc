@@ -47,9 +47,7 @@ hand::hit_player(const size_t p2) {
 	assert(p2 < card_symbols);
 	cards.push_back(card_name[p2]);
 	state = play->hit_player(state, card_value_map[p2]);
-#if HAND_PLAYER_OPTIONS
 	player_options &= play->post_hit_actions;
-#endif
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -77,14 +75,12 @@ hand::deal_player(const size_t p1, const size_t p2, const bool nat,
 	cards.push_back(card_name[p1]);
 	cards.push_back(card_name[p2]);
 	state = play->deal_player(card_value_map[p1], card_value_map[p2], nat);
-#if HAND_PLAYER_OPTIONS
 #if DEBUG_HAND
 	play->initial_actions_per_state[state].dump_debug(cout << "state : ") << endl;
 	play->initial_actions_given_dealer[dr].dump_debug(cout << "dealer: ") << endl;
 #endif
 	player_options = play->initial_actions_per_state[state]
 		& play->initial_actions_given_dealer[dr];
-#endif
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -92,10 +88,8 @@ void
 hand::double_down(const size_t p2) {
 	hit_player(p2);
 	action = DOUBLED_DOWN;
-#if HAND_PLAYER_OPTIONS
 	player_options &= play->post_double_down_actions;
-	// yes, in rare cases, surrender is allowed
-#endif
+	// yes, in rare cases, surrender is allowed after double-down
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -112,13 +106,9 @@ hand::split(hand& nh, const size_t s1, const size_t s2, const size_t dr) {
 	const size_t split_card = state - pair_offset;
 	// 21 should not be considered blackjack when splitting (variation)?
 	deal_player(split_card, s1, false, dr);
-#if HAND_PLAYER_OPTIONS
 	player_options &= play->post_split_actions;
-#endif
 	nh.deal_player(split_card, s2, false, dr);
-#if HAND_PLAYER_OPTIONS
 	nh.player_options &= play->post_split_actions;
-#endif
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

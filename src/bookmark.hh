@@ -22,17 +22,10 @@ struct bookmark {
 	hand				player_hand;
 	// for now, just save everything, only ::cards is needed
 	deck_state			cards;
-#if !HAND_PLAYER_OPTIONS
-	action_mask			player_options;
-#endif
 
 	bookmark();
 
-	bookmark(const size_t, const hand&, const deck_state&
-#if !HAND_PLAYER_OPTIONS
-		, const action_mask&
-#endif
-		);
+	bookmark(const size_t, const hand&, const deck_state&);
 
 	~bookmark();
 
