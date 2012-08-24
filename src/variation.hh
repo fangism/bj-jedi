@@ -99,6 +99,7 @@ struct variation {
 	/// doubled-down multipler (other than 2.0 is rare)
 	double			double_multiplier;
 #if 0
+	// blackjack vs. blackjack variants
 	bool			player_bj_always_wins;
 	bool			dealer_bj_always_loses;
 #endif

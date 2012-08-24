@@ -191,11 +191,12 @@ private:
 
 	static
 	void
-	compute_showdown_odds(const dealer_final_vector&, const edge_type&,
+	compute_showdown_odds(const play_map&,
+		const dealer_final_vector&, const edge_type&,
 		outcome_vector&, player_stand_edges_vector&);
 
 	void
-	compute_player_stand_odds(const edge_type);
+	compute_player_stand_odds(const play_map&, const edge_type);
 
 	static
 	void

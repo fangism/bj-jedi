@@ -86,12 +86,9 @@ public:
 	typedef	array<outcome, dealer_states>		outcome_array_type;
 	typedef	array<outcome_array_type, player_states>
 							outcome_matrix_type;
-	static const outcome_matrix_type&	outcome_matrix;
-private:
 	// TODO: support rule variations in outcome matrix
 	// e.g., player-loses-ties, player-blackjack-always-wins
-	static outcome_matrix_type	__outcome_matrix;
-	static const int		init_outcome_matrix;
+	outcome_matrix_type		outcome_matrix;
 
 private:
 	static vector<size_t>		__reverse_topo_order;
@@ -120,8 +117,7 @@ private:
 	void
 	compute_player_split_state(void);
 
-	static
-	int
+	void
 	compute_final_outcomes(void);
 
 	static
@@ -160,9 +156,8 @@ public:
 	ostream&
 	dump_player_split_state(ostream&) const;
 
-	static
 	ostream&
-	dump_final_outcomes(ostream&);
+	dump_final_outcomes(ostream&) const;
 
 	ostream&
 	dump_variation(ostream& o) const {
