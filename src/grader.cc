@@ -218,7 +218,7 @@ grader::deal_hand(void) {
 	const size_t p1 = draw_up_card("choose player's first card.");
 	const size_t p2 = draw_up_card("choose player's second card.");
 	player_hand& pih(player_hands.front());
-	dealer_reveal = draw_up_card("choose dealer's up-card.");
+	const size_t dealer_reveal = draw_up_card("choose dealer's up-card.");
 	const size_t dealer_reveal_value = card_value_map[dealer_reveal];
 	pih.deal_player(p1, p2, true, dealer_reveal_value);
 	dealer.initial_card_dealer(dealer_reveal);
@@ -457,7 +457,7 @@ switch (pc) {
 		// avoid sequence-point
 		const size_t s1 = draw_up_card("choose player's second card.");
 		const size_t s2 = draw_up_card("choose player's second card.");
-		ph.split(nh, s1, s2, card_value_map[dealer_reveal]);
+		ph.split(nh, s1, s2, card_value_map[dealer.reveal]);
 		player_hands.push_back(nh);
 		// show new hands and other split hand for counting purposes
 		dump_situation(j);
@@ -502,12 +502,12 @@ do {
 		show_count();
 	}
 	// snapshot of current state, in case of bookmark
-	const bookmark bm(dealer_reveal, ph, C);
+	const bookmark bm(dealer.reveal, ph, C);
 	ostringstream oss;
 	oss.flags(ostr.flags());
 	oss.precision(ostr.precision());
 	const pair<expectations, expectations>
-		ace(assess_action(ph.state, card_value_map[dealer_reveal],
+		ace(assess_action(ph.state, card_value_map[dealer.reveal],
 			oss, m));
 	const pair<player_choice, player_choice>
 		acp(ace.first.best(m), ace.second.best(m));
@@ -702,7 +702,7 @@ grader::dump_situation(const size_t j) const {
 	if (dealer.cards.size() > 1) {
 		dealer.dump_dealer(ostr);
 	} else {
-		ostr << "dealer: " << card_name[dealer_reveal];
+		ostr << "dealer: " << card_name[dealer.reveal];
 	}
 	ostr << ", ";
 	player_hands[j].dump_player(ostr) << endl;

@@ -27,6 +27,7 @@ using std::ostream;
 	The essential information about a player's hand.
 	Excludes exact composition.
 	This is used as a key to the situation map for analysis.
+	Use pair/tuple?
  */
 struct player_hand_base {
 	/**
@@ -51,9 +52,22 @@ struct player_hand_base {
 		return state == player_bust;
 	}
 
+	// lexicographical key compare
+	bool
+	operator < (const player_hand_base& r) const {
+		return (state < r.state) ||
+			(state == r.state && player_options < r.player_options);
+	}
+
 };	// end struct player_hand_base
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
+	Essential information about the state of the dealer's hand.
+	Use pair/tuple?
+	This participates in key to dealer_final_state spread map.
+	TODO: use bitfield or enum for peek status
+ */
 struct dealer_hand_base {
 	size_t					state;
 	// reveal_card?
@@ -79,6 +93,16 @@ struct dealer_hand_base {
 	bool
 	dealer_busted(void) const {
 		return state == dealer_bust;
+	}
+
+	bool
+	operator < (const dealer_hand_base& r) const {
+		return peeked_no_10 < r.peeked_no_10 ||
+			(peeked_no_10 == r.peeked_no_10 &&
+			(peeked_no_Ace < r.peeked_no_Ace ||
+			(peeked_no_Ace == r.peeked_no_Ace &&
+			state < r.state)));
+			
 	}
 
 };	// end struct dealer_hand
@@ -207,6 +231,8 @@ struct player_hand : public player_hand_base, public hand_common {
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 struct dealer_hand : public dealer_hand_base, public hand_common {
+	// dealer's revealed card
+	size_t				reveal;
 
 	dealer_hand() : dealer_hand_base(), hand_common() { }
 

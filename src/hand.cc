@@ -32,13 +32,19 @@ player_hand::initial_card_player(const size_t p1) {
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
+	\param p1 reveal card can be A,2-9,T-K, will be translated to value
+ */
 void
 dealer_hand::initial_card_dealer(const size_t p1) {
 	// the string stores the card names, not card indices
 	assert(p1 < card_symbols);
+	const size_t reveal_value = card_value_map[p1];
+	reveal = p1;
+//	reveal = card_value_map[p1];
 	cards.clear();
 	cards.push_back(card_name[p1]);
-	state = play->initial_card_dealer(card_value_map[p1]);
+	state = play->initial_card_dealer(reveal_value);
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

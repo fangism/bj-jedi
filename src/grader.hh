@@ -74,10 +74,6 @@ private:
 	 */
 	dealer_hand					dealer;
 	/**
-		The dealer's revealed card.  Redundant with dealer_hand.
-	 */
-	size_t					dealer_reveal;
-	/**
 		Dealer's hidden card.
 	 */
 	size_t					dealer_hole;
