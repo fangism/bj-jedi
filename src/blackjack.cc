@@ -83,13 +83,6 @@ const char play_map::dealer_final_states[][dealer_states] = {
 	"push"	// switch variation only
 };
 
-play_map::outcome_matrix_type		play_map::__outcome_matrix;
-
-const play_map::outcome_matrix_type&
-play_map::outcome_matrix = play_map::__outcome_matrix;
-
-const int play_map::init_outcome_matrix = play_map::compute_final_outcomes();
-
 vector<size_t>
 play_map::__reverse_topo_order;
 
@@ -113,7 +106,7 @@ play_map::play_map(const variation& v) : var(v),
 	set_dealer_policy();
 	compute_player_hit_state();
 	compute_player_split_state();
-//	compute_final_outcomes();	// is now static global
+	compute_final_outcomes();
 	initialize_action_masks();
 }
 
@@ -509,13 +502,13 @@ play_map::dump_player_split_state(ostream& o) const {
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-int
+void
 play_map::compute_final_outcomes(void) {
 	size_t k;
 	// player blackjack and bust is separate
 	for (k=0; k < player_states -2; ++k) {	// player's final state
 	size_t d;
-		outcome_array_type& v(__outcome_matrix[k]);
+		outcome_array_type& v(outcome_matrix[k]);
 	// -1: blackjack, push, and bust states separate
 	for (d=0; d < dealer_states -3; ++d) {	// dealer's final state
 		outcome& o(v[d]);
@@ -523,7 +516,13 @@ play_map::compute_final_outcomes(void) {
 		if (diff > 0) {
 			o = WIN;
 		} else if (!diff) {
-			o = PUSH;
+			if (var.ties_win) {
+				o = WIN;
+			} else if (var.ties_lose) {
+				o = LOSE;
+			} else {
+				o = PUSH;
+			}
 		} else {
 			o = LOSE;
 		}
@@ -532,12 +531,11 @@ play_map::compute_final_outcomes(void) {
 		v[d+1] = WIN;	// dealer busts
 		v[d+2] = PUSH;	// dealer pushes
 	}
-	outcome_array_type& pbj(__outcome_matrix[k]);	// player blackjack
-	outcome_array_type& px(__outcome_matrix[k+1]);	// player busts
+	outcome_array_type& pbj(outcome_matrix[k]);	// player blackjack
+	outcome_array_type& px(outcome_matrix[k+1]);	// player busts
 	std::fill(pbj.begin(), pbj.end(), WIN);
 	pbj[dealer_states -3] = PUSH;			// both blackjack
 	std::fill(px.begin(), px.end(), LOSE);
-	return 1;
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -575,7 +573,7 @@ play_map::initialize_reverse_topo_order(void) {
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ostream&
-play_map::dump_final_outcomes(ostream& o) {
+play_map::dump_final_outcomes(ostream& o) const {
 	static const char header[] = "P\\D\t17\t18\t19\t20\t21\tBJ\tbust\tpush";
 	o << "Dealer vs. player final state outcomes." << endl;
 	o << header << endl;

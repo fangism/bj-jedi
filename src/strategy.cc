@@ -193,7 +193,7 @@ reveal_strategy::evaluate(
 if (need_update) {
 	const variation& var(play.var);
 	compute_dealer_final_table(play, card_odds);
-	compute_player_stand_odds(var.bj_payoff);
+	compute_player_stand_odds(play, var.bj_payoff);
 	compute_action_expectations(play, card_odds);
 	compute_reveal_edges(card_odds, player_initial_state_odds);
 	need_update = false;
@@ -379,7 +379,8 @@ strategy::dump_dealer_final_table(ostream& o) const {
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void
-reveal_strategy::compute_showdown_odds(const dealer_final_vector& dfv,
+reveal_strategy::compute_showdown_odds(const play_map& play,
+		const dealer_final_vector& dfv,
 		const edge_type& bjp, outcome_vector& stand,
 		player_stand_edges_vector& edges) {
 	static const size_t p_bj_ind = player_states -2;	// see enums.hh
@@ -393,7 +394,7 @@ reveal_strategy::compute_showdown_odds(const dealer_final_vector& dfv,
 	for (k=0; k < player_states; ++k) {	// player's final state
 		outcome_odds& o(ps[k]);
 		const play_map::outcome_array_type&
-			v(play_map::outcome_matrix[k]);
+			v(play.outcome_matrix[k]);
 	size_t d;
 	// -1: blackjack, push, and bust states separate
 	for (d=0; d < dealer_states; ++d) {	// dealer's final state
@@ -426,12 +427,13 @@ reveal_strategy::compute_showdown_odds(const dealer_final_vector& dfv,
 	TODO: evaluate peek for 10 and peek for Ace separately, independently
  */
 void
-reveal_strategy::compute_player_stand_odds(const edge_type bjp) {
+reveal_strategy::compute_player_stand_odds(const play_map& play,
+		const edge_type bjp) {
 	// pre-peek edges
-	compute_showdown_odds(dealer_final_given_revealed_pre_peek, bjp,
+	compute_showdown_odds(play, dealer_final_given_revealed_pre_peek, bjp,
 		player_stand_pre_peek, player_stand_edges_pre_peek);
 	// post-peek edges
-	compute_showdown_odds(dealer_final_given_revealed_post_peek, bjp,
+	compute_showdown_odds(play, dealer_final_given_revealed_post_peek, bjp,
 		player_stand_post_peek, player_stand_edges_post_peek);
 }
 
@@ -1414,7 +1416,7 @@ strategy::dump_optimal_actions(ostream& o) const {
 ostream&
 strategy::dump(ostream& o) const {
 	var.dump(o) << endl;
-	play_map::dump_final_outcomes(o) << endl;	// verified
+	play.dump_final_outcomes(o) << endl;	// verified
 	play.dump_dealer_policy(o) << endl;		// verified
 	play.dump_player_hit_state(o) << endl;		// verified
 	play.dump_player_split_state(o) << endl;	// verified

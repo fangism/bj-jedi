@@ -360,7 +360,7 @@ for (j=0; j<player_hands.size(); ++j) {
 	if (player_hands[j].doubled_down()) {
 		stats.total_bets += bet;
 	}
-	const outcome& wlp(play_map::outcome_matrix
+	const outcome& wlp(play.outcome_matrix
 		[play_map::player_final_state_map(player_hands[j].state)]
 		[dealer_hand.state -stop]);
 	const double delta = player_hands[j].doubled_down() ? bet2 : bet;
