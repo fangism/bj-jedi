@@ -101,6 +101,8 @@ public:
 	size_t
 	quick_draw_uncounted_except(const size_t);
 
+	// TODO: support post-peek conditions for drawing probabilities
+
 	size_t
 	option_draw_uncounted(const bool, istream&, ostream&, const bool);
 

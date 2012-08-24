@@ -22,6 +22,16 @@ using std::ostream;
  */
 // #define	HAND_PLAYER_OPTIONS		1
 
+/**
+	These peek states are mutually exclusive.
+	The peek state influences drawing cards and analysis.
+ */
+enum peek_state_enum {
+	NO_PEEK,
+	PEEKED_NO_10,
+	PEEKED_NO_ACE
+};
+
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
 	The essential information about a player's hand.
@@ -70,19 +80,25 @@ struct player_hand_base {
  */
 struct dealer_hand_base {
 	size_t					state;
-	// reveal_card?
-	// influences drawing cards
-	bool					peeked_no_10;
-	bool					peeked_no_Ace;
+	peek_state_enum				peek_state;
 
 	dealer_hand_base() : state(0),
-		peeked_no_10(false), peeked_no_Ace(false) { }
+		peek_state(NO_PEEK) { }
 
 	void
-	revealed_hole_card(void) {
+	reveal_hole_card(void) {
 		// reset peek status after hole card is revealed
-		peeked_no_10 = false;
-		peeked_no_Ace = false;
+		peek_state = NO_PEEK;
+	}
+
+	void
+	peek_no_10(void) {
+		peek_state = PEEKED_NO_10;
+	}
+
+	void
+	peek_no_Ace(void) {
+		peek_state = PEEKED_NO_ACE;
 	}
 
 	bool
@@ -97,12 +113,9 @@ struct dealer_hand_base {
 
 	bool
 	operator < (const dealer_hand_base& r) const {
-		return peeked_no_10 < r.peeked_no_10 ||
-			(peeked_no_10 == r.peeked_no_10 &&
-			(peeked_no_Ace < r.peeked_no_Ace ||
-			(peeked_no_Ace == r.peeked_no_Ace &&
-			state < r.state)));
-			
+		return peek_state < r.peek_state ||
+			(peek_state == r.peek_state &&
+			state < r.state);
 	}
 
 };	// end struct dealer_hand

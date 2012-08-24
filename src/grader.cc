@@ -140,6 +140,10 @@ grader::show_count(void) const {
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
+	TODO: take into account peek_state_enum, and adjust odds.
+	See text section on Peeking.
+ */
 size_t
 grader::draw_up_card(const char* prompt) {
 	if (opt.pick_cards && prompt) {
@@ -162,6 +166,7 @@ grader::draw_hole_card(const char* prompt) {
 void
 grader::reveal_hole_card(const size_t hole_card) {
 	dealer.hit_dealer(hole_card);
+	// also calls dealer_hand::reveal_hole_card()
 	C.reveal_hole_card();	// only now, count the hole card
 	// optional:
 	dealer.dump_dealer(ostr) << endl;
@@ -279,6 +284,8 @@ grader::deal_hand(void) {
 			}
 		} else {
 			ostr << "No dealer blackjack." << endl;
+			// hole card is known to be NOT a 10
+			dealer.peek_no_10();
 			if (buy_insurance) {
 				bankroll -= half_bet;
 			}
@@ -305,6 +312,7 @@ grader::deal_hand(void) {
 		} else {
 			ostr << "No dealer blackjack." << endl;
 			// hole card is known to be NOT an ACE
+			dealer.peek_no_Ace();
 			if (pbj) {
 				reveal_hole_card(hole_card);
 				bankroll += var.bj_payoff *bet;

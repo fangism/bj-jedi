@@ -60,6 +60,7 @@ player_hand::hit_player(const size_t p2) {
 void
 dealer_hand::hit_dealer(const size_t p2) {
 	assert(p2 < card_symbols);
+	reveal_hole_card();
 	cards.push_back(card_name[p2]);
 	state = play->hit_dealer(state, card_value_map[p2]);
 	if ((cards.size() == 2) && (state == goal)) {
