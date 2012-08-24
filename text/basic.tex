@@ -320,7 +320,8 @@ Given $N$ cards remaining, distributed over $k$ distinct values
 each weighted $N_k$, and 1 of those $N$ cards is taken aside 
 (as the hole card, $k_h$), and the knowledge that $k_h\neq{}10$, 
 what is the probability of drawing card $m$ next, 
-or $p(x=m)$ where $x$ is drawn from the remaining $N-1$ cards?
+or $\Prob{x=m|k_h\neq{}10}$ where $x$ is drawn from the 
+remaining $N-1$ cards?
 
 \begin{eqnarray}
 \Prob{x=10|k_h\neq{}10} &=& \frac{N_{10}}{N-1}\\
@@ -332,6 +333,7 @@ or $p(x=m)$ where $x$ is drawn from the remaining $N-1$ cards?
 &=& \frac{N_m\Paren{N-N_{10}-1}}{\Paren{N-1}\Paren{N-N_{10}}}
 \end{eqnarray}
 
+As a sanity check, we confirm that $\Sum{m=1}{10}{\Prob{x=m|k_h\neq{}10}}=1$.
 \begin{eqnarray}
 \Prob{x=10|k_h\neq{}10} +\Sum{m:m\neq{}10}{}{\Prob{x=m|k_h\neq{}10}} &=&
   \frac{N_{10}}{N-1}
@@ -340,6 +342,14 @@ or $p(x=m)$ where $x$ is drawn from the remaining $N-1$ cards?
 &=& \frac{N_{10}}{N-1} +\frac{N-N_{10}-1}{N-1}\\
 &=& \frac{N_{10}+N-N_{10}-1}{N-1}\\
 &=& 1
+\end{eqnarray}
+
+Note also that in the infinite-deck limit, there is no difference
+between the priori and posteriori probabilities because
+the knowledge of the hole card no longer affects the relative distribution of 
+remaining cards:
+\begin{eqnarray}
+\Lim{N\rightarrow\infty}{\Prob{x=m|k_h\neq{}10}} &=& \frac{N_m}{N}
 \end{eqnarray}
 
 \noindent
@@ -353,6 +363,9 @@ $N$ & $N_10$ & $N_m$ & $\Prob{x=10|k_h\neq{}10}$ & $\Prob{x=m|k_h\neq{}10}$ \\ \
 52 & 16 & 4 & 16/51 & 35/459 \\ \hline
 \end{tabular}
 \end{center}
+
+The above analysis can be repeated for the case where the hole card $k_h$
+is known to not be an Ace.  
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Edges}
