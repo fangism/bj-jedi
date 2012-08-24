@@ -155,7 +155,7 @@ private:
 	bool				_skip_blank_lines;
 public:
 	explicit
-	readline_wrapper(const string& = string());
+	readline_wrapper(const string&);
 
 	~readline_wrapper();
 

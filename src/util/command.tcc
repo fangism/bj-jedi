@@ -94,7 +94,7 @@ command_registry<Cmd>::list_commands(ostream& o) {
 template <class Cmd>
 int
 command_registry<Cmd>::interpret(state_type& s) {
-	readline_wrapper rl(prompt.c_str());
+	readline_wrapper rl(prompt);
 	const readline_init __rli__;
 	// do NOT delete this line string, it is already managed.
 	const char* line = NULL;
