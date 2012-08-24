@@ -20,10 +20,10 @@ using cards::card_symbols;
 using cards::card_value_map;
 
 //=============================================================================
-// class hand method definitions
+// class player_hand method definitions
 
 void
-hand::initial_card_player(const size_t p1) {
+player_hand::initial_card_player(const size_t p1) {
 	// the string stores the card names, not card indices
 	assert(p1 < card_symbols);
 	cards.clear();
@@ -33,7 +33,7 @@ hand::initial_card_player(const size_t p1) {
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void
-hand::initial_card_dealer(const size_t p1) {
+dealer_hand::initial_card_dealer(const size_t p1) {
 	// the string stores the card names, not card indices
 	assert(p1 < card_symbols);
 	cards.clear();
@@ -43,7 +43,7 @@ hand::initial_card_dealer(const size_t p1) {
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void
-hand::hit_player(const size_t p2) {
+player_hand::hit_player(const size_t p2) {
 	assert(p2 < card_symbols);
 	cards.push_back(card_name[p2]);
 	state = play->hit_player(state, card_value_map[p2]);
@@ -52,7 +52,7 @@ hand::hit_player(const size_t p2) {
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void
-hand::hit_dealer(const size_t p2) {
+dealer_hand::hit_dealer(const size_t p2) {
 	assert(p2 < card_symbols);
 	cards.push_back(card_name[p2]);
 	state = play->hit_dealer(state, card_value_map[p2]);
@@ -69,7 +69,7 @@ hand::hit_dealer(const size_t p2) {
 	\param dr dealer's reveal card
  */
 void
-hand::deal_player(const size_t p1, const size_t p2, const bool nat, 
+player_hand::deal_player(const size_t p1, const size_t p2, const bool nat, 
 		const size_t dr) {
 	cards.clear();
 	cards.push_back(card_name[p1]);
@@ -85,7 +85,7 @@ hand::deal_player(const size_t p1, const size_t p2, const bool nat,
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void
-hand::double_down(const size_t p2) {
+player_hand::double_down(const size_t p2) {
 	hit_player(p2);
 	action = DOUBLED_DOWN;
 	player_options &= play->post_double_down_actions;
@@ -102,7 +102,8 @@ hand::double_down(const size_t p2) {
 	\param dr dealer's reveal card
  */
 void
-hand::split(hand& nh, const size_t s1, const size_t s2, const size_t dr) {
+player_hand::split(player_hand& nh,
+		const size_t s1, const size_t s2, const size_t dr) {
 	const size_t split_card = state - pair_offset;
 	// 21 should not be considered blackjack when splitting (variation)?
 	deal_player(split_card, s1, false, dr);
@@ -112,14 +113,17 @@ hand::split(hand& nh, const size_t s1, const size_t s2, const size_t dr) {
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+#if 0
 bool
-hand::splittable(void) const {
+player_hand::splittable(void) const {
+	// TODO: allow variants that split nonmatching cards!
 	return (cards.size() == 2) && (cards[0] == cards[1]);
 }
+#endif
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ostream&
-hand::dump_player(ostream& o) const {
+player_hand::dump_player(ostream& o) const {
 	o << "player: " << cards << " (" << play->player_hit[state].name << ")";
 	switch (action) {
 	case DOUBLED_DOWN: o << " doubled-down"; break;
@@ -132,7 +136,7 @@ hand::dump_player(ostream& o) const {
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ostream&
-hand::dump_dealer(ostream& o) const {
+dealer_hand::dump_dealer(ostream& o) const {
 	o << "dealer: " << cards << " (" << play->dealer_hit[state].name << ")";
 	return o;
 }

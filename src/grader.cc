@@ -55,7 +55,7 @@ grader::grader(const variation& v, play_options& p, istream& i, ostream& o) :
 		var(v), opt(p), istr(i), ostr(o), play(v),
 		basic_strategy(play), dynamic_strategy(play), 
 		C(v),
-		player_hands(), dealer_hand(play), 
+		player_hands(), dealer(play), 
 		stats(), 
 		bookmarks() {
 	player_hands.reserve(16);	// to prevent realloc
@@ -161,10 +161,10 @@ grader::draw_hole_card(const char* prompt) {
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void
 grader::reveal_hole_card(const size_t hole_card) {
-	dealer_hand.hit_dealer(hole_card);
+	dealer.hit_dealer(hole_card);
 	C.reveal_hole_card();	// only now, count the hole card
 	// optional:
-	dealer_hand.dump_dealer(ostr) << endl;
+	dealer.dump_dealer(ostr) << endl;
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -213,15 +213,15 @@ grader::deal_hand(void) {
 	stats.dynamic_priori.edge_sum += dyn_edge;
 	stats.dynamic_priori.weighted_edge_sum += wdyn_edge;
 }
-	hand iph(play);
+	player_hand iph(play);
 	player_hands.push_back(iph);
 	const size_t p1 = draw_up_card("choose player's first card.");
 	const size_t p2 = draw_up_card("choose player's second card.");
-	hand& pih(player_hands.front());
+	player_hand& pih(player_hands.front());
 	dealer_reveal = draw_up_card("choose dealer's up-card.");
 	const size_t dealer_reveal_value = card_value_map[dealer_reveal];
 	pih.deal_player(p1, p2, true, dealer_reveal_value);
-	dealer_hand.initial_card_dealer(dealer_reveal);
+	dealer.initial_card_dealer(dealer_reveal);
 	// TODO: first query whether hold card makes dealer blackjack
 	// so prompt for this after checking, if peeking for blackjack
 {	// accumulate more statistics after initial deal
@@ -332,12 +332,12 @@ if (live || !opt.dealer_plays_only_against_live) {
 	// dealer plays after player is done
 	// should dealer play when there are no live hands?
 	reveal_hole_card(hole_card);	// calls dump_dealer
-	while (!play.is_dealer_terminal(dealer_hand.state)) {
-		dealer_hand.hit_dealer(draw_up_card("choose dealer's next card."));
+	while (!play.is_dealer_terminal(dealer.state)) {
+		dealer.hit_dealer(draw_up_card("choose dealer's next card."));
 		dealer_took_card = true;
 	}
 	if (dealer_took_card) {
-		dealer_hand.dump_dealer(ostr) << endl;
+		dealer.dump_dealer(ostr) << endl;
 	}	// otherwise dealer stands on first two cards
 } else {
 	// hole card is never revealed and thus not counted
@@ -362,7 +362,7 @@ for (j=0; j<player_hands.size(); ++j) {
 	}
 	const outcome& wlp(play_map::outcome_matrix
 		[play_map::player_final_state_map(player_hands[j].state)]
-		[dealer_hand.state -stop]);
+		[dealer.state -stop]);
 	const double delta = player_hands[j].doubled_down() ? bet2 : bet;
 	switch (wlp) {
 	case WIN: ostr << "Player wins." << endl; bankroll += delta; break;
@@ -439,7 +439,7 @@ grader::show_dynamic_edge(void) {
 void
 grader::handle_player_action(const size_t j, const player_choice pc) {
 	++stats.decisions_made;
-	hand& ph(player_hands[j]);
+	player_hand& ph(player_hands[j]);
 switch (pc) {
 	case STAND:
 		ph.stand();
@@ -453,7 +453,7 @@ switch (pc) {
 		// don't bother prompting if hits 21 (auto-stand)
 		break;
 	case SPLIT: {
-		hand nh(play);	// new hand
+		player_hand nh(play);	// new hand
 		// avoid sequence-point
 		const size_t s1 = draw_up_card("choose player's second card.");
 		const size_t s2 = draw_up_card("choose player's second card.");
@@ -485,7 +485,7 @@ switch (pc) {
  */
 bool
 grader::play_out_hand(const size_t j) {
-	hand& ph(player_hands[j]);
+	player_hand& ph(player_hands[j]);
 	// caution, reference may dangle after a vector::push_back
 	// player may resplit hands
 	player_choice pc = NIL;
@@ -699,8 +699,8 @@ ostream&
 grader::dump_situation(const size_t j) const {
 	assert(j < player_hands.size());
 	ostr << '[' << j+1 << '/' << player_hands.size() << "] ";
-	if (dealer_hand.cards.size() > 1) {
-		dealer_hand.dump_dealer(ostr);
+	if (dealer.cards.size() > 1) {
+		dealer.dump_dealer(ostr);
 	} else {
 		ostr << "dealer: " << card_name[dealer_reveal];
 	}

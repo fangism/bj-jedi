@@ -24,10 +24,87 @@ using std::ostream;
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
+	The essential information about a player's hand.
+	Excludes exact composition.
+	This is used as a key to the situation map for analysis.
+ */
+struct player_hand_base {
+	/**
+		Enumerated state, from the state machine.
+		Also encodes the value of the hand, the total.
+	 */
+	size_t					state;
+	// player's actions may be limited by state
+	action_mask				player_options;
+	// TODO: splits remaining (countdown to 0)
+	// TODO: hand size (number of cards)
+
+	player_hand_base() : state(0), player_options(action_mask::all) { }
+
+	bool
+	has_blackjack(void) const {
+		return state == player_blackjack;
+	}
+
+	bool
+	player_busted(void) const {
+		return state == player_bust;
+	}
+
+};	// end struct player_hand_base
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+struct dealer_hand_base {
+	size_t					state;
+	// reveal_card?
+	// influences drawing cards
+	bool					peeked_no_10;
+	bool					peeked_no_Ace;
+
+	dealer_hand_base() : state(0),
+		peeked_no_10(false), peeked_no_Ace(false) { }
+
+	void
+	revealed_hole_card(void) {
+		// reset peek status after hole card is revealed
+		peeked_no_10 = false;
+		peeked_no_Ace = false;
+	}
+
+	bool
+	has_blackjack(void) const {
+		return state == dealer_blackjack;
+	}
+
+	bool
+	dealer_busted(void) const {
+		return state == dealer_bust;
+	}
+
+};	// end struct dealer_hand
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+struct hand_common {
+	// reference to game variation and state transition maps
+	const play_map*				play;
+	/**
+		A,2-9,T.
+	 */
+	typedef	string				card_array_type;
+	card_array_type				cards;
+
+	hand_common() : play(NULL), cards() { }
+
+	explicit
+	hand_common(const play_map& p) : play(&p), cards() { }
+
+};	// end struct hand_common
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
 	A single player or dealer hand state.
  */
-struct hand {
-	const play_map*				play;
+struct player_hand : public player_hand_base, public hand_common {
 	/**
 		Mutually exclusive states.
 		Can't be doubled-down and surrendered.
@@ -41,46 +118,24 @@ struct hand {
 		SURRENDERED
 		// BUSTED
 	};
-	/**
-		A,2-9,T.
-	 */
-	typedef	string				player_cards;
-	player_cards				cards;
-	// player's actions may be limited by state
-	action_mask				player_options;
-	/**
-		Enumerated state, from the state machine.
-		Also encodes the value of the hand, the total.
-	 */
-	size_t					state;
 	play_state				action;
 
-	hand() : play(NULL), cards(),
-		player_options(action_mask::all),
-		state(0), action(LIVE) { }
+	player_hand() : player_hand_base(), hand_common(), action(LIVE) { }
 
 	explicit
-	hand(const play_map& p) : play(&p), cards(), state(0), action(LIVE) { }
+	player_hand(const play_map& p) : player_hand_base(), hand_common(p),
+		action(LIVE) { }
 
 	// initial deal
 	void
 	initial_card_player(const size_t);
 
 	void
-	initial_card_dealer(const size_t);
-
-	void
 	deal_player(const size_t, const size_t, const bool, const size_t);
-
-	void
-	deal_dealer(const size_t, const size_t);
 
 	// hit state transition -- use this for double-down too
 	void
 	hit_player(const size_t);
-
-	void
-	hit_dealer(const size_t);
 
 	void
 	double_down(const size_t);
@@ -104,35 +159,25 @@ struct hand {
 		return action == DOUBLED_DOWN;
 	}
 
+#if 0
 	bool
 	splittable(void) const;
+#endif
 
 	void
-	split(hand&, const size_t, const size_t, const size_t);
+	split(player_hand&, const size_t, const size_t, const size_t);
 
+#if 0
 	bool
 	doubleable(void) const {
 		return cards.size() == 2;
 	}
+
 	bool
 	surrenderable(void) const {
 		return cards.size() == 2;
 	}
-
-	bool
-	has_blackjack(void) const {
-		return state == player_blackjack;
-	}
-
-	bool
-	player_busted(void) const {
-		return state == player_bust;
-	}
-
-	bool
-	dealer_busted(void) const {
-		return state == dealer_bust;
-	}
+#endif
 
 	/**
 		A hand is considered 'live' if it 
@@ -148,6 +193,7 @@ struct hand {
 		Player should be prompt while alive, 
 		and not doubled down, and not surrendered.
 		Also, if 21, don't bother prompting.
+		TODO: just use state of player_actions mask
 	 */
 	bool
 	player_prompt(void) const {
@@ -155,13 +201,31 @@ struct hand {
 	}
 
 	ostream&
-	dump_dealer(ostream&) const;
-
-	ostream&
 	dump_player(ostream&) const;
 
-};	// end struct hand
+};	// end struct player_hand
 
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+struct dealer_hand : public dealer_hand_base, public hand_common {
+
+	dealer_hand() : dealer_hand_base(), hand_common() { }
+
+	explicit
+	dealer_hand(const play_map& m) : dealer_hand_base(), hand_common(m) { }
+
+	void
+	initial_card_dealer(const size_t);
+
+	void
+	deal_dealer(const size_t, const size_t);
+
+	void
+	hit_dealer(const size_t);
+
+	ostream&
+	dump_dealer(ostream&) const;
+
+};	// end struct dealer_hand
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 }	// end namespace blackjack
 

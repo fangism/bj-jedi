@@ -68,11 +68,11 @@ private:
 	/**
 		Maintain a vector of hands in case of splits and re-splits.
 	 */
-	std::vector<hand>			player_hands;
+	std::vector<player_hand>			player_hands;
 	/**
 		Dealer's hand, as it develops.  
 	 */
-	hand					dealer_hand;
+	dealer_hand					dealer;
 	/**
 		The dealer's revealed card.  Redundant with dealer_hand.
 	 */

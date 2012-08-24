@@ -18,14 +18,15 @@ namespace blackjack {
  */
 struct bookmark {
 	size_t				dealer_reveal;
-//	hand				dealer_hand;
-	hand				player_hand;
+//	hand				d_hand;
+	player_hand			p_hand;
+//	player_hand_base		p_hand;
 	// for now, just save everything, only ::cards is needed
 	deck_state			cards;
 
 	bookmark();
 
-	bookmark(const size_t, const hand&, const deck_state&);
+	bookmark(const size_t, const player_hand&, const deck_state&);
 
 	~bookmark();
 
