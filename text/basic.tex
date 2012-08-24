@@ -255,12 +255,104 @@ Most insurance payoffs pay 2:1, i.e., the insurance bet (half of the original)
 pays the whole bet amount if the dealer does have a natural.
 In other words, the insurance bet is equivalent to betting 
 whether or not the dealer's hole card is a 10.
-In a standard deck, 4 out of 13 cards are 10-valued, 9 out of 13 are not, 
+In a standard deck, 4/13 cards are 10-valued, 9/13 are not, 
 so the odds are 9:4 against.  
 If the payoff is only 2:1 (8:4), then insurance is a losing bet.
 Hence, basic strategy dictates: \emph{never take insurance}.
 Only when the odds of a 10-valued card is less than 2:1 against
 is insurance a favorable side bet.
+
+\subsection{Even-money}
+\label{sec:basic:insurance:even-money}
+
+\index{even money}
+When the player has a natural blackjack, and the dealer is showing an 
+Ace, the dealer sometimes offers the ``even money'' proposition, 
+before peeking for a 10 in the hole.
+If the player accepts, then she wins 1:1 on her original bet
+instead of the typical 3:2, and the hand is over.
+If the player declines, then the dealer peeks for a 10.
+If the hole card is a 10, giving the dealer a natural, then the hand
+is declared a push, and no money is exchanged.
+Otherwise, the player's natural holds up against the dealer
+and is paid out 3:2.
+
+Under these circumstances, with the standard 3:2 blackjack payoff, 
+even money is equivalent to the insurance side bet;
+accepting ``even money'' is to the player's disadvantage.
+With the standard card distribution, 
+declining even money pays off 3:2 with probability 9/13, 
+while the other 4/13 times pays nothing (push), 
+so the expected value of declining is
+$\frac{9}{13}\cdot\frac{3}{2}=\frac{27}{26}$,
+whereas the expected value of accepting even money is only 1.  
+Since $\frac{27}{26}>1$, it is better to decline even money, 
+under basic strategy.
+
+As an exercise to the reader, analyze the even money proposition
+given a 6:5 payoff for natural blackjack.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Peeking}
+\label{sec:basic:peeking}
+
+\index{peeking}
+This section addresses the impact of the peeking for a natural blackjack
+on the odds of drawing cards, and computing probabilities of outcomes.
+If you are only interested in strategy, you may skip this section.  
+
+Under common blackjack variants, the dealer peeks at the hole card
+to see if he already has a natural blackjack.
+The dealer can only have a natural if the dealer's reveal card is an 
+Ace or 10-valued, otherwise there is no need to peek at the hole card.
+When an Ace is showing, the dealer checks for a 10 in the hole (usually 
+after offering the insurance side bet), and when a 10 is showing, 
+the dealer checks for an A in the hole (usually no side bets).
+When the dealer does have a natural, the hand is over, 
+and there is nothing else to calculate.
+If the dealer does not have a natural, then play resumes, 
+and the player is next to act, with additional information on the
+distribution of cards remaining in the deck.
+
+\noindent
+Problem formulation:
+Given $N$ cards remaining, distributed over $k$ distinct values 
+each weighted $N_k$, and 1 of those $N$ cards is taken aside 
+(as the hole card, $k_h$), and the knowledge that $k_h\neq{}10$, 
+what is the probability of drawing card $m$ next, 
+or $p(x=m)$ where $x$ is drawn from the remaining $N-1$ cards?
+
+\begin{eqnarray}
+\Prob{x=10|k_h\neq{}10} &=& \frac{N_{10}}{N-1}\\
+\Prob{x=m,m\neq{}10|k_h\neq{}10} &=&
+  \Prob{k_h=m} \Prob{x=m|k_h=m}
+  +\Prob{k_h\neq{}m} \Prob{x=m|k_h\neq{}m}\\
+&=& \frac{N_m}{N-N_{10}}\cdot\frac{N_m-1}{N-1}
+  +\frac{N-N_{10}-N_m}{N-N_{10}}\cdot\frac{N_m}{N-1}\\
+&=& \frac{N_m\Paren{N-N_{10}-1}}{\Paren{N-1}\Paren{N-N_{10}}}
+\end{eqnarray}
+
+\begin{eqnarray}
+\Prob{x=10|k_h\neq{}10} +\Sum{m:m\neq{}10}{}{\Prob{x=m|k_h\neq{}10}} &=&
+  \frac{N_{10}}{N-1}
+  +\frac{N-N_{10}-1}{\Paren{N-1}\Paren{N-N_{10}}} \Sum{m:m\neq{}10}{}{N_m}\\
+&=& \frac{N_{10}}{N-1} +\frac{\Paren{N-N_{10}}\Paren{N-N_{10}-1}}{\Paren{N-1}\Paren{N-N_{10}}}\\
+&=& \frac{N_{10}}{N-1} +\frac{N-N_{10}-1}{N-1}\\
+&=& \frac{N_{10}+N-N_{10}-1}{N-1}\\
+&=& 1
+\end{eqnarray}
+
+\noindent
+Examples:
+\begin{center}
+\begin{tabular}{|c|c|c||c|c|}
+\hline
+$N$ & $N_10$ & $N_m$ & $\Prob{x=10|k_h\neq{}10}$ & $\Prob{x=m|k_h\neq{}10}$ \\ \hline \hline
+13 & 4 & 1 & 4/12 & 2/27 \\ \hline
+26 & 8 & 2 & 8/25 & 17/225 \\ \hline
+52 & 16 & 4 & 16/51 & 35/459 \\ \hline
+\end{tabular}
+\end{center}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Edges}
