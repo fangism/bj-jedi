@@ -61,8 +61,7 @@ post-peek probability (Bayes' Formula):
 	N_k/(N-N_10) * (N_k-1)/(N-1) + (N-N_10-N_k)/(N-N_10) *N_k/(N-1) =
 	(N_k^2 -N_k + N*N_k -N_k^2 -N_k*N_10)/(N-1)(N-N_10) =
 	(N -N_10 -1)*N_k/(N-1)(N-N_10)
-
-	Generalize and write-up in text document.
+	Added to chapter basic-strategy:peeking.
 
 permissible actions table (action_masks):
 	different variations may restrict player options for certain hands,

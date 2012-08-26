@@ -221,7 +221,11 @@ ACTION_EXPECTATIONS_TABLE_SCRIPT = \
 			-e '/^split/s| \\hline|*|' \
 			-e '/^delta/s|$$| \\hline|' \
 			-e 's/delta/$$\\absdelta$$/g' \
-			-e '/^21/,/^A/s|\*$$| \\hline \\hline|' ; \
+			-e '/^21/,/^A/s|\*$$| \\hline \\hline|' \
+			-e '/^21/s| \\hline|*|' \
+			-e '/^BJ/s| \\hline|*|' \
+			-e '/^bust/s| \\hline|*|' \
+			-e '/^A.*hline.*hline/s| \\hline.*|*|g' ; \
 	} > $@
 
 tables/player-action-expectations-basic-H17.tex: \
