@@ -314,30 +314,32 @@ If the dealer does not have a natural, then play resumes,
 and the player is next to act, with additional information on the
 distribution of cards remaining in the deck.
 
-\noindent
-Problem formulation:
+\subsection{Impact of peeking on drawing odds}
+\label{sec:basic:peeking:drawing_odds}
+% Problem formulation:
 Given $N$ cards remaining, distributed over $k$ distinct values 
 each weighted $N_k$, and 1 of those $N$ cards is taken aside 
-(as the hole card, $k_h$), and the knowledge that $k_h\neq{}10$, 
+(as the hole card, $h$), and the knowledge that $h\neq{}10$, 
 what is the probability of drawing card $m$ next, 
-or $\Prob{x=m|k_h\neq{}10}$ where $x$ is drawn from the 
+or $\Prob{x=m|h\neq{}10}$ where $x$ is drawn from the 
 remaining $N-1$ cards?
 
 \begin{eqnarray}
-\Prob{x=10|k_h\neq{}10} &=& \frac{N_{10}}{N-1}\\
-\Prob{x=m,m\neq{}10|k_h\neq{}10} &=&
-  \Prob{k_h=m} \Prob{x=m|k_h=m}
-  +\Prob{k_h\neq{}m} \Prob{x=m|k_h\neq{}m}\\
+\Prob{x=10|h\neq{}10} &=& \frac{N_{10}}{N-1}\\
+\Prob{x=m,m\neq{}10|h\neq{}10} &=&
+  \Prob{h=m} \Prob{x=m|h=m} \nonumber \\
+& &  +\Prob{h\neq{}m} \Prob{x=m|h\neq{}m}\\
 &=& \frac{N_m}{N-N_{10}}\cdot\frac{N_m-1}{N-1}
   +\frac{N-N_{10}-N_m}{N-N_{10}}\cdot\frac{N_m}{N-1}\\
 &=& \frac{N_m\Paren{N-N_{10}-1}}{\Paren{N-1}\Paren{N-N_{10}}}
 \end{eqnarray}
 
-As a sanity check, we confirm that $\Sum{m=1}{10}{\Prob{x=m|k_h\neq{}10}}=1$.
+As a sanity check, we confirm that $\Sum{m=1}{10}{\Prob{x=m|h\neq{}10}}=1$.
 \begin{eqnarray}
-\Prob{x=10|k_h\neq{}10} +\Sum{m:m\neq{}10}{}{\Prob{x=m|k_h\neq{}10}} &=&
-  \frac{N_{10}}{N-1}
-  +\frac{N-N_{10}-1}{\Paren{N-1}\Paren{N-N_{10}}} \Sum{m:m\neq{}10}{}{N_m}\\
+\Sum{m=1}{10}{\Prob{x=m|h\neq{}10}} &=&
+\Prob{x=10|h\neq{}10} +\Sum{m:m\neq{}10}{}{\Prob{x=m|h\neq{}10}}\\
+&=& \frac{N_{10}}{N-1}
+  +\frac{N-N_{10}-1}{\Paren{N-1}\Paren{N-N_{10}}} \Sum{m:m\neq{}10}{}{N_m} \label{eqn:post_peek} \\
 &=& \frac{N_{10}}{N-1} +\frac{\Paren{N-N_{10}}\Paren{N-N_{10}-1}}{\Paren{N-1}\Paren{N-N_{10}}}\\
 &=& \frac{N_{10}}{N-1} +\frac{N-N_{10}-1}{N-1}\\
 &=& \frac{N_{10}+N-N_{10}-1}{N-1}\\
@@ -349,23 +351,69 @@ between the priori and posteriori probabilities because
 the knowledge of the hole card no longer affects the relative distribution of 
 remaining cards:
 \begin{eqnarray}
-\Lim{N\rightarrow\infty}{\Prob{x=m|k_h\neq{}10}} &=& \frac{N_m}{N}
+\Lim{N\rightarrow\infty}{\Prob{x=m|h\neq{}10}} &=& \frac{N_m}{N}
 \end{eqnarray}
 
 \noindent
-Examples:
+Example calculations:
 \begin{center}
 \begin{tabular}{|c|c|c||c|c|}
 \hline
-$N$ & $N_10$ & $N_m$ & $\Prob{x=10|k_h\neq{}10}$ & $\Prob{x=m|k_h\neq{}10}$ \\ \hline \hline
+$N$ & $N_10$ & $N_m$ & $\Prob{x=10|h\neq{}10}$ & $\Prob{x=m|h\neq{}10}$ \\ \hline \hline
 13 & 4 & 1 & 4/12 & 2/27 \\ \hline
 26 & 8 & 2 & 8/25 & 17/225 \\ \hline
 52 & 16 & 4 & 16/51 & 35/459 \\ \hline
 \end{tabular}
 \end{center}
 
-The above analysis can be repeated for the case where the hole card $k_h$
+The above analysis can be repeated for the case where the hole card $h$
 is known to not be an Ace.  
+
+\begin{eqnarray}
+\Prob{x=A|h\neq{}A} &=& \frac{N_{A}}{N-1}\\
+\Prob{x=m,m\neq{}A|h\neq{}A} &=&
+  \frac{N_m\Paren{N-N_{A}-1}}{\Paren{N-1}\Paren{N-N_{A}}}
+\end{eqnarray}
+
+% table?
+Another way of looking at how the odds change after peeking is
+by adjusting the weighting of the \emph{priori} distribution.
+Before peeking, the weight of drawing each card $m$ is exactly
+$N_m$, thus each probability is $N_m/N$.
+If we take Equation~\ref{eqn:post_peek} and multiply both sides
+by the common denominator to acquire integer weights (whose sum is 
+$\Paren{N-1}\Paren{N-N_{10}}$),
+we see that $N_10$ is weighted by $N-N_{10}$ and for $m\neq{}10$, 
+$N_m$ is weighted by $N-N_{10}-1$.
+In other words, knowledge that the hole card cannot be 10 increases
+the likelihood of drawing a 10 from the remaining cards.
+This property can be used to efficiently adjust the
+random card generator without having to perform division.
+
+\subsection{Accumulating unknown hole cards}
+\label{sec:basic:peeking:accumulate}
+
+As a deck or shoe is played, there may be times when the hole card
+is never revealed.  This can occur if the player (or all players)
+bust or surrender. 
+When this happens, the dealer need not play out his hand; 
+he may discard his revealed card and the hole card without revealing
+the hole card.
+When the dealer shows neither a 10 nor Ace, 
+there is no information about the hole card;
+it may as well be replaced among the remaining cards.  
+However, when the dealer peeks for a natural blackjack,
+there is partial information about the hole card
+and the probability distribution of the remaining cards.  
+When it is the dealer's turn to play, 
+revealing the hole card provides certain information about 
+what cards remain in the deck.  
+The previous section assumed that prior to the hand, 
+no peeked hole cards were discarded.
+This section computes the impact of discarded peeked hole cards
+on probability of drawing cards.  
+
+TODO: generalize
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Edges}
