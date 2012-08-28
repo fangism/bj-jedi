@@ -324,14 +324,16 @@ what is the probability of drawing card $m$ next,
 or $\Prob{x=m|h\neq{}10}$ where $x$ is drawn from the 
 remaining $N-1$ cards?
 
+Let $N_{-10}=N-N_{10}$, for shorthand.
+
 \begin{eqnarray}
 \Prob{x=10|h\neq{}10} &=& \frac{N_{10}}{N-1}\\
 \Prob{x=m,m\neq{}10|h\neq{}10} &=&
   \Prob{h=m} \Prob{x=m|h=m} \nonumber \\
 & &  +\Prob{h\neq{}m} \Prob{x=m|h\neq{}m}\\
-&=& \frac{N_m}{N-N_{10}}\cdot\frac{N_m-1}{N-1}
-  +\frac{N-N_{10}-N_m}{N-N_{10}}\cdot\frac{N_m}{N-1}\\
-&=& \frac{N_m\Paren{N-N_{10}-1}}{\Paren{N-1}\Paren{N-N_{10}}}
+&=& \frac{N_m}{N_{-10}}\cdot\frac{N_m-1}{N-1}
+  +\frac{N_{-10}-N_m}{N_{-10}}\cdot\frac{N_m}{N-1}\\
+&=& \frac{N_m\Paren{N_{-10}-1}}{\Paren{N-1}\Paren{N_{-10}}}
 \end{eqnarray}
 
 As a sanity check, we confirm that $\Sum{m=1}{10}{\Prob{x=m|h\neq{}10}}=1$.
@@ -339,10 +341,10 @@ As a sanity check, we confirm that $\Sum{m=1}{10}{\Prob{x=m|h\neq{}10}}=1$.
 \Sum{m=1}{10}{\Prob{x=m|h\neq{}10}} &=&
 \Prob{x=10|h\neq{}10} +\Sum{m:m\neq{}10}{}{\Prob{x=m|h\neq{}10}}\\
 &=& \frac{N_{10}}{N-1}
-  +\frac{N-N_{10}-1}{\Paren{N-1}\Paren{N-N_{10}}} \Sum{m:m\neq{}10}{}{N_m} \label{eqn:post_peek} \\
-&=& \frac{N_{10}}{N-1} +\frac{\Paren{N-N_{10}}\Paren{N-N_{10}-1}}{\Paren{N-1}\Paren{N-N_{10}}}\\
-&=& \frac{N_{10}}{N-1} +\frac{N-N_{10}-1}{N-1}\\
-&=& \frac{N_{10}+N-N_{10}-1}{N-1}\\
+  +\frac{N_{-10}-1}{\Paren{N-1}\Paren{N_{-10}}} \Sum{m:m\neq{}10}{}{N_m} \label{eqn:post_peek} \\
+&=& \frac{N_{10}}{N-1} +\frac{\Paren{N_{-10}}\Paren{N_{-10}-1}}{\Paren{N-1}\Paren{N_{-10}}}\\
+&=& \frac{N_{10}}{N-1} +\frac{N_{-10}-1}{N-1}\\
+&=& \frac{N_{10}+N_{-10}-1}{N-1}\\
 &=& 1
 \end{eqnarray}
 
@@ -372,7 +374,7 @@ is known to not be an Ace.
 \begin{eqnarray}
 \Prob{x=A|h\neq{}A} &=& \frac{N_{A}}{N-1}\\
 \Prob{x=m,m\neq{}A|h\neq{}A} &=&
-  \frac{N_m\Paren{N-N_{A}-1}}{\Paren{N-1}\Paren{N-N_{A}}}
+  \frac{N_m\Paren{N_{-A}-1}}{\Paren{N-1}\Paren{N_{-A}}}
 \end{eqnarray}
 
 % table?
@@ -382,9 +384,9 @@ Before peeking, the weight of drawing each card $m$ is exactly
 $N_m$, thus each probability is $N_m/N$.
 If we take Equation~\ref{eqn:post_peek} and multiply both sides
 by the common denominator to acquire integer weights (whose sum is 
-$\Paren{N-1}\Paren{N-N_{10}}$),
-we see that $N_10$ is weighted by $N-N_{10}$ and for $m\neq{}10$, 
-$N_m$ is weighted by $N-N_{10}-1$.
+$\Paren{N-1}\Paren{N_{-10}}$),
+we see that $N_10$ is weighted by $N_{-10}$ and for $m\neq{}10$, 
+$N_m$ is weighted by $N_{-10}-1$.
 In other words, knowledge that the hole card cannot be 10 increases
 the likelihood of drawing a 10 from the remaining cards.
 This property can be used to efficiently adjust the
@@ -409,11 +411,89 @@ When it is the dealer's turn to play,
 revealing the hole card provides certain information about 
 what cards remain in the deck.  
 The previous section assumed that prior to the hand, 
-no peeked hole cards were discarded.
-This section computes the impact of discarded peeked hole cards
+no peeked hole cards were discarded in previous hands.
+This section computes the impact of accumulating discarded peeked hole cards
 on probability of drawing cards.  
 
-TODO: generalize
+The previous problem can be generalized:
+Given $N$ cards remaining, distributed over $k$ distinct values 
+each weighted $N_k$, and $d$ of those $N$ cards 
+set aside as $h_1\ldots{}h_d$
+with the knowledge that $\forall{}i:h_i\neq{}10$
+(which we abbreviate $H\neq{}10$), 
+what is the probability of drawing card $m$ next, 
+or $\Prob{x=m|H\neq{}10}$ where $x$ is drawn from the 
+remaining $N-d$ cards?
+
+There are $d+1$ cases to consider:
+the $d$ hole cards may contain anywhere from $0$ to $d$ cards with value $m$.
+
+The probability of 1 hole card having value $m$ is
+\begin{eqnarray}
+P_m &=& \nonumber \\
+\Prob{h=m|H\neq{}10} &=& \frac{N_m}{N_{-10}}
+\end{eqnarray}
+
+Let the probability that $c$ of $d$ hole cards have value $m$ be denoted as:
+\begin{eqnarray}
+P_{c,d,m} &=& \Prob{\sizeof{\Set{\forall{}i:h_i=m}}=c|H\neq{}10} \\
+&=& {P_m}^c \cdot \Paren{1-P_m}^{d-c} \cdot\nCr{d}{c} \\
+&=& \Paren{\frac{N_m}{N_{-10}}}^c\cdot\Paren{\frac{N_{-10}-N_m}{N_{-10}}}^{d-c} \cdot\nCr{d}{c} \\
+&=& \frac{N_m^c\cdot\Paren{N_{-10}-N_m}^{d-c}\cdot\nCr{d}{c}}{\Paren{N_{-10}}^d}
+\end{eqnarray}
+
+\begin{eqnarray}
+\Prob{x=10|H\neq{}10} &=& \frac{N_{10}}{N-d}
+\end{eqnarray}
+
+The probability of drawing card $m$ if $c$ of $d$ hole cards is $m$ is:
+\begin{eqnarray}
+\Prob{x=m|c,d,m} &=& \frac{N_m-c}{N-d}
+\end{eqnarray}
+
+Thus, the overall probability of drawing card $m$ is the weighted sum
+of the conditional probabilities:
+
+\begin{eqnarray}
+\Prob{x=m,m\neq{}10|H\neq{}10} &=&
+  \Sum{c=0}{d}{P_{c,d,m}\cdot\Prob{x=m|c,d,m}} \\
+&=& \Sum{c=0}{d}{%
+\frac{N_m^c\cdot\Paren{N_{-10}-N_m}^{d-c}\cdot\nCr{d}{c}}{\Paren{N_{-10}}^d}%
+\cdot\frac{N_m-c}{N-d}} \\
+&=& \frac{\Sum{c=0}{d}{N_m^c\cdot\Paren{N_{-10}-N_m}^{d-c}\cdot\nCr{d}{c}\cdot\Paren{N_m-c}}}
+{\Paren{N_{-10}}^d\cdot{\Paren{N-d}}}
+\end{eqnarray}
+
+For $d=2$, for example, 
+\begin{eqnarray}
+\Prob{x=m,m\neq{}10|H\neq{}10}
+&=& \frac{\Paren{N_{-10}-N_m}^2\cdot\Paren{N_m}
+ +2 N_m\cdot\Paren{N_{-10}-N_m}\cdot\Paren{N_m-1}
+ +N_m^2\cdot\Paren{N_m-2}
+}{\Paren{N_{-10}}^2\cdot{\Paren{N-2}}} \\
+&=& N_m \frac{\Paren{N_{-10}-N_m}^2
+ + 2\Paren{N_{-10}-N_m}\cdot\Paren{N_m-1}
+ +N_m\cdot\Paren{N_m-2}
+}{\Paren{N_{-10}}^2\cdot{\Paren{N-2}}} \\
+&=& N_m \frac{\Paren{N_{-10}-N_m}^2
+ + 2\Paren{N_{-10}-N_m}\cdot\Paren{N_m-1}
+ +\Paren{N_m-1}^2 -1
+}{\Paren{N_{-10}}^2\cdot{\Paren{N-2}}} \\
+&=& N_m \frac{\Paren{N_{-10}-N_m +N_m -1}^2 -1
+}{\Paren{N_{-10}}^2\cdot{\Paren{N-2}}} \\
+&=& N_m \frac{\Paren{N_{-10} -1}^2 -1
+}{\Paren{N_{-10}}^2\cdot{\Paren{N-2}}} \\
+&=& N_m \frac{N_{-10}\Paren{N_{-10} -2}
+}{\Paren{N_{-10}}^2\cdot{\Paren{N-2}}} \\
+&=& N_m \frac{N_{-10} -2}{\Paren{N_{-10}}\cdot{\Paren{N-2}}}
+\end{eqnarray}
+
+Exercise.
+Prove the following:
+\begin{eqnarray}
+\Prob{x=m,m\neq{}10|H\neq{}10} &=&
+  N_m \frac{N_{-10} -d}{\Paren{N_{-10}}\cdot{\Paren{N-d}}}
+\end{eqnarray}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Edges}

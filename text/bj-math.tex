@@ -9,6 +9,8 @@
 \usepackage{verbatim}
 % \usepackage{float}		% for user-defined floating environments
 % \usepackage{subfigure}		% for sub-figure
+\usepackage{amsmath}
+% \usepackage{amssymb}
 \usepackage{longtable}
 \usepackage{makeidx}
 \usepackage[usenames]{color}
@@ -40,9 +42,12 @@
 \DeclareRobustCommand{\raisehalf}[1]{\raisebox{1.2ex}[0pt]{#1}}
 \DeclareRobustCommand{\lowerhalf}[1]{\raisebox{-1.2ex}[0pt]{#1}}
 
+% math commands
 \newcommand{\abs}[1]{\left|#1\right|}
 \newcommand{\absdelta}{\abs{\Delta}}
+\newcommand{\sizeof}[1]{\abs{#1}}
 
+\newcommand{\Set}[1]{\left\{#1\right\}}
 \newcommand{\Paren}[1]{\left(#1\right)}
 % summation
 \newcommand{\Sum}[3]{\sum_{#1}^{#2}{#3}}
@@ -56,6 +61,8 @@
 \newcommand{\Prob}[1]{\textrm{P}\hspace{-.5ex}\Paren{#1}}
 % limit
 \newcommand{\Lim}[2]{\lim_{#1}{#2}}
+% combinatorics
+\newcommand{\nCr}[2]{\binom{#1}{#2}}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{document}
