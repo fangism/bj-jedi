@@ -284,7 +284,7 @@ With the standard card distribution,
 declining even money pays off 3:2 with probability 9/13, 
 while the other 4/13 times pays nothing (push), 
 so the expected value of declining is
-$\frac{9}{13}\cdot\frac{3}{2}=\frac{27}{26}$,
+$\frac{9}{13}\frac{3}{2}=\frac{27}{26}$,
 whereas the expected value of accepting even money is only 1.  
 Since $\frac{27}{26}>1$, it is better to decline even money, 
 under basic strategy.
@@ -331,8 +331,8 @@ Let $N_{-10}=N-N_{10}$, for shorthand.
 \Prob{x=m,m\neq{}10|h\neq{}10} &=&
   \Prob{h=m} \Prob{x=m|h=m} \nonumber \\
 & &  +\Prob{h\neq{}m} \Prob{x=m|h\neq{}m}\\
-&=& \frac{N_m}{N_{-10}}\cdot\frac{N_m-1}{N-1}
-  +\frac{N_{-10}-N_m}{N_{-10}}\cdot\frac{N_m}{N-1}\\
+&=& \frac{N_m}{N_{-10}}\frac{N_m-1}{N-1}
+  +\frac{N_{-10}-N_m}{N_{-10}}\frac{N_m}{N-1}\\
 &=& \frac{N_m\Paren{N_{-10}-1}}{\Paren{N-1}\Paren{N_{-10}}}
 \end{eqnarray}
 
@@ -385,7 +385,7 @@ $N_m$, thus each probability is $N_m/N$.
 If we take Equation~\ref{eqn:post_peek} and multiply both sides
 by the common denominator to acquire integer weights (whose sum is 
 $\Paren{N-1}\Paren{N_{-10}}$),
-we see that $N_10$ is weighted by $N_{-10}$ and for $m\neq{}10$, 
+we see that $N_{10}$ is weighted by $N_{-10}$ and for $m\neq{}10$, 
 $N_m$ is weighted by $N_{-10}-1$.
 In other words, knowledge that the hole card cannot be 10 increases
 the likelihood of drawing a 10 from the remaining cards.
@@ -434,66 +434,83 @@ P_m &=& \nonumber \\
 \Prob{h=m|H\neq{}10} &=& \frac{N_m}{N_{-10}}
 \end{eqnarray}
 
+\noindent
 Let the probability that $c$ of $d$ hole cards have value $m$ be denoted as:
 \begin{eqnarray}
 P_{c,d,m} &=& \Prob{\sizeof{\Set{\forall{}i:h_i=m}}=c|H\neq{}10} \\
-&=& {P_m}^c \cdot \Paren{1-P_m}^{d-c} \cdot\nCr{d}{c} \\
-&=& \Paren{\frac{N_m}{N_{-10}}}^c\cdot\Paren{\frac{N_{-10}-N_m}{N_{-10}}}^{d-c} \cdot\nCr{d}{c} \\
-&=& \frac{N_m^c\cdot\Paren{N_{-10}-N_m}^{d-c}\cdot\nCr{d}{c}}{\Paren{N_{-10}}^d}
+&=& {P_m}^c \Paren{1-P_m}^{d-c} \nCr{d}{c} \\
+&=& \Paren{\frac{N_m}{N_{-10}}}^c\Paren{\frac{N_{-10}-N_m}{N_{-10}}}^{d-c} \nCr{d}{c} \\
+&=& \frac{N_m^c\Paren{N_{-10}-N_m}^{d-c}\nCr{d}{c}}{N_{-10}^d}
 \end{eqnarray}
 
+\noindent
+The probability of drawing a 10 card is simply:
 \begin{eqnarray}
 \Prob{x=10|H\neq{}10} &=& \frac{N_{10}}{N-d}
 \end{eqnarray}
 
+\noindent
 The probability of drawing card $m$ if $c$ of $d$ hole cards is $m$ is:
 \begin{eqnarray}
 \Prob{x=m|c,d,m} &=& \frac{N_m-c}{N-d}
 \end{eqnarray}
 
-Thus, the overall probability of drawing card $m$ is the weighted sum
-of the conditional probabilities:
+\noindent
+Thus, the overall probability of drawing card $m$ (for $m\neq{}10$) 
+is the weighted sum of the conditional probabilities:
 
 \begin{eqnarray}
 \Prob{x=m,m\neq{}10|H\neq{}10} &=&
-  \Sum{c=0}{d}{P_{c,d,m}\cdot\Prob{x=m|c,d,m}} \\
+  \Sum{c=0}{d}{P_{c,d,m}\Prob{x=m|c,d,m}} \\
 &=& \Sum{c=0}{d}{%
-\frac{N_m^c\cdot\Paren{N_{-10}-N_m}^{d-c}\cdot\nCr{d}{c}}{\Paren{N_{-10}}^d}%
-\cdot\frac{N_m-c}{N-d}} \\
-&=& \frac{\Sum{c=0}{d}{N_m^c\cdot\Paren{N_{-10}-N_m}^{d-c}\cdot\nCr{d}{c}\cdot\Paren{N_m-c}}}
-{\Paren{N_{-10}}^d\cdot{\Paren{N-d}}}
+\frac{N_m^c\Paren{N_{-10}-N_m}^{d-c}\nCr{d}{c}}{N_{-10}^d}%
+\frac{N_m-c}{N-d}} \\
+&=& \frac{\Sum{c=0}{d}{N_m^c\Paren{N_{-10}-N_m}^{d-c}\nCr{d}{c}\Paren{N_m-c}}}
+{N_{-10}^d{\Paren{N-d}}}
 \end{eqnarray}
 
 For $d=2$, for example, 
 \begin{eqnarray}
 \Prob{x=m,m\neq{}10|H\neq{}10}
-&=& \frac{\Paren{N_{-10}-N_m}^2\cdot\Paren{N_m}
- +2 N_m\cdot\Paren{N_{-10}-N_m}\cdot\Paren{N_m-1}
- +N_m^2\cdot\Paren{N_m-2}
-}{\Paren{N_{-10}}^2\cdot{\Paren{N-2}}} \\
+&=& \frac{\Paren{N_{-10}-N_m}^2 N_m
+ +2 N_m\Paren{N_{-10}-N_m}\Paren{N_m-1}
+ +N_m^2\Paren{N_m-2}
+}{N_{-10}^2{\Paren{N-2}}} \\
 &=& N_m \frac{\Paren{N_{-10}-N_m}^2
- + 2\Paren{N_{-10}-N_m}\cdot\Paren{N_m-1}
- +N_m\cdot\Paren{N_m-2}
-}{\Paren{N_{-10}}^2\cdot{\Paren{N-2}}} \\
+ + 2\Paren{N_{-10}-N_m}\Paren{N_m-1}
+ +N_m\Paren{N_m-2}
+}{N_{-10}^2{\Paren{N-2}}} \\
 &=& N_m \frac{\Paren{N_{-10}-N_m}^2
- + 2\Paren{N_{-10}-N_m}\cdot\Paren{N_m-1}
+ + 2\Paren{N_{-10}-N_m}\Paren{N_m-1}
  +\Paren{N_m-1}^2 -1
-}{\Paren{N_{-10}}^2\cdot{\Paren{N-2}}} \\
+}{N_{-10}^2{\Paren{N-2}}} \\
 &=& N_m \frac{\Paren{N_{-10}-N_m +N_m -1}^2 -1
-}{\Paren{N_{-10}}^2\cdot{\Paren{N-2}}} \\
+}{N_{-10}^2{\Paren{N-2}}} \\
 &=& N_m \frac{\Paren{N_{-10} -1}^2 -1
-}{\Paren{N_{-10}}^2\cdot{\Paren{N-2}}} \\
+}{N_{-10}^2{\Paren{N-2}}} \\
 &=& N_m \frac{N_{-10}\Paren{N_{-10} -2}
-}{\Paren{N_{-10}}^2\cdot{\Paren{N-2}}} \\
-&=& N_m \frac{N_{-10} -2}{\Paren{N_{-10}}\cdot{\Paren{N-2}}}
+}{N_{-10}^2{\Paren{N-2}}} \\
+&=& N_m \frac{N_{-10} -2}{N_{-10}{\Paren{N-2}}}
 \end{eqnarray}
 
 Exercise.
-Prove the following:
+Prove the following generalization:
 \begin{eqnarray}
 \Prob{x=m,m\neq{}10|H\neq{}10} &=&
-  N_m \frac{N_{-10} -d}{\Paren{N_{-10}}\cdot{\Paren{N-d}}}
+  N_m \frac{N_{-10} -d}{\Paren{N_{-10}}{\Paren{N-d}}}
 \end{eqnarray}
+
+Exercise.
+Verify that:
+\begin{eqnarray}
+\Sum{m}{10}{\Prob{x=m,|H\neq{}10}} &=& 1
+\end{eqnarray}
+
+Again, the above derivation also works for evaluating
+when there are $e$ non-Ace cards discarded.
+
+Now suppose that there are $d$ discarded cards that are known to not be 10,
+and $e$ discarded cards that are known not to be Ace.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Edges}
