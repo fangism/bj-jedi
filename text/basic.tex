@@ -307,41 +307,92 @@ The dealer can only have a natural if the dealer's reveal card is an
 Ace or 10-valued, otherwise there is no need to peek at the hole card.
 When an Ace is showing, the dealer checks for a 10 in the hole (usually 
 after offering the insurance side bet), and when a 10 is showing, 
-the dealer checks for an A in the hole (usually no side bets).
+the dealer checks for an A in the hole (usually without side bets).
 When the dealer does have a natural, the hand is over, 
 and there is nothing else to calculate.
 If the dealer does not have a natural, then play resumes, 
 and the player is next to act, with additional information on the
 distribution of cards remaining in the deck.
 
-\subsection{Impact of peeking on drawing odds}
-\label{sec:basic:peeking:drawing_odds}
-% Problem formulation:
-Given $N$ cards remaining, distributed over $k$ distinct values 
-each weighted $N_k$, and 1 of those $N$ cards is taken aside 
-(as the hole card, $h$), and the knowledge that $h\neq{}10$, 
-what is the probability of drawing card $m$ next, 
-or $\Prob{x=m|h\neq{}10}$ where $x$ is drawn from the 
-remaining $N-1$ cards?
+\subsection{Bayes' Theorem}
+\label{sec:basic:peeking:bayes}
+\index{Bayes' Theorem}
+\index{conditional probability}
+\index{probability!conditional}
 
-Let $N_{-10}=N-N_{10}$, for shorthand.
+Bayes' Theorem defines a mathematical relationship between
+probabilities of two events and the \emph{conditional probabilities}
+of one event given the other.
 
 \begin{eqnarray}
-\Prob{x=10|h\neq{}10} &=& \frac{N_{10}}{N-1}\\
-\Prob{x=m,m\neq{}10|h\neq{}10} &=&
-  \Prob{h=m} \Prob{x=m|h=m} \nonumber \\
-& &  +\Prob{h\neq{}m} \Prob{x=m|h\neq{}m}\\
-&=& \frac{N_m}{N_{-10}}\frac{N_m-1}{N-1}
-  +\frac{N_{-10}-N_m}{N_{-10}}\frac{N_m}{N-1}\\
-&=& \frac{N_m\Paren{N_{-10}-1}}{\Paren{N-1}\Paren{N_{-10}}}
+\Prob{A|B} &=& \frac{\Prob{B|A}\Prob{A}}{\Prob{B}} \label{eqn:bayes}
 \end{eqnarray}
 
-As a sanity check, we confirm that $\Sum{m=1}{10}{\Prob{x=m|h\neq{}10}}=1$.
+Bayes' Theorem applies to computing post-peek conditional probabilities
+because knowledge of one event (eliminated hole card value)
+influences the probability distribution of drawing the next card.
+
+We define events $A$ and $B$ prior to the peeking of any hole cards.
+\begin{itemize}
+\item Let $A_m$ be the event of drawing card $m:m\neq{}10$ 
+from the deck of $N$ cards.
+\item Let $A_{10}$ be the event of drawing a 10 card from the same deck.
+\item Let $B$ be the event of drawing a non-10 card from the same deck.
+\end{itemize}
+
+\noindent
+Let $N_k$ denote the number of $k$-valued cards in the deck of size $N$,
+with $\Sum{k=1}{10}=N$.
+
+\noindent
+Let $N_{-k}=N-N_k$, for shorthand.
+
+\noindent
+Their respective probabilities are:
 \begin{eqnarray}
-\Sum{m=1}{10}{\Prob{x=m|h\neq{}10}} &=&
-\Prob{x=10|h\neq{}10} +\Sum{m:m\neq{}10}{}{\Prob{x=m|h\neq{}10}}\\
+\Prob{A_m} &=& \frac{N_m}{N}\\
+\Prob{A_{10}} &=& \frac{N_{10}}{N}\\
+\Prob{B} &=& \frac{N_{-10}}{N}
+\end{eqnarray}
+
+\noindent
+The conditional probability of $B|A_m$ follows from removing a non-10 card
+from the deck, 
+and the conditional probability of $B|A_{10}$ follows from removing a 10 card
+from the deck.
+
+\begin{eqnarray}
+\Prob{B|A_m} &=& \frac{N-1-N_{10}}{N-1} \nonumber \\
+&=& \frac{N_{-10}-1}{N-1}\\
+\Prob{B|A_{10}} &=& \frac{N-1-\Paren{N_{10}-1}}{N-1} \nonumber \\
+&=& \frac{N_{-10}}{N-1}
+\end{eqnarray}
+
+\noindent
+It follows from Bayes' Theorem (Equation~\ref{eqn:bayes}) that
+the conditional probabilities of $A|B$ are:
+
+\begin{eqnarray}
+\Prob{A_m|B} &=& \frac{N_m}{N}\frac{N_{-10}-1}{N-1}\frac{N}{N_{-10}} \nonumber \\
+&=& \frac{N_m}{N-1}\frac{N_{-10}-1}{N_{-10}} \label{eqn:Am_B} \\
+\Prob{A_{10}|B} &=& \frac{N_{10}}{N}\frac{N_{-10}}{N-1}\frac{N}{N{-10}-1} \nonumber \\
+&=& \frac{N_{10}}{N-1}\frac{N_{-10}}{N{-10}-1} \label{eqn:A10_B}
+\end{eqnarray}
+
+Relative to the \emph{priori} probabilities $\Prob{A_m}$ the
+\emph{posteriori} probabilities makes sense;
+eliminating a non-10 card from the deck increases the likelihood
+of drawing a 10 card next, and decreases the likelihood of drawing
+a non-10 card next.
+The same analysis applies to the situation where the hole card
+is known to not be an Ace.
+
+As a sanity check, we confirm that $\Sum{j=1}{10}{\Prob{A_j|B}}$ = 1.
+\begin{eqnarray}
+\Sum{j=1}{10}{\Prob{A_j|B}} &=&
+\Prob{A_{10}|B} +\Sum{j}{j\neq{}10}{\Prob{A_j|B}}\\
 &=& \frac{N_{10}}{N-1}
-  +\frac{N_{-10}-1}{\Paren{N-1}\Paren{N_{-10}}} \Sum{m:m\neq{}10}{}{N_m} \label{eqn:post_peek} \\
+  +\frac{N_{-10}-1}{\Paren{N-1}\Paren{N_{-10}}} \Sum{j}{j\neq{}10}{N_j} \label{eqn:post_peek} \\
 &=& \frac{N_{10}}{N-1} +\frac{\Paren{N_{-10}}\Paren{N_{-10}-1}}{\Paren{N-1}\Paren{N_{-10}}}\\
 &=& \frac{N_{10}}{N-1} +\frac{N_{-10}-1}{N-1}\\
 &=& \frac{N_{10}+N_{-10}-1}{N-1}\\
@@ -349,11 +400,11 @@ As a sanity check, we confirm that $\Sum{m=1}{10}{\Prob{x=m|h\neq{}10}}=1$.
 \end{eqnarray}
 
 Note also that in the infinite-deck limit, there is no difference
-between the priori and posteriori probabilities because
+between the \emph{priori} and \emph{posteriori} probabilities because
 the knowledge of the hole card no longer affects the relative distribution of 
 remaining cards:
 \begin{eqnarray}
-\Lim{N\rightarrow\infty}{\Prob{x=m|h\neq{}10}} &=& \frac{N_m}{N}
+\forall k: \Lim{N\rightarrow\infty}{\Prob{A_k|B}} &=& \frac{N_k}{N}
 \end{eqnarray}
 
 \noindent
@@ -361,35 +412,26 @@ Example calculations:
 \begin{center}
 \begin{tabular}{|c|c|c||c|c|}
 \hline
-$N$ & $N_10$ & $N_m$ & $\Prob{x=10|h\neq{}10}$ & $\Prob{x=m|h\neq{}10}$ \\ \hline \hline
+$N$ & $N_{10}$ & $N_m$ & $\Prob{A_{10}|B}$ & $\Prob{A_m|B}$ \\ \hline \hline
 13 & 4 & 1 & 4/12 & 2/27 \\ \hline
 26 & 8 & 2 & 8/25 & 17/225 \\ \hline
 52 & 16 & 4 & 16/51 & 35/459 \\ \hline
 \end{tabular}
 \end{center}
 
-The above analysis can be repeated for the case where the hole card $h$
-is known to not be an Ace.  
-
-\begin{eqnarray}
-\Prob{x=A|h\neq{}A} &=& \frac{N_{A}}{N-1}\\
-\Prob{x=m,m\neq{}A|h\neq{}A} &=&
-  \frac{N_m\Paren{N_{-A}-1}}{\Paren{N-1}\Paren{N_{-A}}}
-\end{eqnarray}
-
 % table?
-Another way of looking at how the odds change after peeking is
-by adjusting the weighting of the \emph{priori} distribution.
+Another way to interpret the post-peeking probabilities is by treating 
+the term coefficients as weights of the \emph{priori} distribution.
 Before peeking, the weight of drawing each card $m$ is exactly
-$N_m$, thus each probability is $N_m/N$.
+$N_m$, thus each \emph{priori} probability is $N_m/N$.
 If we take Equation~\ref{eqn:post_peek} and multiply both sides
 by the common denominator to acquire integer weights (whose sum is 
 $\Paren{N-1}\Paren{N_{-10}}$),
 we see that $N_{10}$ is weighted by $N_{-10}$ and for $m\neq{}10$, 
 $N_m$ is weighted by $N_{-10}-1$.
-In other words, knowledge that the hole card cannot be 10 increases
-the likelihood of drawing a 10 from the remaining cards.
-This property can be used to efficiently adjust the
+This unequal weighting accounts for the relative change in 
+conditional probabilities given event $B$.
+Eliminating the common denominator can be used to efficiently implement the
 random card generator without having to perform division.
 
 \subsection{Accumulating unknown hole cards}
@@ -416,101 +458,71 @@ This section computes the impact of accumulating discarded peeked hole cards
 on probability of drawing cards.  
 
 The previous problem can be generalized:
-Given $N$ cards remaining, distributed over $k$ distinct values 
-each weighted $N_k$, and $d$ of those $N$ cards 
-set aside as $h_1\ldots{}h_d$
-with the knowledge that $\forall{}i:h_i\neq{}10$
-(which we abbreviate $H\neq{}10$), 
-what is the probability of drawing card $m$ next, 
-or $\Prob{x=m|H\neq{}10}$ where $x$ is drawn from the 
-remaining $N-d$ cards?
+What are the \emph{posteriori} probabilities of $A|B^d$
+when $B^d$ is the event that $d$ hole cards are known to be not 10?
 
-There are $d+1$ cases to consider:
-the $d$ hole cards may contain anywhere from $0$ to $d$ cards with value $m$.
+Event $B^d$ is now the case where $d$ non-10 cards are
+removed from a deck of $N$.
+The probability of $B^d$ is:
 
-The probability of 1 hole card having value $m$ is
 \begin{eqnarray}
-P_m &=& \nonumber \\
-\Prob{h=m|H\neq{}10} &=& \frac{N_m}{N_{-10}}
+\Prob{B^d} &=& \frac{N_{-10}}{N}\frac{N_{-10}}{N-1}\cdots\frac{N_{-10}}{N-\Paren{d-1}} \nonumber \\
+&=& \frac{N_{-10}^d}{\Prod{i=0}{d-1}{\Paren{N-i}}}
 \end{eqnarray}
 
 \noindent
-Let the probability that $c$ of $d$ hole cards have value $m$ be denoted as:
+The conditional probabilities of $B^d|A_k$ follows from 
+removing a 10 or non-10 card from the deck.
+Bear in mind that as each successive non-10 is drawn, 
+the denominator diminishes.
+
 \begin{eqnarray}
-P_{c,d,m} &=& \Prob{\sizeof{\Set{\forall{}i:h_i=m}}=c|H\neq{}10} \\
-&=& {P_m}^c \Paren{1-P_m}^{d-c} \nCr{d}{c} \\
-&=& \Paren{\frac{N_m}{N_{-10}}}^c\Paren{\frac{N_{-10}-N_m}{N_{-10}}}^{d-c} \nCr{d}{c} \\
-&=& \frac{N_m^c\Paren{N_{-10}-N_m}^{d-c}\nCr{d}{c}}{N_{-10}^d}
+\Prob{B^d|A_m} &=& \frac{N_{-10}-1}{N-1}\frac{N_{-10}-1}{N-2}\cdots\frac{N_{-10}-1}{N-d} \nonumber \\
+&=& \frac{\Paren{N_{-10}-1}^d}{\Prod{i=1}{d}{\Paren{N-i}}}\\
+\Prob{B^d|A_{10}} &=& \frac{N_{-10}}{N-1}\frac{N_{-10}}{N-2}\cdots\frac{N_{-10}}{N-d} \nonumber \\
+&=& \frac{N_{-10}^d}{\Prod{i=1}{d}{\Paren{N-i}}}
 \end{eqnarray}
 
 \noindent
-The probability of drawing a 10 card is simply:
+Applying Bayes' Theorem yields $\Prob{A_k|B^d}$:
 \begin{eqnarray}
-\Prob{x=10|H\neq{}10} &=& \frac{N_{10}}{N-d}
+\Prob{A_m|B^d} &=& \Prob{B^d|A_m}\frac{\Prob{A_m}}{\Prob{B^d}} \nonumber \\
+&=& \frac{\Paren{N_{-10}-1}^d}{\Prod{i=1}{d}{\Paren{N-i}}}
+\frac{N_m}{N} \frac{\Prod{i=0}{d-1}{\Paren{N-i}}}{N_{-10}^d} \nonumber \\
+&=& \frac{\Paren{N_{-10}-1}^d}{\Paren{N-d}}
+\frac{N_m}{N} \frac{N}{N_{-10}^d} \nonumber \\
+&=& \frac{\Paren{N_{-10}-1}^d}{\Paren{N-d}}
+\frac{N_m}{N} \frac{N}{N_{-10}^d} \nonumber \\
+&=& \frac{N_m}{N-d} \Paren{\frac{N_{-10}-1}{N_{-10}}}^d \label{eqn:Am_Bd} \\
+\Prob{A_10|B^d} &=& \Prob{B^d|A_10}\frac{\Prob{A_10}}{\Prob{B^d}} \nonumber \\
+&=& \frac{\Paren{N_{-10}}^d}{\Prod{i=1}{d}{\Paren{N-i}}}
+\frac{N_{10}}{N} \frac{\Prod{i=0}{d-1}{\Paren{N-i}}}{N_{-10}^d} \nonumber \\
+&=& \frac{\Paren{N_{-10}}^d}{\Paren{N-d}}
+\frac{N_{10}}{N} \frac{N}{N_{-10}^d} \nonumber \\
+&=& \frac{N_{10}}{N-d} \label{eqn:A10_Bd}
 \end{eqnarray}
 
 \noindent
-The probability of drawing card $m$ if $c$ of $d$ hole cards is $m$ is:
-\begin{eqnarray}
-\Prob{x=m|c,d,m} &=& \frac{N_m-c}{N-d}
-\end{eqnarray}
-
-\noindent
-Thus, the overall probability of drawing card $m$ (for $m\neq{}10$) 
-is the weighted sum of the conditional probabilities:
-
-\begin{eqnarray}
-\Prob{x=m,m\neq{}10|H\neq{}10} &=&
-  \Sum{c=0}{d}{P_{c,d,m}\Prob{x=m|c,d,m}} \\
-&=& \Sum{c=0}{d}{%
-\frac{N_m^c\Paren{N_{-10}-N_m}^{d-c}\nCr{d}{c}}{N_{-10}^d}%
-\frac{N_m-c}{N-d}} \\
-&=& \frac{\Sum{c=0}{d}{N_m^c\Paren{N_{-10}-N_m}^{d-c}\nCr{d}{c}\Paren{N_m-c}}}
-{N_{-10}^d{\Paren{N-d}}}
-\end{eqnarray}
-
-For $d=2$, for example, 
-\begin{eqnarray}
-\Prob{x=m,m\neq{}10|H\neq{}10}
-&=& \frac{\Paren{N_{-10}-N_m}^2 N_m
- +2 N_m\Paren{N_{-10}-N_m}\Paren{N_m-1}
- +N_m^2\Paren{N_m-2}
-}{N_{-10}^2{\Paren{N-2}}} \\
-&=& N_m \frac{\Paren{N_{-10}-N_m}^2
- + 2\Paren{N_{-10}-N_m}\Paren{N_m-1}
- +N_m\Paren{N_m-2}
-}{N_{-10}^2{\Paren{N-2}}} \\
-&=& N_m \frac{\Paren{N_{-10}-N_m}^2
- + 2\Paren{N_{-10}-N_m}\Paren{N_m-1}
- +\Paren{N_m-1}^2 -1
-}{N_{-10}^2{\Paren{N-2}}} \\
-&=& N_m \frac{\Paren{N_{-10}-N_m +N_m -1}^2 -1
-}{N_{-10}^2{\Paren{N-2}}} \\
-&=& N_m \frac{\Paren{N_{-10} -1}^2 -1
-}{N_{-10}^2{\Paren{N-2}}} \\
-&=& N_m \frac{N_{-10}\Paren{N_{-10} -2}
-}{N_{-10}^2{\Paren{N-2}}} \\
-&=& N_m \frac{N_{-10} -2}{N_{-10}{\Paren{N-2}}}
-\end{eqnarray}
-
-Exercise.
-Prove the following generalization:
-\begin{eqnarray}
-\Prob{x=m,m\neq{}10|H\neq{}10} &=&
-  N_m \frac{N_{-10} -d}{\Paren{N_{-10}}{\Paren{N-d}}}
-\end{eqnarray}
+Substituting for $d=1$ gives us Equations~\ref{eqn:Am_B} and~\ref{eqn:A10_B}.
 
 Exercise.
 Verify that:
 \begin{eqnarray}
-\Sum{m}{10}{\Prob{x=m,|H\neq{}10}} &=& 1
+\Sum{k}{10}{\Prob{A_k|B^d}} &=& 1
 \end{eqnarray}
 
-Again, the above derivation also works for evaluating
-when there are $e$ non-Ace cards discarded.
+If we consider the relative \emph{posteriori} weights $A_k|B^d$, 
+eliminating the common denominator reveals that
+$A_m$ is weighted by $\Paren{N_{10}-1}^d$ and
+$A_10$ is weighted by $\Paren{N_{10}}^d$.
 
-Now suppose that there are $d$ discarded cards that are known to not be 10,
-and $e$ discarded cards that are known not to be Ace.
+Again, the above derivation also works for evaluating
+when there are $e$ non-Ace cards discarded,
+which we denote as $C^e$.
+
+Now suppose that there are $d$ discards that are known to not be 10,
+\emph{and} $e$ discards that are known not to be Ace, 
+what is $\Prob{A_k|B^d C^e}$?
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Edges}
