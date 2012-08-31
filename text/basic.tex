@@ -494,7 +494,7 @@ Applying Bayes' Theorem yields $\Prob{A_k|B^d}$:
 &=& \frac{\Paren{N_{-10}-1}^d}{\Paren{N-d}}
 \frac{N_m}{N} \frac{N}{N_{-10}^d} \nonumber \\
 &=& \frac{N_m}{N-d} \Paren{\frac{N_{-10}-1}{N_{-10}}}^d \label{eqn:Am_Bd} \\
-\Prob{A_10|B^d} &=& \Prob{B^d|A_10}\frac{\Prob{A_10}}{\Prob{B^d}} \nonumber \\
+\Prob{A_{10}|B^d} &=& \Prob{B^d|A_{10}}\frac{\Prob{A_{10}}}{\Prob{B^d}} \nonumber \\
 &=& \frac{\Paren{N_{-10}}^d}{\Prod{i=1}{d}{\Paren{N-i}}}
 \frac{N_{10}}{N} \frac{\Prod{i=0}{d-1}{\Paren{N-i}}}{N_{-10}^d} \nonumber \\
 &=& \frac{\Paren{N_{-10}}^d}{\Paren{N-d}}
@@ -514,7 +514,7 @@ Verify that:
 If we consider the relative \emph{posteriori} weights $A_k|B^d$, 
 eliminating the common denominator reveals that
 $A_m$ is weighted by $\Paren{N_{10}-1}^d$ and
-$A_10$ is weighted by $\Paren{N_{10}}^d$.
+$A_{10}$ is weighted by $\Paren{N_{10}}^d$.
 
 Again, the above derivation also works for evaluating
 when there are $e$ non-Ace cards discarded,
@@ -523,6 +523,37 @@ which we denote as $C^e$.
 Now suppose that there are $d$ discards that are known to not be 10,
 \emph{and} $e$ discards that are known not to be Ace, 
 what is $\Prob{A_k|B^d C^e}$?
+
+\begin{eqnarray}
+\Prob{B^d C^e} &=& \frac{N_{10}^d N_A^e}{N \Paren{N-1} \cdots \Paren{N-\Paren{d+e-1}}} \nCr{d+e}{d} \nonumber \\
+&=& \frac{N_{10}^d N_A^e}{\Prod{i=0}{d+e-1}{\Paren{N-i}}} \nCr{d+e}{d}
+\end{eqnarray}
+
+\noindent
+The $\nCr{d+e}{d}$ coefficient comes from binomial multiplicity.
+
+\noindent
+The conditional probabilities given $A_m$ ($m\neq{}10,m\neq{}A$), 
+$A_{10}$, and $A_A$ are:
+
+\begin{eqnarray}
+\Prob{B^d C^e|A_m} &=& \nCr{d+e}{d} \frac{\Paren{N_{-10}-1}^d \Paren{N_{-A}-1}^e}{\Prod{i=1}{d+e}{\Paren{N-i}}}\\
+\Prob{B^d C^e|A_{10}} &=& \nCr{d+e}{d} \frac{\Paren{N_{-10}}^d \Paren{N_{-A}-1}^e}{\Prod{i=1}{d+e}{\Paren{N-i}}}\\
+\Prob{B^d C^e|A_A} &=& \nCr{d+e}{d} \frac{\Paren{N_{-10}-1}^d \Paren{N_{-A}}^e}{\Prod{i=1}{d+e}{\Paren{N-i}}}
+\end{eqnarray}
+
+\noindent
+Applying Bayes' Theorem (and simplification) 
+yields the conditional probabilities:
+\begin{eqnarray}
+\Prob{A_m|B^c D^e} &=& \frac{N_m}{N-\Paren{d+e}}
+\Paren{\frac{N_{-10}-1}{N_{-10}}}^d
+\Paren{\frac{N_{-A}-1}{N_{-A}}}^e\\
+\Prob{A_{10}|B^c D^e} &=& \frac{N_{10}}{N-\Paren{d+e}}
+\Paren{\frac{N_{-A}-1}{N_{-A}}}^e\\
+\Prob{A_A|B^c D^e} &=& \frac{N_A}{N-\Paren{d+e}}
+\Paren{\frac{N_{-10}-1}{N_{-10}}}^d
+\end{eqnarray}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Edges}
