@@ -426,9 +426,13 @@ Before peeking, the weight of drawing each card $m$ is exactly
 $N_m$, thus each \emph{priori} probability is $N_m/N$.
 If we take Equation~\ref{eqn:post_peek} and multiply both sides
 by the common denominator to acquire integer weights (whose sum is 
-$\Paren{N-1}\Paren{N_{-10}}$),
-we see that $N_{10}$ is weighted by $N_{-10}$ and for $m\neq{}10$, 
-$N_m$ is weighted by $N_{-10}-1$.
+$\Paren{N-1}\Paren{N_{-10}}$), we find the \emph{posteriori} weights:
+
+\begin{eqnarray}
+\Prob{A_m|B} &\propto& N_m \Paren{N_{-10}-1} \\
+\Prob{A_{10}|B} &\propto& N_{10} \Paren{N_{-10}}
+\end{eqnarray}
+
 This unequal weighting accounts for the relative change in 
 conditional probabilities given event $B$.
 Eliminating the common denominator can be used to efficiently implement the
@@ -512,9 +516,12 @@ Verify that:
 \end{eqnarray}
 
 If we consider the relative \emph{posteriori} weights $A_k|B^d$, 
-eliminating the common denominator reveals that
-$A_m$ is weighted by $\Paren{N_{10}-1}^d$ and
-$A_{10}$ is weighted by $\Paren{N_{10}}^d$.
+eliminating the common denominator resulst in:
+
+\begin{eqnarray}
+\Prob{A_m|B^d} &\propto& N_m \Paren{N_{-10}-1}^d \\
+\Prob{A_{10}|B^d} &\propto& N_{10} \Paren{N_{-10}}^d
+\end{eqnarray}
 
 Again, the above derivation also works for evaluating
 when there are $e$ non-Ace cards discarded,
@@ -554,6 +561,25 @@ yields the conditional probabilities:
 \Prob{A_A|B^c D^e} &=& \frac{N_A}{N-\Paren{d+e}}
 \Paren{\frac{N_{-10}-1}{N_{-10}}}^d
 \end{eqnarray}
+
+In terms of relative weights, we can multiply each conditional probability
+by the common denominator, $\Paren{N-\Paren{d+e}}N_{-10}^d N_{-A}^e$:
+
+\begin{eqnarray}
+\Prob{A_m|B^c D^e} &\propto& N_m \Paren{N_{-10}-1}^d \Paren{N_{-A}-1}^e\\
+\Prob{A_{10}|B^c D^e} &\propto& N_{10} \Paren{N_{-10}}^d \Paren{N_{-A}-1}^e\\
+\Prob{A_A|B^c D^e} &\propto& N_A \Paren{N_{-10}-1}^d \Paren{N_{-A}}^e
+\end{eqnarray}
+
+\noindent
+With these weight equations, 
+one can implement a weighted random number generator with 
+\emph{posterior} conditional probabilities, given the number
+of peeked discards.  
+
+These \emph{posteriori} weights can be generalized for any number of
+peeked cards whose values are eliminated, but for blackjack, 
+the equation for peeked 10s and Aces suffices.  
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Edges}
