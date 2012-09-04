@@ -16,6 +16,7 @@ using std::string;
 using cards::probability_vector;
 using cards::extended_deck_distribution;
 using cards::extended_deck_count_type;
+using cards::deck_count_type;
 using cards::state_machine;
 using cards::counter;
 
@@ -23,7 +24,95 @@ typedef	std::pair<string, counter>		named_counter;
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
-	Tracks cards remaining in deck(s).
+	This maintains the effective count from the player's perspective.
+	The observed count may differ slightly from the actual count, 
+	due to partial information about discards.  
+	The deck_state maintains the actual count of remaining cards
+	unbeknownst to the player.
+	These counts may differ due to discarding of peeked hole cards.
+	This distribution information is used to compute the
+	odds as seen by the player, using Bayesian conditional weights.
+ */
+class perceived_deck_state {
+protected:
+	/**
+		All 10 cards are lumped together, no distinction required.
+		This contains certain the number of cards.
+		Unknown discards are not counted.
+	 */
+	deck_count_type				remaining;
+	/**
+		Partial information.
+		Number of discarded peeked cards that are not 10s.
+		Revealed cards no longer count as peeked.
+	 */
+	size_t					peeked_not_10s;
+	/**
+		Partial information.
+		Number of discarded peeked cards that are not Aces.
+		Revealed cards no longer count as peeked.
+	 */
+	size_t					peeked_not_Aces;
+#if 0
+	// non-peeked discards offer no information, and need not be counted
+	size_t					discards;
+#endif
+	/**
+		property: remaining.sum().
+	 */
+	size_t					remaining_total;
+
+public:
+	perceived_deck_state();
+
+	void
+	initialize(const extended_deck_count_type&);
+
+	void
+	remove(const size_t);	// translate with card_value_map
+
+	void
+	peek_not_10(void);
+
+	void
+	peek_not_Ace(void);
+
+	void
+	reveal_peek_10(const size_t);
+
+	void
+	reveal_peek_Ace(const size_t);
+
+	/**
+		Peeked unknown discards are not counted as removed
+		from the remaining_total count.
+	 */
+	size_t
+	actual_remaining(void) const {
+		return remaining_total -peeked_not_10s -peeked_not_Aces;
+	}
+
+	void
+	distribution_weight_adjustment(deck_count_type&) const;
+
+	void
+	distribution_weight_adjustment(extended_deck_count_type&) const;
+
+	// re-weighted distribution using peek information, see math paper
+	void
+	effective_distribution(deck_count_type&) const;
+
+	void
+	effective_distribution(extended_deck_count_type&) const;
+
+	bool
+	operator < (const perceived_deck_state&) const;
+
+};	// end class perceived_deck_state
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
+	Tracks actual number of cards remaining in deck(s).
 	Also the configuration of the game as far as deck size
 	and reshuffle policy.
 	Retains a hole card.

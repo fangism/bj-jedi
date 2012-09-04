@@ -22,16 +22,6 @@ using std::ostream;
  */
 // #define	HAND_PLAYER_OPTIONS		1
 
-/**
-	These peek states are mutually exclusive.
-	The peek state influences drawing cards and analysis.
- */
-enum peek_state_enum {
-	NO_PEEK,
-	PEEKED_NO_10,
-	PEEKED_NO_ACE
-};
-
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
 	The essential information about a player's hand.

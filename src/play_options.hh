@@ -51,7 +51,7 @@ struct play_options {
 	bool				use_exact_strategy;
 	/**
 		If all player hands are busted/surrendered, 
-		don't bother playing.
+		don't bother playing.  Hole card is not revealed.
 		Default: true
 	 */
 	bool				dealer_plays_only_against_live;

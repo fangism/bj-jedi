@@ -57,6 +57,17 @@ enum table_offsets {
 };
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
+	These peek states are mutually exclusive.
+	The peek state influences drawing cards and analysis.
+ */
+enum peek_state_enum {
+	NO_PEEK,
+	PEEKED_NO_10,
+	PEEKED_NO_ACE
+};
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 }	// end namespace blackjack
 
 #endif	// __BOC2_ENUMS_HH__

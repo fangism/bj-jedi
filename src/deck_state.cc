@@ -3,6 +3,8 @@
 #include <string>
 #include <iostream>
 #include <iomanip>
+#include <algorithm>			// for copy, fill
+#include <numeric>			// for accumulate
 
 #include "deck_state.hh"
 #include "variation.hh"
@@ -19,6 +21,8 @@ using std::string;
 using std::cerr;
 using std::endl;
 using std::setw;
+using std::fill;
+using std::copy;
 using util::string_list;
 using util::tokenize;
 using util::strings::string_to_num;
@@ -33,9 +37,173 @@ using cards::extended_reveal_print_ordering;
 using cards::deck_count_type;
 using cards::card_values;
 using cards::card_name;
+using cards::card_value_map;
 using cards::standard_deck_distribution;
 using cards::reveal_print_ordering;
 using cards::card_index;
+
+/**
+	Power function, as iterative integer multiply.
+	Beware of overflow?
+	Complexity: O(lg p)
+	TODO: efficient implementation using bitfield-powers?
+ */
+static
+inline
+size_t
+zpow(const size_t b, size_t p) {
+#if 0
+	if (p) {
+		size_t ret = b;
+		for (--p; p; --p) {
+			ret *= b;
+		}
+		return ret;
+	} else {
+		return 1;
+	}
+#else
+	// composite function algorithm
+	size_t ret = 1;		// multiplicative identity
+	size_t factor = p;
+	for ( ; p; p >>= 1, factor *= factor) {
+		if (p & 1) {
+			ret *= factor;
+		}
+	}
+	return ret;
+#endif
+}
+
+//=============================================================================
+// class perceived_deck_state method definitions
+
+void
+perceived_deck_state::initialize(const extended_deck_count_type& d) {
+	cards::simplify_deck_count(d, remaining);
+	peeked_not_10s = 0;
+	peeked_not_Aces = 0;
+	remaining_total =
+		std::accumulate(remaining.begin(), remaining.end(), 0);
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
+	Decrements count of card.
+	Only known cards are counted.
+ */
+void
+perceived_deck_state::remove(const size_t c) {
+	size_t& r(remaining[card_value_map[c]]);
+	assert(r);
+	--r;
+	assert(remaining_total);
+	--remaining_total;
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
+	Increment number of peeked non-10 cards.
+	if peeked card is discarded, it may not be revealed!
+ */
+void
+perceived_deck_state::peek_not_10(void) {
+	++peeked_not_10s;
+}
+
+void
+perceived_deck_state::peek_not_Ace(void) {
+	++peeked_not_Aces;
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+void
+perceived_deck_state::reveal_peek_10(const size_t c) {
+	--peeked_not_10s;
+	const size_t d = card_value_map[c];
+	remove(c);
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+void
+perceived_deck_state::reveal_peek_Ace(const size_t c) {
+	--peeked_not_Aces;
+	const size_t d = card_value_map[c];
+	remove(c);
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
+	Takes an extended deck count and re-weights the count
+	according to the perceived distribution.  
+	TODO: compute four power terms more efficiently w/ valarray,
+	vector operations, or the like.
+ */
+void
+perceived_deck_state::distribution_weight_adjustment(deck_count_type& d) const {
+	// computing integer power, just multiply
+	// unlikely to have high powers
+	const size_t p_nA = remaining_total -remaining[ACE];
+	const size_t p_n10 = remaining_total -remaining[TEN];
+	const size_t p_nA_1 = p_nA -1;
+	const size_t p_n10_1 = p_n10 -1;
+	const size_t w_10 = zpow(p_n10, peeked_not_10s);
+	const size_t w_10_1 = zpow(p_n10_1, peeked_not_10s);
+	const size_t w_A = zpow(p_nA, peeked_not_10s);
+	const size_t w_A_1 = zpow(p_nA_1, peeked_not_10s);
+	const size_t f_x = w_A_1 *w_10_1;
+	const size_t f_10 = w_A_1 *w_10;
+	const size_t f_A = w_A *w_10_1;
+	// loop bounds depend on card enum in deck.hh
+	d[ACE] = f_A;
+	fill(&d[ACE+1], &d[TEN], f_x);
+	d[TEN] = f_10;
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
+	Copy the 10 weight to J,Q,K.
+ */
+void
+perceived_deck_state::distribution_weight_adjustment(
+		extended_deck_count_type& d) const {
+	deck_count_type t;
+	distribution_weight_adjustment(t);
+	// this assumes a particular enumeration ordering
+	copy(t.begin(), t.end(), d.begin());
+	fill(&d[JACK], &d[KING+1], d[TEN]);
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
+	Comparison for sorting and ordering.
+ */
+bool
+perceived_deck_state::operator < (const perceived_deck_state& r) const {
+	if (remaining_total < r.remaining_total)
+		return true;
+	if (r.remaining_total < remaining_total)
+		return false;
+	const int c = remaining.compare(r.remaining);
+	if (c < 0)
+		return true;
+	if (c > 0)
+		return false;
+	if (peeked_not_10s < r.peeked_not_10s)
+		return true;
+	if (r.peeked_not_10s < peeked_not_10s)
+		return false;
+#if 0
+	if (peeked_not_Aces < r.peeked_not_Aces)
+		return true;
+	if (r.peeked_not_Aces < peeked_not_Aces)
+		return false;
+	// then all members are equal
+	return false;
+#else
+	return peeked_not_Aces < r.peeked_not_Aces;
+#endif
+}
 
 //=============================================================================
 // class deck_state method definitions

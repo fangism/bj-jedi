@@ -168,6 +168,7 @@ grader::reveal_hole_card(const size_t hole_card) {
 	dealer.hit_dealer(hole_card);
 	// also calls dealer_hand::reveal_hole_card()
 	C.reveal_hole_card();	// only now, count the hole card
+	// TODO: decrement the peeked_not_Xs count, if appropriate
 	// optional:
 	dealer.dump_dealer(ostr) << endl;
 }

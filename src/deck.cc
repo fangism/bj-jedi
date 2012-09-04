@@ -102,6 +102,10 @@ const deck_distribution
 standard_deck_distribution(__standard_deck_distribution);
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
+	Lumps all 10-valued cards together.
+	Goes from size 13 array to size 10.
+ */
 void
 simplify_deck_count(const extended_deck_count_type& d, deck_count_type& rd) {
 	const extended_deck_count_type::const_iterator t(d.begin() +card_values);

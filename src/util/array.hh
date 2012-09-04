@@ -99,6 +99,12 @@ public:
 	iterator
 	end(void) { return &this->_value[S]; }
 
+	bool
+	operator < (const this_type&) const;
+
+	int
+	compare(const this_type&) const;
+
 };	// end class array
 
 template <class T, size_t S>
