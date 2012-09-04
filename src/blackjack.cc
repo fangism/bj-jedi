@@ -56,7 +56,7 @@ action_names[] = {
 	TODO: this table should be redundant from player 
 	state machine, which already contains strings.
  */
-const char play_map::player_final_states[][player_states] = {
+const char play_map::player_final_states[][p_final_states] = {
 	"<=16",
 	"17",
 	"18",
@@ -72,7 +72,7 @@ const char play_map::player_final_states[][player_states] = {
 	TODO: this table should be redundant from dealer
 	state machine, which already contains strings.
  */
-const char play_map::dealer_final_states[][dealer_states] = {
+const char play_map::dealer_final_states[][d_final_states] = {
 	"17",
 	"18",
 	"19",
@@ -245,7 +245,7 @@ play_map::deal_player(const size_t p1, const size_t p2, const bool nat) const {
 /**
 	Translates player states to compact representation of final states.  
 	\param i is player *action* state index.
-	\return an index [0,player_states) into an array of player final states.
+	\return an index [0,p_final_states) into an array of player final states.
  */
 size_t
 play_map::player_final_state_map(const size_t i) {
@@ -256,10 +256,10 @@ play_map::player_final_state_map(const size_t i) {
 		return i -stop +1;	// represents 17..21
 	} else if (i == player_blackjack) {
 		// represents blackjack state
-		return player_states -2;
+		return p_final_states -2;
 	} else if (i == player_bust) {
 		// represents bust state
-		return player_states -1;
+		return p_final_states -1;
 	} else if (i < pair_offset) {
 		// is Ace state, take the higher value
 		return player_final_state_map(i -player_bust +card_values);
@@ -281,16 +281,23 @@ play_map::player_final_state_map(const size_t i) {
  */
 const outcome&
 play_map::lookup_outcome(const size_t p, const size_t d) const {
-	return lookup_outcome_array(player_final_state_map(p))[d -stop];
+	return outcome_matrix[player_final_state_map(p)][d -stop];
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
-	\param p player state, mapped to final state index
+	Given a spread of dealer final states and outcome_array (win/lose/push)
+	compute the overall outcome odds for a given player (final) state.
  */
-const play_map::outcome_array_type&
-play_map::lookup_outcome_array(const size_t p) const {
-	return outcome_matrix[p];
+void
+play_map::compute_outcome(const size_t p, const dealer_final_vector& dfv,
+		outcome_odds& o) const {
+	const outcome_array_type& v(outcome_matrix[p]);
+	size_t d = 0;
+	for (d=0; d < d_final_states; ++d) {     // dealer's final state
+		const probability_type& p(dfv[d]);
+		o.prob(v[d]) += p;              // adds to win/push/lose
+	}       // end for d_final_states
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -526,11 +533,11 @@ void
 play_map::compute_final_outcomes(void) {
 	size_t k;
 	// player blackjack and bust is separate
-	for (k=0; k < player_states -2; ++k) {	// player's final state
+	for (k=0; k < p_final_states -2; ++k) {	// player's final state
 	size_t d;
 		outcome_array_type& v(outcome_matrix[k]);
 	// -1: blackjack, push, and bust states separate
-	for (d=0; d < dealer_states -3; ++d) {	// dealer's final state
+	for (d=0; d < d_final_states -3; ++d) {	// dealer's final state
 		outcome& o(v[d]);
 		int diff = k -d -1;
 		if (diff > 0) {
@@ -554,7 +561,7 @@ play_map::compute_final_outcomes(void) {
 	outcome_array_type& pbj(outcome_matrix[k]);	// player blackjack
 	outcome_array_type& px(outcome_matrix[k+1]);	// player busts
 	std::fill(pbj.begin(), pbj.end(), WIN);
-	pbj[dealer_states -3] = PUSH;			// both blackjack
+	pbj[d_final_states -3] = PUSH;			// both blackjack
 	std::fill(px.begin(), px.end(), LOSE);
 }
 
@@ -593,21 +600,26 @@ play_map::initialize_reverse_topo_order(void) {
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ostream&
+play_map::dealer_final_table_header(ostream& o) {
+	size_t d;
+	for (d=0; d<d_final_states; ++d) {
+		o << '\t' << dealer_final_states[d];
+	}
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+ostream&
 play_map::dump_final_outcomes(ostream& o) const {
-	static const char header[] = "P\\D\t17\t18\t19\t20\t21\tBJ\tbust\tpush";
+	static const char header[] = "P\\D";
 	o << "Dealer vs. player final state outcomes." << endl;
-	o << header << endl;
+	dealer_final_table_header(o << header) << endl;
 	size_t k;
-	for (k=0; k<player_states; ++k) {
+	for (k=0; k<p_final_states; ++k) {
 		o << player_final_states[k];
 		const outcome_array_type& v(outcome_matrix[k]);
 	size_t d;
-	for (d=0; d<player_states; ++d) {
-		switch (v[d]) {
-		case WIN: o << "\twin"; break;
-		case LOSE: o << "\tlose"; break;
-		case PUSH: o << "\tpush"; break;
-		}
+	for (d=0; d<d_final_states; ++d) {
+		o << '\t' << v[d];
 	}
 		o << endl;
 	}

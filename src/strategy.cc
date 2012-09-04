@@ -296,12 +296,12 @@ reveal_strategy::compute_dealer_final_table(const play_map& play,
 	play.dealer_hit.solve(card_odds, init, final);
 	dealer_final_vector& row(dealer_final_given_revealed_pre_peek);
 	dealer_final_vector::const_iterator i(&final[stop]);
-	copy(i, i+dealer_states, row.begin());
+	copy(i, i+d_final_states, row.begin());
 	// odds of dealer blackjack
 	if (j == ACE) {
-		 row[dealer_states-3] = card_odds[TEN];
+		 row[d_final_states-3] = card_odds[TEN];
 	} else if (j == TEN) {
-		 row[dealer_states-3] = card_odds[ACE];
+		 row[d_final_states-3] = card_odds[ACE];
 	}
 
 	// post-peek normalizing
@@ -329,10 +329,10 @@ ostream&
 strategy::dump_dealer_final_table(ostream& o) const {
 	const precision_saver p(o, 4);
 	o << "Dealer's final state odds (pre-peek):\n";
-	static const char header[] = 
-		"show\\do\t17\t18\t19\t20\t21\tBJ\tbust\tpush";
+	static const char header[] = "show\\do";
 	ostream_iterator<probability_type> osi(o, "\t");
 {
+	play_map::dealer_final_table_header(o << header) << endl;
 #if 0
 	typedef member_select_iterator<reveal_array_type::const_iterator,
 		reveal_strategy::dealer_final_vector,
@@ -341,10 +341,8 @@ strategy::dump_dealer_final_table(ostream& o) const {
 #else
 	typedef reveal_array_type::const_iterator	const_iterator;
 #endif
-	const const_iterator
-		b(reveal.begin()), e(reveal.end());
+	const const_iterator b(reveal.begin()), e(reveal.end());
 	const_iterator i(b);
-	o << header << endl;
 	for ( ; i!=e; ++i) {
 		o << play.dealer_hit[play_map::d_initial_card_map[i-b]].name << '\t';
 		copy(i->dealer_final_given_revealed_pre_peek.begin(),
@@ -355,6 +353,7 @@ strategy::dump_dealer_final_table(ostream& o) const {
 	o << endl;
 {
 	o << "Dealer's final state odds (post-peek):\n";
+	play_map::dealer_final_table_header(o << header) << endl;
 #if 0
 	typedef member_select_iterator<reveal_array_type::const_iterator,
 		reveal_strategy::dealer_final_vector,
@@ -363,10 +362,8 @@ strategy::dump_dealer_final_table(ostream& o) const {
 #else
 	typedef reveal_array_type::const_iterator	const_iterator;
 #endif
-	const const_iterator
-		b(reveal.begin()), e(reveal.end());
+	const const_iterator b(reveal.begin()), e(reveal.end());
 	const_iterator i(b);
-	o << header << endl;
 	for ( ; i!=e; ++i) {
 		o << play.dealer_hit[play_map::d_initial_card_map[i-b]].name << '\t';
 		copy(i->dealer_final_given_revealed_post_peek.begin(),
@@ -383,7 +380,7 @@ reveal_strategy::compute_showdown_odds(const play_map& play,
 		const dealer_final_vector& dfv,
 		const edge_type& bjp, outcome_vector& stand,
 		player_stand_edges_vector& edges) {
-	static const size_t p_bj_ind = player_states -2;	// see enums.hh
+	static const size_t p_bj_ind = p_final_states -2;	// see enums.hh
 //	const size_t j = reveal_card;
 	fill(stand.begin(), stand.end(), outcome_odds());
 {
@@ -391,17 +388,10 @@ reveal_strategy::compute_showdown_odds(const play_map& play,
 	outcome_vector& ps(stand);
 	size_t k;
 	// player blackjack and bust is separate
-	for (k=0; k < player_states; ++k) {	// player's final state
+	for (k=0; k < p_final_states; ++k) {	// player's final state
 		outcome_odds& o(ps[k]);
-		const play_map::outcome_array_type&
-			v(play.lookup_outcome_array(k));
-	size_t d;
-	// -1: blackjack, push, and bust states separate
-	for (d=0; d < dealer_states; ++d) {	// dealer's final state
-		const probability_type& p(dfv[d]);
-		o.prob(v[d]) += p;		// adds to win/push/lose
-	}	// end for dealer_states
-	}	// end for player_states
+		play.compute_outcome(k, dfv, o);
+	}	// end for p_final_states
 }{
 	const outcome_vector& ps(stand);
 	transform(ps.begin(), ps.end(), edges.begin(), 
@@ -449,7 +439,7 @@ strategy::__dump_player_stand_odds(ostream& o,
 	const_iterator i(b);
 	o << "D\\P";
 	size_t j;
-	for (j=0; j<player_states; ++j) {
+	for (j=0; j<p_final_states; ++j) {
 		o << '\t' << play_map::player_final_states[j];
 	}
 	o << endl;
@@ -481,7 +471,7 @@ strategy::__dump_player_stand_edges(ostream& o,
 	const_iterator i(b);
 	o << "D\\P";
 	size_t j;
-	for (j=0; j<player_states; ++j) {
+	for (j=0; j<p_final_states; ++j) {
 		o << '\t' << play_map::player_final_states[j];
 	}
 	o << endl;
@@ -825,7 +815,7 @@ reveal_strategy::dump_player_final_state_probabilities(ostream& o) const {
 		", player\'s final state spread (hit/stand only):" << endl;
 	o << "player";
 	size_t i;
-	for (i=0; i<player_states; ++i) {
+	for (i=0; i<p_final_states; ++i) {
 		o << '\t' << play_map::player_final_states[i];
 	}
 	o << endl;

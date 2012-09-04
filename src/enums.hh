@@ -50,8 +50,8 @@ enum table_offsets {
 	pair_offset = player_soft +card_values +1,
 	p_action_states = pair_offset +card_values,
 	d_action_states = dealer_soft +card_values +1,
-	player_states = goal -stop +4,
-	dealer_states = goal -stop +4
+	p_final_states = goal -stop +4,
+	d_final_states = goal -stop +4
 	// player action table offset
 //	static const size_t p_pair_states = p_action_states +card_values,
 };

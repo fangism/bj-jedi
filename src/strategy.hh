@@ -62,8 +62,6 @@ struct reveal_strategy {
 			included, they should be looked up.
 	 */
 	state_machine				player_opt_hit;
-	typedef	array<probability_type, dealer_states>
-						dealer_final_vector;
 
 	/**
 		Prior to peek, these are the odds of the dealer's final state
@@ -83,7 +81,7 @@ struct reveal_strategy {
 		assuming that the player hits until it is not advisable 
 			(using player_opt_hit)
 	 */
-	typedef	array<probability_type, player_states>
+	typedef	array<probability_type, p_final_states>
 					player_final_state_probability_vector;
 	typedef	array<player_final_state_probability_vector, p_action_states>
 					player_final_state_probability_matrix;
@@ -101,7 +99,7 @@ struct reveal_strategy {
 	/**
 		For each entry in 'player_stand': win - lose = edge.
 	 */
-	typedef	array<probability_type, player_states>
+	typedef	array<probability_type, p_final_states>
 						player_stand_edges_vector;
 	/**
 		index: player's final value (including bust)
@@ -259,7 +257,7 @@ public:
 	const play_map&			play;
 private:
 
-	typedef	array<probability_type, player_states>
+	typedef	array<probability_type, p_final_states>
 					player_final_state_probability_vector;
 
 	/**

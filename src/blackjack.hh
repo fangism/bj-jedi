@@ -54,8 +54,8 @@ public:
 	static const size_t		p_initial_card_map[card_values];
 	static const size_t		d_initial_card_map[card_values];
 // private:
-	static const char		player_final_states[][player_states];
-	static const char		dealer_final_states[][dealer_states];
+	static const char		player_final_states[][p_final_states];
+	static const char		dealer_final_states[][d_final_states];
 
 	const variation&		var;
 // some of these could be split into a rules struct
@@ -82,10 +82,10 @@ public:
 	/// after a player splits, action options are restricted
 	action_mask			post_split_actions;
 
-	/// in the dealer/player final states, who wins
-	typedef	array<outcome, dealer_states>		outcome_array_type;
 private:
-	typedef	array<outcome_array_type, player_states>
+	/// in the dealer/player final states, who wins
+	typedef	array<outcome, d_final_states>		outcome_array_type;
+	typedef	array<outcome_array_type, p_final_states>
 							outcome_matrix_type;
 	// TODO: support rule variations in outcome matrix
 	// e.g., player-loses-ties, player-blackjack-always-wins
@@ -148,11 +148,12 @@ public:
 	size_t
 	hit_dealer(const size_t, const size_t) const;
 
-	const outcome_array_type&
-	lookup_outcome_array(const size_t p) const;
-
 	const outcome&
 	lookup_outcome(const size_t p, const size_t d) const;
+
+	void
+	compute_outcome(const size_t p, const dealer_final_vector&, 
+		outcome_odds&) const;
 
 	ostream&
 	dump_dealer_policy(ostream&) const;
@@ -170,6 +171,11 @@ public:
 	dump_variation(ostream& o) const {
 		return var.dump(o);
 	}
+
+	static
+	ostream&
+	dealer_final_table_header(ostream&);
+
 };	// end class play_map
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

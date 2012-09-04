@@ -7,6 +7,24 @@
 namespace blackjack {
 using std::endl;
 
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+ostream&
+operator << (ostream& o, const outcome r) {
+	// matches the enum outcome ordering
+	static const char* wlp[] = { "win", "push", "lose" };
+#if 0
+	switch (r) {
+	case WIN: o << "win"; break;
+	case LOSE: o << "lose"; break;
+	case PUSH: o << "push"; break;
+	default: o << '?'; break;
+	}
+#else
+	o << wlp[size_t(r)];
+#endif
+	return o;
+}
+
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 ostream&
 operator << (ostream& o, const outcome_odds& r) {

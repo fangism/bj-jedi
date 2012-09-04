@@ -23,12 +23,17 @@ using cards::probability_type;
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
 	Dealer vs. player showdown outcomes.  
+	Enumeration values matter for outcome indexed field.
  */
 enum outcome {
 	WIN = 0,
 	PUSH = 1,
 	LOSE = 2
 };
+
+extern
+ostream&
+operator << (ostream&, const outcome);
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
@@ -89,7 +94,7 @@ struct outcome_odds {
 	check(void);
 };	// end struct outcome_odds
 
-typedef	array<outcome_odds, player_states>	outcome_vector;
+typedef	array<outcome_odds, p_final_states>	outcome_vector;
 
 extern
 ostream&
@@ -98,6 +103,8 @@ dump_outcome_vector(const outcome_vector&, ostream&);
 extern
 ostream&
 operator << (ostream&, const outcome_odds&);
+
+typedef array<probability_type, d_final_states>	dealer_final_vector;
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 }	// end namespace blackjack
