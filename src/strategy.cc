@@ -399,15 +399,7 @@ reveal_strategy::compute_showdown_odds(const play_map& play,
 	// -1: blackjack, push, and bust states separate
 	for (d=0; d < dealer_states; ++d) {	// dealer's final state
 		const probability_type& p(dfv[d]);
-#if INDEXED_WLP
 		o.prob(v[d]) += p;		// adds to win/push/lose
-#else
-		switch (v[d]) {
-		case WIN: o.win() += p; break;
-		case LOSE: o.lose() += p; break;
-		case PUSH: o.push() += p; break;
-		}
-#endif
 	}	// end for dealer_states
 	}	// end for player_states
 }{

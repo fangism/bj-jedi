@@ -16,8 +16,9 @@ using cards::probability_type;
 
 /**
 	Define to 1 to have win/push/lose as an enum-indexed array.
+	Status: perm'd
  */
-#define	INDEXED_WLP				1
+// #define	INDEXED_WLP				1
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
@@ -37,22 +38,11 @@ enum outcome {
 	TODO: array of size 3, using enum in enums.hh.
  */
 struct outcome_odds {
-#if INDEXED_WLP
 	probability_type		_prob[3];
-#else
-	probability_type		_win;
-	probability_type		_push;
-	probability_type		_lose;
-#endif
 
 	// initialize ctor
-#if INDEXED_WLP
 	outcome_odds() { _prob[0] = _prob[1] = _prob[2] = 0.0; }
-#else
-	outcome_odds() : _win(0.0), _push(0.0), _lose(0.0) { }
-#endif
 
-#if INDEXED_WLP
 	probability_type&
 	prob(const outcome o) {
 		return _prob[o];
@@ -80,25 +70,6 @@ struct outcome_odds {
 
 	const probability_type&
 	lose(void) const { return _prob[LOSE]; }
-#else
-	probability_type&
-	win(void) { return _win; }
-
-	const probability_type&
-	win(void) const { return _win; }
-
-	probability_type&
-	push(void) { return _push; }
-
-	const probability_type&
-	push(void) const { return _push; }
-
-	probability_type&
-	lose(void) { return _lose; }
-
-	const probability_type&
-	lose(void) const { return _lose; }
-#endif
 
 	probability_type
 	edge(void) const { return win() -lose(); }
