@@ -84,6 +84,7 @@ public:
 
 	/// in the dealer/player final states, who wins
 	typedef	array<outcome, dealer_states>		outcome_array_type;
+private:
 	typedef	array<outcome_array_type, player_states>
 							outcome_matrix_type;
 	// TODO: support rule variations in outcome matrix
@@ -146,6 +147,12 @@ public:
 
 	size_t
 	hit_dealer(const size_t, const size_t) const;
+
+	const outcome_array_type&
+	lookup_outcome_array(const size_t p) const;
+
+	const outcome&
+	lookup_outcome(const size_t p, const size_t d) const;
 
 	ostream&
 	dump_dealer_policy(ostream&) const;

@@ -78,6 +78,11 @@ zpow(const size_t b, size_t p) {
 //=============================================================================
 // class perceived_deck_state method definitions
 
+perceived_deck_state::perceived_deck_state() : remaining(size_t(0)),
+	peeked_not_10s(0), peeked_not_Aces(0), remaining_total(0) {
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void
 perceived_deck_state::initialize(const extended_deck_count_type& d) {
 	cards::simplify_deck_count(d, remaining);

@@ -275,6 +275,26 @@ play_map::player_final_state_map(const size_t i) {
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
+	\param p player state, before mapping to final_state index
+	\param d dealer state
+	\return win-lose-push outcome
+ */
+const outcome&
+play_map::lookup_outcome(const size_t p, const size_t d) const {
+	return lookup_outcome_array(player_final_state_map(p))[d -stop];
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
+	\param p player state, mapped to final state index
+ */
+const play_map::outcome_array_type&
+play_map::lookup_outcome_array(const size_t p) const {
+	return outcome_matrix[p];
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
 	Build the dealer's state machine, independent of probability.
 	\param H17 If H17, then dealer must hit on a soft 17, else must stand.  
 	\param push22, 22 is dealer push

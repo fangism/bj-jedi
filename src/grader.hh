@@ -62,6 +62,13 @@ private:
 		So is bankroll.
 	 */
 	deck_state				C;
+	/**
+		The perceived state only counts cards of known value
+		and tracks peeked discarded cards separately.
+		This is information from the player's perspective
+		instead of the program's perspective.
+	 */
+	perceived_deck_state			P;
 
 	// hand information is not saved, it is only temporary
 	// should these be removed from here?

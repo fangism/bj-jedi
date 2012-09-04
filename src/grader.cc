@@ -55,11 +55,13 @@ grader::grader(const variation& v, play_options& p, istream& i, ostream& o) :
 		var(v), opt(p), istr(i), ostr(o), play(v),
 		basic_strategy(play), dynamic_strategy(play), 
 		C(v),
+		P(),
 		player_hands(), dealer(play), 
 		stats(), 
 		bookmarks() {
 	player_hands.reserve(16);	// to prevent realloc
 	const extended_deck_count_type& d(C.get_card_counts());
+	P.initialize(d);
 	// each call does util::normalize()
 	basic_strategy.set_card_distribution(d);
 	dynamic_strategy.set_card_distribution(d);
@@ -149,7 +151,9 @@ grader::draw_up_card(const char* prompt) {
 	if (opt.pick_cards && prompt) {
 		ostr << prompt << endl;
 	}
-	return C.option_draw(opt.pick_cards, istr, ostr);
+	const size_t ret = C.option_draw(opt.pick_cards, istr, ostr);
+	P.remove(ret);
+	return ret;
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -168,7 +172,24 @@ grader::reveal_hole_card(const size_t hole_card) {
 	dealer.hit_dealer(hole_card);
 	// also calls dealer_hand::reveal_hole_card()
 	C.reveal_hole_card();	// only now, count the hole card
-	// TODO: decrement the peeked_not_Xs count, if appropriate
+	switch (dealer.reveal) {
+	case ACE:
+		if (var.peek_on_Ace) {
+			P.reveal_peek_10(hole_card);
+		} else {
+			P.remove(hole_card);
+		}
+		break;
+	case TEN:
+		if (var.peek_on_10) {
+			P.reveal_peek_Ace(hole_card);
+		} else {
+			P.remove(hole_card);
+		}
+		break;
+	default:
+		P.remove(hole_card);
+	}
 	// optional:
 	dealer.dump_dealer(ostr) << endl;
 }
@@ -176,6 +197,8 @@ grader::reveal_hole_card(const size_t hole_card) {
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
 	Hole card was not used.
+	If hole card was peeked, leave the peeked-count incremented;
+	do not decrement it.  
  */
 void
 grader::replace_hole_card(void) {
@@ -266,6 +289,7 @@ grader::deal_hand(void) {
 	if (dealer_reveal == ACE) {
 		pih.dump_player(ostr) << endl;
 		if (var.peek_on_Ace) {
+			P.peek_not_10();
 		const bool buy_insurance = offer_insurance(pbj);;
 		// TODO: handle even-money bet for !2:1 payoffs
 		// determine change in bankroll
@@ -301,6 +325,7 @@ grader::deal_hand(void) {
 	} else if (dealer_reveal_value == TEN) {
 		pih.dump_player(ostr) << endl;
 		if (var.peek_on_10) {
+			P.peek_not_Ace();
 		if (hole_card == ACE) {
 			end = true;
 			reveal_hole_card(hole_card);
@@ -369,9 +394,8 @@ for (j=0; j<player_hands.size(); ++j) {
 	if (player_hands[j].doubled_down()) {
 		stats.total_bets += bet;
 	}
-	const outcome& wlp(play.outcome_matrix
-		[play_map::player_final_state_map(player_hands[j].state)]
-		[dealer.state -stop]);
+	const outcome&
+		wlp(play.lookup_outcome(player_hands[j].state, dealer.state));
 	const double delta = player_hands[j].doubled_down() ? bet2 : bet;
 	switch (wlp) {
 	case WIN: ostr << "Player wins." << endl; bankroll += delta; break;

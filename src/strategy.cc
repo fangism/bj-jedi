@@ -394,7 +394,7 @@ reveal_strategy::compute_showdown_odds(const play_map& play,
 	for (k=0; k < player_states; ++k) {	// player's final state
 		outcome_odds& o(ps[k]);
 		const play_map::outcome_array_type&
-			v(play.outcome_matrix[k]);
+			v(play.lookup_outcome_array(k));
 	size_t d;
 	// -1: blackjack, push, and bust states separate
 	for (d=0; d < dealer_states; ++d) {	// dealer's final state

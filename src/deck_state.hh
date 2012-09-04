@@ -32,6 +32,8 @@ typedef	std::pair<string, counter>		named_counter;
 	These counts may differ due to discarding of peeked hole cards.
 	This distribution information is used to compute the
 	odds as seen by the player, using Bayesian conditional weights.
+
+	Technically, card-counting should be based on perceived count.
  */
 class perceived_deck_state {
 protected:
@@ -152,6 +154,8 @@ private:
 	bool					hole_reserved;
 	/**
 		Countdown of cards remaining.
+		This is the actual count, which may include
+		discarded cards that the player never sees.
 	 */
 	size_t					cards_remaining;
 	size_t					cards_spent;
