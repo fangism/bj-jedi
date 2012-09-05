@@ -53,10 +53,11 @@ public:
 	// these could go into a struct for rules
 	static const size_t		p_initial_card_map[card_values];
 	static const size_t		d_initial_card_map[card_values];
-// private:
+private:
 	static const char		player_final_states[][p_final_states];
 	static const char		dealer_final_states[][d_final_states];
 
+public:
 	const variation&		var;
 // some of these could be split into a rules struct
 	/// the dealer's fixed state machine, also action table
@@ -119,11 +120,15 @@ private:
 	compute_player_split_state(void);
 
 	void
-	compute_final_outcomes(void);
+	initialize_outcome_matrix(void);
 
 	static
 	int
 	initialize_reverse_topo_order(void);
+
+	void
+	compute_outcome(const size_t p, const dealer_final_vector&, 
+		outcome_odds&) const;
 
 public:
 	bool
@@ -152,8 +157,8 @@ public:
 	lookup_outcome(const size_t p, const size_t d) const;
 
 	void
-	compute_outcome(const size_t p, const dealer_final_vector&, 
-		outcome_odds&) const;
+	compute_outcome_vector(const dealer_final_vector&,
+		outcome_vector&) const;
 
 	ostream&
 	dump_dealer_policy(ostream&) const;
@@ -175,6 +180,10 @@ public:
 	static
 	ostream&
 	dealer_final_table_header(ostream&);
+
+	static
+	ostream&
+	player_final_table_header(ostream&);
 
 };	// end class play_map
 

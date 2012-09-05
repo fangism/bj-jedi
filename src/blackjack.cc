@@ -2,6 +2,8 @@
 
 #include <iostream>
 #include <sstream>
+#include <algorithm>
+
 #include "blackjack.hh"
 
 /**
@@ -13,6 +15,7 @@ namespace blackjack {
 using std::ostringstream;
 using std::cout;
 using std::endl;
+using std::fill;
 using cards::card_name;
 using cards::ACE;
 
@@ -106,7 +109,7 @@ play_map::play_map(const variation& v) : var(v),
 	set_dealer_policy();
 	compute_player_hit_state();
 	compute_player_split_state();
-	compute_final_outcomes();
+	initialize_outcome_matrix();
 	initialize_action_masks();
 }
 
@@ -128,10 +131,10 @@ play_map::initialize_action_masks(void) {
 	action_mask default_init_split(default_init);
 	if (var.split)
 		default_init_split += SPLIT;
-	std::fill(initial_actions_per_state.begin(),
+	fill(initial_actions_per_state.begin(),
 		initial_actions_per_state.end(), default_init);
 	// splittable states
-	std::fill(&initial_actions_per_state[pair_offset],
+	fill(&initial_actions_per_state[pair_offset],
 		&initial_actions_per_state[pair_offset+card_values],
 		default_init_split);
 	// terminal states: stand only
@@ -141,7 +144,7 @@ play_map::initialize_action_masks(void) {
 			initial_actions_per_state[i] = action_mask::stand;
 		}
 	}
-	std::fill(initial_actions_given_dealer.begin(),
+	fill(initial_actions_given_dealer.begin(),
 		initial_actions_given_dealer.end(), default_init +SPLIT);
 	// restrict double-downs, e.g. only on player 10,11
 	// 'other' includes A,x soft-hands
@@ -298,6 +301,23 @@ play_map::compute_outcome(const size_t p, const dealer_final_vector& dfv,
 		const probability_type& p(dfv[d]);
 		o.prob(v[d]) += p;              // adds to win/push/lose
 	}       // end for d_final_states
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
+	Given a spread of dealer final states, compute outcome odds
+	for all player final states.
+ */
+void
+play_map::compute_outcome_vector(const dealer_final_vector& dfv,
+		outcome_vector& ps) const {
+	fill(ps.begin(), ps.end(), outcome_odds());	// clear first
+	size_t k;
+	// player blackjack and bust is separate
+	for (k=0; k < p_final_states; ++k) {    // player's final state
+		outcome_odds& o(ps[k]);
+		compute_outcome(k, dfv, o);
+	}       // end for p_final_states
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -530,7 +550,7 @@ play_map::dump_player_split_state(ostream& o) const {
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void
-play_map::compute_final_outcomes(void) {
+play_map::initialize_outcome_matrix(void) {
 	size_t k;
 	// player blackjack and bust is separate
 	for (k=0; k < p_final_states -2; ++k) {	// player's final state
@@ -560,9 +580,9 @@ play_map::compute_final_outcomes(void) {
 	}
 	outcome_array_type& pbj(outcome_matrix[k]);	// player blackjack
 	outcome_array_type& px(outcome_matrix[k+1]);	// player busts
-	std::fill(pbj.begin(), pbj.end(), WIN);
+	fill(pbj.begin(), pbj.end(), WIN);
 	pbj[d_final_states -3] = PUSH;			// both blackjack
-	std::fill(px.begin(), px.end(), LOSE);
+	fill(px.begin(), px.end(), LOSE);
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -604,6 +624,15 @@ play_map::dealer_final_table_header(ostream& o) {
 	size_t d;
 	for (d=0; d<d_final_states; ++d) {
 		o << '\t' << dealer_final_states[d];
+	}
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+ostream&
+play_map::player_final_table_header(ostream& o) {
+	size_t j;
+	for (j=0; j<p_final_states; ++j) {
+		o << '\t' << player_final_states[j];
 	}
 }
 
