@@ -7,22 +7,8 @@
 #include "statistics.hh"
 #include "blackjack.hh"
 #include "util/iosfmt_saver.hh"
-#if 0
-#include "util/string.tcc"	// for string_to_num
-#include "util/command.tcc"
-#include "util/value_saver.hh"
-#endif
 
 namespace blackjack {
-#if 0
-typedef	util::Command<statistics>			GraderCommand;
-}
-namespace util {
-template class command_registry<blackjack::GraderCommand>;
-}
-namespace blackjack {
-typedef	util::command_registry<GraderCommand>		stats_command_registry;
-#endif
 
 using std::setw;
 using std::endl;
@@ -31,16 +17,8 @@ using std::accumulate;
 using cards::card_name;
 using cards::reveal_print_ordering;
 
-#if 0
-using util::value_saver;
-using util::Command;
-using util::CommandStatus;
-using util::string_list;
-using util::strings::string_to_num;
-#endif
-
 //=============================================================================
-// clas statistics method declarations
+// class statistics method declarations
 
 statistics::statistics() :
 	initial_bankroll(0.0),
@@ -160,14 +138,14 @@ statistics::dump(ostream& o, const play_map& play) const {
 		for ( ; i<card_values; ++i) {
 			const size_t k = reveal_print_ordering[i];
 			o << setw(4) << row[k];
-			vtotals[i] += row[k];
+			vtotals[k] += row[k];
 		}
 		o << '\t' << accumulate(row.begin(), row.end(), 0) << endl;
 	}
 	o << "\n\ttotal\t";
 	for (j=0; j<card_values; ++j) {
 		const size_t k = reveal_print_ordering[j];
-		o << setw(4) << vtotals[j];
+		o << setw(4) << vtotals[k];
 	}
 	o << '\t' << accumulate(vtotals.begin(), vtotals.end(), 0) << endl;
 	o << '}' << endl;
