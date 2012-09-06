@@ -19,6 +19,8 @@ using std::fill;
 using cards::card_name;
 using cards::ACE;
 
+static const std::ios_base::Init __init;
+
 //=============================================================================
 // Blackjack specific routines
 
@@ -621,19 +623,21 @@ play_map::initialize_reverse_topo_order(void) {
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ostream&
 play_map::dealer_final_table_header(ostream& o) {
-	size_t d;
-	for (d=0; d<d_final_states; ++d) {
+	size_t d = 0;
+	for (; d<d_final_states; ++d) {
 		o << '\t' << dealer_final_states[d];
 	}
+	return o;
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ostream&
 play_map::player_final_table_header(ostream& o) {
-	size_t j;
-	for (j=0; j<p_final_states; ++j) {
+	size_t j = 0;
+	for (; j<p_final_states; ++j) {
 		o << '\t' << player_final_states[j];
 	}
+	return o;
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
