@@ -383,6 +383,10 @@ No dealer blackjack.
 [1/1] dealer: A, player: 74 (11)
 action? [hsdrbc?!]> !
 *** dynamic strategy beats basic ***
+perceived count:
+card:	   2   3   4   5   6   7   8   9   T   A   !10  !A	total
+rem:	  19  17  21  19  17  15  19  19  67  15     2   4	222
+actual count:
 card:	   2   3   4   5   6   7   8   9   T   A	total	%
 used:	   5   7   3   5   7   9   5   5  29   9	84	(26.92%)
 rem:	  19  17  21  19  17  15  19  19  67  15	228	(73.08%)
@@ -558,6 +562,10 @@ No dealer blackjack.
 [1/1] dealer: J, player: 87 (15)
 action? [hsdrbc?!]> !
 *** dynamic strategy beats basic ***
+perceived count:
+card:	   2   3   4   5   6   7   8   9   T   A   !10  !A	total
+rem:	  14  15  20  16  13  12  13  12  49  14     1   7	170
+actual count:
 card:	   2   3   4   5   6   7   8   9   T   A	total	%
 used:	  10   9   4   8  11  12  11  12  47  10	134	(42.95%)
 rem:	  14  15  20  16  13  12  13  12  49  14	178	(57.05%)
@@ -577,6 +585,10 @@ dealer: 2
 [1/1] dealer: 2, player: K4 (14)
 action? [hsdrbc?!]> !
 *** dynamic strategy beats basic ***
+perceived count:
+card:	   2   3   4   5   6   7   8   9   T   A   !10  !A	total
+rem:	  13  15  19  16  13  12  13  12  48  14     1   7	167
+actual count:
 card:	   2   3   4   5   6   7   8   9   T   A	total	%
 used:	  11   9   5   8  11  12  11  12  48  10	137	(43.91%)
 rem:	  13  15  19  16  13  12  13  12  48  14	175	(56.09%)
@@ -619,6 +631,10 @@ No dealer blackjack.
 [1/1] dealer: T, player: 5Q (15)
 action? [hsdrbc?!]> !
 *** dynamic strategy beats basic ***
+perceived count:
+card:	   2   3   4   5   6   7   8   9   T   A   !10  !A	total
+rem:	  13  11  18  15  12  12  12  12  44  14     1   8	154
+actual count:
 card:	   2   3   4   5   6   7   8   9   T   A	total	%
 used:	  11  13   6   9  12  12  12  12  52  10	149	(47.76%)
 rem:	  13  11  18  15  12  12  12  12  44  14	163	(52.24%)
@@ -661,6 +677,10 @@ dealer: 4
 [1/1] dealer: 4, player: 2K (12)
 action? [hsdrbc?!]> !
 *** dynamic strategy beats basic ***
+perceived count:
+card:	   2   3   4   5   6   7   8   9   T   A   !10  !A	total
+rem:	  12   9  16  14  12  12  12  11  40  13     1   8	142
+actual count:
 card:	   2   3   4   5   6   7   8   9   T   A	total	%
 used:	  12  15   8  10  12  12  12  13  56  11	161	(51.60%)
 rem:	  12   9  16  14  12  12  12  11  40  13	151	(48.40%)
@@ -686,6 +706,10 @@ No dealer blackjack.
 [1/1] dealer: J, player: 69 (15)
 action? [hsdrbc?!]> !
 *** dynamic strategy beats basic ***
+perceived count:
+card:	   2   3   4   5   6   7   8   9   T   A   !10  !A	total
+rem:	  12   9  16  14  11  12  12  10  37  12     1   9	135
+actual count:
 card:	   2   3   4   5   6   7   8   9   T   A	total	%
 used:	  12  15   8  10  13  12  12  14  59  12	167	(53.53%)
 rem:	  12   9  16  14  11  12  12  10  37  12	145	(46.47%)
@@ -771,6 +795,10 @@ dealer: 6
 [1/1] dealer: 6, player: 99 (9,9)
 action? [hsdprbc?!]> !
 *** dynamic strategy beats basic ***
+perceived count:
+card:	   2   3   4   5   6   7   8   9   T   A   !10  !A	total
+rem:	  11   8  14  14   8  10  11   7  28  11     1  10	111
+actual count:
 card:	   2   3   4   5   6   7   8   9   T   A	total	%
 used:	  13  16  10  10  16  14  13  17  68  13	190	(60.90%)
 rem:	  11   8  14  14   8  10  11   7  28  11	122	(39.10%)
@@ -790,6 +818,10 @@ Bookmark saved.
 [1/2] dealer: 6, player: 95 (14)
 action? [hsdbc?!]> !
 *** dynamic strategy beats basic ***
+perceived count:
+card:	   2   3   4   5   6   7   8   9   T   A   !10  !A	total
+rem:	  11   8  14  13   8  10  11   7  28  10     1  10	109
+actual count:
 card:	   2   3   4   5   6   7   8   9   T   A	total	%
 used:	  13  16  10  11  16  14  13  17  68  14	192	(61.54%)
 rem:	  11   8  14  13   8  10  11   7  28  10	120	(38.46%)
@@ -830,6 +862,10 @@ No dealer blackjack.
 [1/1] dealer: Q, player: T6 (16)
 action? [hsdrbc?!]> !
 *** dynamic strategy beats basic ***
+perceived count:
+card:	   2   3   4   5   6   7   8   9   T   A   !10  !A	total
+rem:	  10   8  14  13   7  10  10   7  23   9     1  11	99
+actual count:
 card:	   2   3   4   5   6   7   8   9   T   A	total	%
 used:	  14  16  10  11  17  14  14  17  73  15	201	(64.42%)
 rem:	  10   8  14  13   7  10  10   7  23   9	111	(35.58%)
@@ -849,6 +885,10 @@ dealer: 5
 [1/1] dealer: 5, player: 4J (14)
 action? [hsdrbc?!]> !
 *** dynamic strategy beats basic ***
+perceived count:
+card:	   2   3   4   5   6   7   8   9   T   A   !10  !A	total
+rem:	  10   8  13  12   7  10  10   7  22   9     1  11	96
+actual count:
 card:	   2   3   4   5   6   7   8   9   T   A	total	%
 used:	  14  16  11  12  17  14  14  17  74  15	204	(65.38%)
 rem:	  10   8  13  12   7  10  10   7  22   9	108	(34.62%)
@@ -943,6 +983,10 @@ dealer: 5
 [1/1] dealer: 5, player: T2 (12)
 action? [hsdrbc?!]> !
 *** dynamic strategy beats basic ***
+perceived count:
+card:	   2   3   4   5   6   7   8   9   T   A   !10  !A	total
+rem:	   6   6  10   8   6   9   6   5  16   8     1  11	68
+actual count:
 card:	   2   3   4   5   6   7   8   9   T   A	total	%
 used:	  18  18  14  16  18  15  18  19  80  16	232	(74.36%)
 rem:	   6   6  10   8   6   9   6   5  16   8	80	(25.64%)
@@ -1037,69 +1081,80 @@ initial deal histogram: {
 }
 table> bookmarks-list
 -------- bookmarks --------
-card:	   2   3   4   5   6   7   8   9   T   A	total	%
-rem:	  19  17  21  19  17  15  19  19  67  15	228	(73.08%)
-hi-lo: -11, true-count: -2.51
+perceived count:
+card:	   2   3   4   5   6   7   8   9   T   A   !10  !A	total
+rem:	  19  17  21  19  17  15  19  19  67  15     2   4	222
+hi-lo: -11, true-count: -2.58
 dealer: A, player: 74 (11)
 options: double:yes, split:no, surrender:yes
 
-card:	   2   3   4   5   6   7   8   9   T   A	total	%
-rem:	  14  15  20  16  13  12  13  12  49  14	178	(57.05%)
-hi-lo: -15, true-count: -4.38
+perceived count:
+card:	   2   3   4   5   6   7   8   9   T   A   !10  !A	total
+rem:	  14  15  20  16  13  12  13  12  49  14     1   7	170
+hi-lo: -15, true-count: -4.59
 dealer: J, player: 87 (15)
 options: double:yes, split:no, surrender:yes
 
-card:	   2   3   4   5   6   7   8   9   T   A	total	%
-rem:	  13  15  19  16  13  12  13  12  48  14	175	(56.09%)
-hi-lo: -14, true-count: -4.16
+perceived count:
+card:	   2   3   4   5   6   7   8   9   T   A   !10  !A	total
+rem:	  13  15  19  16  13  12  13  12  48  14     1   7	167
+hi-lo: -14, true-count: -4.36
 dealer: 2, player: K4 (14)
 options: double:yes, split:no, surrender:yes
 
-card:	   2   3   4   5   6   7   8   9   T   A	total	%
-rem:	  13  11  18  15  12  12  12  12  44  14	163	(52.24%)
-hi-lo: -11, true-count: -3.51
+perceived count:
+card:	   2   3   4   5   6   7   8   9   T   A   !10  !A	total
+rem:	  13  11  18  15  12  12  12  12  44  14     1   8	154
+hi-lo: -11, true-count: -3.71
 dealer: T, player: 5Q (15)
 options: double:yes, split:no, surrender:yes
 
-card:	   2   3   4   5   6   7   8   9   T   A	total	%
-rem:	  12   9  16  14  12  12  12  11  40  13	151	(48.40%)
-hi-lo: -10, true-count: -3.44
+perceived count:
+card:	   2   3   4   5   6   7   8   9   T   A   !10  !A	total
+rem:	  12   9  16  14  12  12  12  11  40  13     1   8	142
+hi-lo: -10, true-count: -3.66
 dealer: 4, player: 2K (12)
 options: double:yes, split:no, surrender:yes
 
-card:	   2   3   4   5   6   7   8   9   T   A	total	%
-rem:	  12   9  16  14  11  12  12  10  37  12	145	(46.47%)
-hi-lo: -13, true-count: -4.66
+perceived count:
+card:	   2   3   4   5   6   7   8   9   T   A   !10  !A	total
+rem:	  12   9  16  14  11  12  12  10  37  12     1   9	135
+hi-lo: -13, true-count: -5.01
 dealer: J, player: 69 (15)
 options: double:yes, split:no, surrender:yes
 
-card:	   2   3   4   5   6   7   8   9   T   A	total	%
-rem:	  11   8  14  14   8  10  11   7  28  11	122	(39.10%)
-hi-lo: -16, true-count: -6.82
+perceived count:
+card:	   2   3   4   5   6   7   8   9   T   A   !10  !A	total
+rem:	  11   8  14  14   8  10  11   7  28  11     1  10	111
+hi-lo: -16, true-count: -7.50
 dealer: 6, player: 99 (9,9)
 options: double:yes, split:yes, surrender:yes
 
-card:	   2   3   4   5   6   7   8   9   T   A	total	%
-rem:	  11   8  14  13   8  10  11   7  28  10	120	(38.46%)
-hi-lo: -16, true-count: -6.93
+perceived count:
+card:	   2   3   4   5   6   7   8   9   T   A   !10  !A	total
+rem:	  11   8  14  13   8  10  11   7  28  10     1  10	109
+hi-lo: -16, true-count: -7.63
 dealer: 6, player: 95 (14)
 options: double:yes, split:no, surrender:no
 
-card:	   2   3   4   5   6   7   8   9   T   A	total	%
-rem:	  10   8  14  13   7  10  10   7  23   9	111	(35.58%)
-hi-lo: -20, true-count: -9.37
+perceived count:
+card:	   2   3   4   5   6   7   8   9   T   A   !10  !A	total
+rem:	  10   8  14  13   7  10  10   7  23   9     1  11	99
+hi-lo: -20, true-count: -10.51
 dealer: Q, player: T6 (16)
 options: double:yes, split:no, surrender:yes
 
-card:	   2   3   4   5   6   7   8   9   T   A	total	%
-rem:	  10   8  13  12   7  10  10   7  22   9	108	(34.62%)
-hi-lo: -19, true-count: -9.15
+perceived count:
+card:	   2   3   4   5   6   7   8   9   T   A   !10  !A	total
+rem:	  10   8  13  12   7  10  10   7  22   9     1  11	96
+hi-lo: -19, true-count: -10.29
 dealer: 5, player: 4J (14)
 options: double:yes, split:no, surrender:yes
 
-card:	   2   3   4   5   6   7   8   9   T   A	total	%
-rem:	   6   6  10   8   6   9   6   5  16   8	80	(25.64%)
-hi-lo: -12, true-count: -7.80
+perceived count:
+card:	   2   3   4   5   6   7   8   9   T   A   !10  !A	total
+rem:	   6   6  10   8   6   9   6   5  16   8     1  11	68
+hi-lo: -12, true-count: -9.18
 dealer: 5, player: T2 (12)
 options: double:yes, split:no, surrender:yes
 

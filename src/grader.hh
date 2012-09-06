@@ -12,6 +12,7 @@
 #include "deck_state.hh"
 #include "statistics.hh"
 #include "hand.hh"
+#include "counter.hh"
 #include "bookmark.hh"
 
 namespace blackjack {
@@ -70,6 +71,9 @@ private:
 	 */
 	perceived_deck_state			P;
 
+	/// TODO: support extendable vector of various counters
+	cards::named_counter			hi_lo_counter;
+
 	// hand information is not saved, it is only temporary
 	// should these be removed from here?
 	/**
@@ -84,7 +88,6 @@ private:
 		Dealer's hidden card.
 	 */
 	size_t					dealer_hole;
-
 public:
 	/**
 		Collection of statistics of play.
@@ -132,8 +135,16 @@ public:
 	const deck_state&
 	get_deck_state(void) const { return C; }
 
+	// really only intended for edit_deck
 	deck_state&
 	get_deck_state(void) { return C; }
+
+	const perceived_deck_state&
+	get_perceived_deck_state(void) const { return P; }
+
+	// really only intended for edit_deck
+	perceived_deck_state&
+	get_perceived_deck_state(void) { return P; }
 
 	const strategy&
 	get_basic_strategy(void) const { return basic_strategy; }
@@ -142,7 +153,13 @@ public:
 	get_dynamic_strategy(void) const { return dynamic_strategy; }
 
 	void
-	shuffle(void) { C.reshuffle(); }
+	reset_counts(void);
+
+	void
+	shuffle(void) {
+		C.reshuffle();
+		reset_counts();
+	}
 
 	void
 	update_dynamic_strategy(void);

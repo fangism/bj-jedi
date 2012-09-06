@@ -9,6 +9,10 @@ You sit down at a blackjack table.
 Type 'help' or '?' for a list of table commands.
 table> edit-deck 6 + 1
 table> count
+perceived count:
+card:	   2   3   4   5   6   7   8   9   T   A   !10  !A	total
+rem:	   4   4   4   4   5   4   4   4  16   4     0   0	53
+actual count:
 card:	   2   3   4   5   6   7   8   9   T   A	total	%
 used:	   0   0   0   0   0   0   0   0   0   0	0	(0.00%)
 rem:	   4   4   4   4   5   4   4   4  16   4	53	(101.92%)

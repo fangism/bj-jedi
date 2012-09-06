@@ -183,31 +183,55 @@ perceived_deck_state::distribution_weight_adjustment(
 /**
 	Comparison for sorting and ordering.
  */
-bool
-perceived_deck_state::operator < (const perceived_deck_state& r) const {
+int
+perceived_deck_state::compare(const perceived_deck_state& r) const {
 	if (remaining_total < r.remaining_total)
-		return true;
+		return -1;
 	if (r.remaining_total < remaining_total)
-		return false;
+		return 1;
 	const int c = remaining.compare(r.remaining);
 	if (c < 0)
-		return true;
+		return -1;
 	if (c > 0)
-		return false;
+		return 1;
 	if (peeked_not_10s < r.peeked_not_10s)
-		return true;
+		return -1;
 	if (r.peeked_not_10s < peeked_not_10s)
-		return false;
-#if 0
+		return 1;
 	if (peeked_not_Aces < r.peeked_not_Aces)
-		return true;
+		return -1;
 	if (r.peeked_not_Aces < peeked_not_Aces)
-		return false;
+		return 1;
 	// then all members are equal
-	return false;
-#else
-	return peeked_not_Aces < r.peeked_not_Aces;
-#endif
+	return 0;
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+bool
+perceived_deck_state::operator < (const perceived_deck_state& r) const {
+	return compare(r) < 0;
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+ostream&
+perceived_deck_state::show_count(ostream& o) const {
+	o << "perceived count:" << endl;
+	size_t i = 0;
+	o << "card:\t";
+	for (; i<card_values; ++i) {
+		const size_t j = reveal_print_ordering[i];
+		o << "   " << card_name[j];
+	}
+	o << "   !10  !A\ttotal\n";
+	o << "rem:\t";
+	for (i=0; i<card_values; ++i) {
+		const size_t j = reveal_print_ordering[i];
+		o << setw(4) << remaining[j];
+	}
+	o << "  " << setw(4) << peeked_not_10s;
+	o << setw(4) << peeked_not_Aces;
+	o << '\t' << actual_remaining() << endl;
+	return o;
 }
 
 //=============================================================================
@@ -218,9 +242,7 @@ perceived_deck_state::operator < (const perceived_deck_state& r) const {
  */
 deck_state::deck_state(const variation& v) : 
 		num_decks(v.num_decks),
-		hole_reserved(false), 
-		hi_lo_counter("hi-lo", counter(cards::hi_lo_signature))
-		{
+		hole_reserved(false) {
 	reshuffle();		// does most of the initializing
 	// default penetration before reshuffling: 75%
 	maximum_penetration = (1.0 -v.maximum_penetration) * num_decks *52;
@@ -235,7 +257,6 @@ deck_state::reshuffle(void) {
 	const size_t f = num_decks*4;
 	std::fill(used_cards.begin(), used_cards.end(), 0);
 	std::fill(cards.begin(), cards.end(), f);
-	hi_lo_counter.second.initialize(cards);
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -282,7 +303,6 @@ deck_state::magic_draw(const size_t r) {
 	--cards[r];
 	++cards_spent;
 	--cards_remaining;
-	hi_lo_counter.second.incremental_count_card(r);
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -426,6 +446,7 @@ deck_state::reveal_hole_card(void) {
  */
 ostream&
 deck_state::show_count(ostream& o, const bool ex, const bool used) const {
+	o << "actual count:" << endl;
 	const size_t N = ex ? card_symbols : card_values;
 	const util::precision_saver p(o, 2);
 	const size_t* const po = ex ? extended_reveal_print_ordering
@@ -469,53 +490,7 @@ if (used) {
 	o << "\t" << cards_remaining << "\t(" <<
 		double(cards_remaining) *100.0 / (num_decks *52) << "%)\n";
 }
-
-// TODO: support generalized counting schemes
-#if 0
-	// hi-lo count summary, details of true count, running count
-	int hi_lo_count = 0;
-	// more accurately, based on remaining cards, not used cards
-	// this allows meaningful counting for altered decks
-	hi_lo_count -= cards[1] +cards[2] +cards[3]
-		+cards[4] +cards[5];	// 2 through 6
-	hi_lo_count += cards[ACE] +cards[TEN];
-	hi_lo_count += cards[JACK] +cards[QUEEN] +cards[KING];
-	double true_count = (double(hi_lo_count) * 52)
-		/ double(cards_remaining);
-	o << "hi-lo: " << hi_lo_count <<
-	// true count adjusts for number of cards remaining
-	// normalized to 1 deck
-		", true-count: " << true_count;
-	// adjusted count accounts for the house edge based on rules
-#else
-	hi_lo_counter.second.dump(o,
-		hi_lo_counter.first.c_str(), cards_remaining);
-#endif
-	return o << endl;
-}
-
-//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/**
-	This could be pushed into deck_state, or counter.
- */
-void
-deck_state::quiz_count(istream& istr, ostream& ostr) const {
-	string line;
-	ostr << "Quiz: " << hi_lo_counter.first << " running count? ";
-	getline(istr, line);
-	int ans;
-	if (string_to_num(line, ans)) {
-		// for any other response, just show count
-		show_count(ostr, false, false);
-	} else {
-		if (ans == hi_lo_counter.second.get_running_count()) {
-			ostr << "Correct." << endl;
-		} else {
-			ostr << "Incorrect." << endl;
-			show_count(ostr, false, false);
-		}
-	}
-// otherwise, just skip quiz
+	return o;
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -548,7 +523,6 @@ deck_state::edit_deck(const size_t c, const int n) {
 	cards[c] = n;
 	cards_remaining += d;
 	// leave used_cards and cards_spent alone
-	hi_lo_counter.second.initialize(cards);
 	return false;
 }
 

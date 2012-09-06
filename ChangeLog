@@ -1,5 +1,11 @@
 # "ChangeLog"
 
+2012-09-05	David Fang		<fangism@users.sourceforge.net>
+	Show/report count using perceived_deck_state.
+	Bookmark using perceived_deck_state.
+	Moved counter outside of deck_state.
+	Factor out counter_base from counter.
+
 2012-08-22	David Fang		<fangism@users.sourceforge.net>
 	Move player_options from bookmark into struct hand.
 	Fixes failure to prompt with split option on T,T.

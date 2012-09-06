@@ -171,6 +171,9 @@ public:
 	ostream&
 	dump_debug(ostream&) const;
 
+	ostream&
+	dump_verbose(ostream&) const;
+
 };	// end struct action_mask
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

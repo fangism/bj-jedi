@@ -3,8 +3,6 @@
 #ifndef	__BOC2_DECK_STATE_HH__
 #define	__BOC2_DECK_STATE_HH__
 
-#include <utility>
-#include <string>
 #include "card_state.hh"
 #include "counter.hh"
 
@@ -19,8 +17,6 @@ using cards::extended_deck_count_type;
 using cards::deck_count_type;
 using cards::state_machine;
 using cards::counter;
-
-typedef	std::pair<string, counter>		named_counter;
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
@@ -63,12 +59,16 @@ protected:
 		property: remaining.sum().
 	 */
 	size_t					remaining_total;
-
 public:
 	perceived_deck_state();
 
 	void
 	initialize(const extended_deck_count_type&);
+
+	const deck_count_type&
+	get_counts(void) const {
+		return remaining;
+	}
 
 	void
 	remove(const size_t);	// translate with card_value_map
@@ -107,8 +107,14 @@ public:
 	void
 	effective_distribution(extended_deck_count_type&) const;
 
+	int
+	compare(const perceived_deck_state&) const;
+
 	bool
 	operator < (const perceived_deck_state&) const;
+
+	ostream&
+	show_count(ostream&) const;
 
 };	// end class perceived_deck_state
 
@@ -164,9 +170,6 @@ private:
 		Maximum allowed should be .90 (90%)
 	 */
 	size_t					maximum_penetration;
-
-	/// TODO: support extendable vector of various counters
-	named_counter				hi_lo_counter;
 public:
 	explicit
 	deck_state(const variation&);
@@ -177,6 +180,11 @@ public:
 	const _deck_count_type&
 	get_card_counts(void) const {
 		return cards;		// remaining
+	}
+
+	size_t
+	get_cards_remaining(void) const {
+		return cards_remaining;
 	}
 
 	double
@@ -233,9 +241,6 @@ public:
 
 	ostream&
 	show_count(ostream&, const bool, const bool) const;
-
-	void
-	quiz_count(istream&, ostream&) const;
 
 #if 0
 	ostream&

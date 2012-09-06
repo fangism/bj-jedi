@@ -3,10 +3,12 @@
 #include <iostream>
 #include <string>
 #include "player_action.hh"
+#include "util/configure_option.hh"
 
 namespace blackjack {
 using std::endl;
 using std::string;
+using util::yn;
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const action_mask action_mask::stand(STAND);
@@ -95,6 +97,14 @@ action_mask::dump_debug(ostream& o) const {
 		can_double_down() << ',' <<
 		can_split() << ',' <<
 		can_surrender();
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+ostream&
+action_mask::dump_verbose(ostream& o) const {
+	return o << "double:" << yn(can_double_down())
+		<< ", split:" << yn(can_split())
+		<< ", surrender:" << yn(can_surrender()) << endl;
 }
 
 //=============================================================================

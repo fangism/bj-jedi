@@ -10,6 +10,10 @@
 #include "deck_state.hh"
 #include "player_action.hh"
 
+namespace cards {
+class counter_base;
+}
+
 namespace blackjack {
 
 /**
@@ -22,16 +26,20 @@ struct bookmark {
 	player_hand			p_hand;
 //	player_hand_base		p_hand;
 	// for now, just save everything, only ::cards is needed
-	deck_state			cards;
+	perceived_deck_state		cards;
+//	deck_state			cards;
 
 	bookmark();
 
-	bookmark(const size_t, const player_hand&, const deck_state&);
+	bookmark(const size_t, const player_hand&, const perceived_deck_state&);
 
 	~bookmark();
 
 	ostream&
 	dump(ostream&) const;
+
+	ostream&
+	dump(ostream&, const char*, const cards::counter_base&) const;
 
 };	// end struct bookmark
 

@@ -121,6 +121,10 @@ No dealer blackjack.
 [1/1] dealer: T, player: 69 (15)
 action? [hsdrbc?!]> !
 *** dynamic strategy beats basic ***
+perceived count:
+card:	   2   3   4   5   6   7   8   9   T   A   !10  !A	total
+rem:	  24  23  23  24  22  24  22  22  90  23     1   2	294
+actual count:
 card:	   2   3   4   5   6   7   8   9   T   A	total	%
 used:	   0   1   1   0   2   0   2   2   6   1	15	(4.81%)
 rem:	  24  23  23  24  22  24  22  22  90  23	297	(95.19%)
@@ -587,6 +591,10 @@ No dealer blackjack.
 [1/1] dealer: Q, player: T6 (16)
 action? [hsdrbc?!]> !
 *** dynamic strategy beats basic ***
+perceived count:
+card:	   2   3   4   5   6   7   8   9   T   A   !10  !A	total
+rem:	  12  13  15  17  14  14   9  14  49  16     1  10	162
+actual count:
 card:	   2   3   4   5   6   7   8   9   T   A	total	%
 used:	  12  11   9   7  10  10  15  10  47   8	139	(44.55%)
 rem:	  12  13  15  17  14  14   9  14  49  16	173	(55.45%)
@@ -1032,15 +1040,17 @@ initial deal histogram: {
 }
 table> bookmarks-list
 -------- bookmarks --------
-card:	   2   3   4   5   6   7   8   9   T   A	total	%
-rem:	  24  23  23  24  22  24  22  22  90  23	297	(95.19%)
+perceived count:
+card:	   2   3   4   5   6   7   8   9   T   A   !10  !A	total
+rem:	  24  23  23  24  22  24  22  22  90  23     1   2	294
 hi-lo: -3, true-count: -0.53
 dealer: T, player: 69 (15)
 options: double:yes, split:no, surrender:yes
 
-card:	   2   3   4   5   6   7   8   9   T   A	total	%
-rem:	  12  13  15  17  14  14   9  14  49  16	173	(55.45%)
-hi-lo: -6, true-count: -1.80
+perceived count:
+card:	   2   3   4   5   6   7   8   9   T   A   !10  !A	total
+rem:	  12  13  15  17  14  14   9  14  49  16     1  10	162
+hi-lo: -6, true-count: -1.93
 dealer: Q, player: T6 (16)
 options: double:yes, split:no, surrender:yes
 

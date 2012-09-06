@@ -56,6 +56,7 @@ grader::grader(const variation& v, play_options& p, istream& i, ostream& o) :
 		basic_strategy(play), dynamic_strategy(play), 
 		C(v),
 		P(),
+		hi_lo_counter("hi-lo", counter(cards::hi_lo_signature)),
 		player_hands(), dealer(play), 
 		stats(), 
 		bookmarks() {
@@ -138,7 +139,12 @@ grader::offer_insurance(const bool pbj) {
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void
 grader::show_count(void) const {
+	P.show_count(ostr);
 	C.show_count(ostr, opt.count_face_cards, opt.count_used_cards);
+	// TODO: support generalized counting schemes
+	hi_lo_counter.second.dump(ostr,
+		hi_lo_counter.first.c_str(), C.get_cards_remaining());
+	ostr << endl;
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -153,6 +159,7 @@ grader::draw_up_card(const char* prompt) {
 	}
 	const size_t ret = C.option_draw(opt.pick_cards, istr, ostr);
 	P.remove(ret);
+	hi_lo_counter.second.incremental_count_card(ret);
 	return ret;
 }
 
@@ -190,6 +197,7 @@ grader::reveal_hole_card(const size_t hole_card) {
 	default:
 		P.remove(hole_card);
 	}
+	hi_lo_counter.second.incremental_count_card(hole_card);
 	// optional:
 	dealer.dump_dealer(ostr) << endl;
 }
@@ -425,6 +433,17 @@ for (j=0; j<player_hands.size(); ++j) {
 
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
+	After actual deck_state is modified (non-incrementally)
+	need to reset counts.  
+ */
+void
+grader::reset_counts(void) {
+	P.initialize(C.get_card_counts());
+	hi_lo_counter.second.initialize(P.get_counts());
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 bool
 grader::auto_shuffle(void) {
 	bool b = false;
@@ -441,6 +460,7 @@ grader::auto_shuffle(void) {
 	if (b) {
 		ostr << "**************** Reshuffling... ****************"
 			<< endl;
+		reset_counts();
 		if (opt.always_show_dynamic_edge && !opt.continuous_shuffle) {
 			// don't bother if shuffling is continuous
 			show_dynamic_edge();
@@ -452,9 +472,26 @@ grader::auto_shuffle(void) {
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void
 grader::quiz_count(void) const {
-	if (!opt.auto_play) {
-		C.quiz_count(istr, ostr);
+if (!opt.auto_play) {
+	// TODO: quiz different counting schemes
+	string line;
+	ostr << "Quiz: " << hi_lo_counter.first << " running count? ";
+	getline(istr, line);
+	int ans;
+	if (string_to_num(line, ans)) {
+		// for any other response, just show count
+//		C.show_count(ostr, false, false);
+		P.show_count(ostr);
+	} else {
+		if (ans == hi_lo_counter.second.get_running_count()) {
+			ostr << "Correct." << endl;
+		} else {
+			ostr << "Incorrect." << endl;
+//			C.show_count(ostr, false, false);
+			P.show_count(ostr);
+		}
 	}
+}
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -535,7 +572,7 @@ do {
 		show_count();
 	}
 	// snapshot of current state, in case of bookmark
-	const bookmark bm(dealer.reveal, ph, C);
+	const bookmark bm(dealer.reveal, ph, P);
 	ostringstream oss;
 	oss.flags(ostr.flags());
 	oss.precision(ostr.precision());
@@ -758,7 +795,9 @@ grader::list_bookmarks(void) const {
 	vector<bookmark>::const_iterator
 		i(bookmarks.begin()), e(bookmarks.end());
 	for ( ; i!=e; ++i) {
-		i->dump(ostr) << endl;
+//		i->dump(ostr) << endl;
+		i->dump(ostr, hi_lo_counter.first.c_str(), 
+			hi_lo_counter.second) << endl;
 	}
 	ostr << "------ end bookmarks ------" << endl;
 }
@@ -1146,6 +1185,7 @@ DECLARE_GRADER_COMMAND_CLASS(EditDeck, "edit-deck",
 int
 EditDeck::main(grader& g, const string_list& args) {
 	deck_state& C(g.get_deck_state());
+	perceived_deck_state& P(g.get_perceived_deck_state());
 switch (args.size()) {
 case 1: Count::main(g, args);	// just show count
 	g.ostr << "usage: " << name << " " << brief << endl;
@@ -1155,7 +1195,8 @@ case 2: {
 	Count::main(g, args);		// first show all
 	if (args.back() == "all") {
 		C.edit_deck_all(g.istr, g.ostr);	// exit status?
-		Count::main(g, args);	// show all once again
+		g.reset_counts();
+		return Count::main(g, args);	// show all once again
 	} else {
 		g.ostr << "usage: " << name << " " << brief << endl;
 		return CommandStatus::BADARG;
@@ -1214,6 +1255,7 @@ case 4: {
 default: cerr << "usage: " << name << " " << brief << endl;
 	return CommandStatus::SYNTAX;
 }	// end switch
+	g.reset_counts();
 	return CommandStatus::NORMAL;
 }
 
