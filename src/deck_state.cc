@@ -65,7 +65,7 @@ zpow(const size_t b, size_t p) {
 #else
 	// composite function algorithm
 	size_t ret = 1;		// multiplicative identity
-	size_t factor = p;
+	size_t factor = b;
 	for ( ; p; p >>= 1, factor *= factor) {
 		if (p & 1) {
 			ret *= factor;
@@ -125,7 +125,7 @@ perceived_deck_state::peek_not_Ace(void) {
 void
 perceived_deck_state::reveal_peek_10(const size_t c) {
 	--peeked_not_10s;
-	const size_t d = card_value_map[c];
+//	const size_t d = card_value_map[c];
 	remove(c);
 }
 
@@ -133,7 +133,7 @@ perceived_deck_state::reveal_peek_10(const size_t c) {
 void
 perceived_deck_state::reveal_peek_Ace(const size_t c) {
 	--peeked_not_Aces;
-	const size_t d = card_value_map[c];
+//	const size_t d = card_value_map[c];
 	remove(c);
 }
 

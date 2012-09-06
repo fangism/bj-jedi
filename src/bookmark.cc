@@ -39,6 +39,7 @@ bookmark::dump(ostream& o) const {
 	o << "dealer: " << card_name[dealer_reveal] << ", ";
 	p_hand.dump_player(o) << endl;
 	p_hand.player_options.dump_verbose(o << "options: ");
+	return o;
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -57,6 +58,7 @@ bookmark::dump(ostream& o, const char* cname,
 	o << "dealer: " << card_name[dealer_reveal] << ", ";
 	p_hand.dump_player(o) << endl;
 	p_hand.player_options.dump_verbose(o << "options: ");
+	return o;
 }
 
 //=============================================================================

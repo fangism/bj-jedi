@@ -1185,7 +1185,6 @@ DECLARE_GRADER_COMMAND_CLASS(EditDeck, "edit-deck",
 int
 EditDeck::main(grader& g, const string_list& args) {
 	deck_state& C(g.get_deck_state());
-	perceived_deck_state& P(g.get_perceived_deck_state());
 switch (args.size()) {
 case 1: Count::main(g, args);	// just show count
 	g.ostr << "usage: " << name << " " << brief << endl;
@@ -1263,7 +1262,7 @@ default: cerr << "usage: " << name << " " << brief << endl;
 DECLARE_GRADER_COMMAND_CLASS(BookmarksClear, "bookmarks-clear",
 	": erase all saved bookmarks")
 int
-BookmarksClear::main(grader& g, const string_list& args) {
+BookmarksClear::main(grader& g, const string_list&) {
 	g.clear_bookmarks();
 	return CommandStatus::NORMAL;
 }
@@ -1272,7 +1271,7 @@ BookmarksClear::main(grader& g, const string_list& args) {
 DECLARE_GRADER_COMMAND_CLASS(BookmarksList, "bookmarks-list",
 	": print all saved bookmarks")
 int
-BookmarksList::main(grader& g, const string_list& args) {
+BookmarksList::main(grader& g, const string_list&) {
 	g.list_bookmarks();
 	return CommandStatus::NORMAL;
 }

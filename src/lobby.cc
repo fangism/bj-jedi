@@ -58,7 +58,7 @@ namespace lobby_commands {
 DECLARE_LOBBY_COMMAND_CLASS(Help, "help",
 	"[cmd] : list lobby command(s)")
 int
-Help::main(lobby& g, const string_list& args) {
+Help::main(lobby&, const string_list& args) {
 switch (args.size()) {
 case 1:
 	lobby_command_registry::list_commands(cout);

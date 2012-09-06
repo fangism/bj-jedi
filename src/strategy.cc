@@ -578,8 +578,8 @@ reveal_strategy::compute_action_expectations(const play_map& play,
 	const action_mask dfm(drm -SPLIT);	// final, no more split
 	// the following computed edges are post-peek
 if (var.split) {
-	const bool DAS = var.double_after_split && var.some_double();
 #if 0
+	const bool DAS = var.double_after_split && var.some_double();
 #define	RESPLIT_DP	DAS, var.resplit
 #define	RESPLIT_DPR	RESPLIT_DP, false
 #define	SPLIT_DP	DAS, false
@@ -923,9 +923,9 @@ reveal_strategy::compute_player_initial_nonsplit_edges(
 		c.hit() = player_hit_stand_edges[i];
 		c.optimize(-surr_pen);
 		// since splits are folded into non-pair states
+#if DEBUG_SPLIT
 		const bool t = play.player_hit[i].is_terminal();
 //			splits are computed in a separate section of the table
-#if DEBUG_SPLIT
 			const action_mask mm(m & play.initial_actions_per_state[i]);
 			const action_mask mref(t ? action_mask::stand : m);
 			if (mm != mref) {
@@ -1419,7 +1419,7 @@ namespace strategy_commands {
 DECLARE_STRATEGY_COMMAND_CLASS(Help, "help",
 	"[cmd] : list strategy command(s)")
 int
-Help::main(const strategy& g, const string_list& args) {
+Help::main(const strategy&, const string_list& args) {
 switch (args.size()) {
 case 1:
 	strategy_command_registry::list_commands(cout);
@@ -1448,7 +1448,7 @@ Help2::main(const strategy& v, const string_list& args) {
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 DECLARE_STRATEGY_COMMAND_CLASS(Quit, "quit", ": exit strategy menu")
 int
-Quit::main(const strategy& g, const string_list&) {
+Quit::main(const strategy&, const string_list&) {
 	return CommandStatus::END;
 }
 
@@ -1462,7 +1462,7 @@ Exit::main(const strategy& g, const string_list& args) {
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 DECLARE_STRATEGY_COMMAND_CLASS(Echo, "echo", ": print arguments")
 int
-Echo::main(const strategy& g, const string_list& args) {
+Echo::main(const strategy&, const string_list& args) {
 	copy(++args.begin(), args.end(), ostream_iterator<string>(cout, " "));
 	cout << endl;
 	return CommandStatus::NORMAL;
@@ -1487,7 +1487,7 @@ if (args.size() > 1) {
 DECLARE_STRATEGY_COMMAND_CLASS(StandEdges, "stand-edges",
 	": show all standing edges")
 int
-StandEdges::main(const strategy& g, const string_list& args) {
+StandEdges::main(const strategy& g, const string_list&) {
 	g.dump_player_stand_odds(cout);
 	return CommandStatus::NORMAL;
 }
@@ -1496,7 +1496,7 @@ StandEdges::main(const strategy& g, const string_list& args) {
 DECLARE_STRATEGY_COMMAND_CLASS(InitialOdds, "initial-odds",
 	": show prob. dist. of all initial hands")
 int
-InitialOdds::main(const strategy& g, const string_list& args) {
+InitialOdds::main(const strategy& g, const string_list&) {
 	g.dump_player_initial_state_odds(cout);
 	return CommandStatus::NORMAL;
 }
@@ -1505,7 +1505,7 @@ InitialOdds::main(const strategy& g, const string_list& args) {
 DECLARE_STRATEGY_COMMAND_CLASS(InitialEdges, "initial-edges",
 	": show all edges of initial hands")
 int
-InitialEdges::main(const strategy& g, const string_list& args) {
+InitialEdges::main(const strategy& g, const string_list&) {
 	g.dump_player_initial_edges(cout);
 	return CommandStatus::NORMAL;
 }
@@ -1514,7 +1514,7 @@ InitialEdges::main(const strategy& g, const string_list& args) {
 DECLARE_STRATEGY_COMMAND_CLASS(HitEdges, "hit-edges",
 	": show all hitting edges")
 int
-HitEdges::main(const strategy& g, const string_list& args) {
+HitEdges::main(const strategy& g, const string_list&) {
 	g.dump_player_hit_stand_edges(cout);
 	return CommandStatus::NORMAL;
 }
@@ -1523,7 +1523,7 @@ HitEdges::main(const strategy& g, const string_list& args) {
 DECLARE_STRATEGY_COMMAND_CLASS(HitStrategy, "hit-strategy",
 	": show optimal hit strategy vs. dealer")
 int
-HitStrategy::main(const strategy& g, const string_list& args) {
+HitStrategy::main(const strategy& g, const string_list&) {
 // TODO: optional arg, given reveal
 	g.dump_player_hit_tables(cout);
 	return CommandStatus::NORMAL;
@@ -1533,7 +1533,7 @@ HitStrategy::main(const strategy& g, const string_list& args) {
 DECLARE_STRATEGY_COMMAND_CLASS(SplitEdges, "split-edges",
 	": show all splitting edges")
 int
-SplitEdges::main(const strategy& g, const string_list& args) {
+SplitEdges::main(const strategy& g, const string_list&) {
 	g.dump_player_split_edges(cout);
 	return CommandStatus::NORMAL;
 }
@@ -1542,7 +1542,7 @@ SplitEdges::main(const strategy& g, const string_list& args) {
 DECLARE_STRATEGY_COMMAND_CLASS(PlayerFinalOdds, "player-final-state-odds",
 	": show prob. dist. of player's final state vs. dealer")
 int
-PlayerFinalOdds::main(const strategy& g, const string_list& args) {
+PlayerFinalOdds::main(const strategy& g, const string_list&) {
 // TODO: optional arg, given reveal
 	g.dump_player_final_state_probabilities(cout);
 	return CommandStatus::NORMAL;
@@ -1552,7 +1552,7 @@ PlayerFinalOdds::main(const strategy& g, const string_list& args) {
 DECLARE_STRATEGY_COMMAND_CLASS(RevealEdges, "reveal-edges",
 	": show initial edges pre/post-peek")
 int
-RevealEdges::main(const strategy& g, const string_list& args) {
+RevealEdges::main(const strategy& g, const string_list&) {
 	g.dump_reveal_edges(cout);
 	return CommandStatus::NORMAL;
 }
@@ -1561,7 +1561,7 @@ RevealEdges::main(const strategy& g, const string_list& args) {
 DECLARE_STRATEGY_COMMAND_CLASS(OverallEdge, "overall-edge",
 	": show pre-deal overall player's edge")
 int
-OverallEdge::main(const strategy& g, const string_list& args) {
+OverallEdge::main(const strategy& g, const string_list&) {
 	cout << "overall edge: " << g.overall_edge() << endl;
 	return CommandStatus::NORMAL;
 }
@@ -1570,7 +1570,7 @@ OverallEdge::main(const strategy& g, const string_list& args) {
 DECLARE_STRATEGY_COMMAND_CLASS(ActionEdges, "action-edges",
 	": show complete edges/action table vs. dealer")
 int
-ActionEdges::main(const strategy& g, const string_list& args) {
+ActionEdges::main(const strategy& g, const string_list&) {
 	g.dump_action_expectations(cout);
 	return CommandStatus::NORMAL;
 }
@@ -1579,7 +1579,7 @@ ActionEdges::main(const strategy& g, const string_list& args) {
 DECLARE_STRATEGY_COMMAND_CLASS(ActionOptimal, "action-optimal",
 	": show optimal action table vs. dealer")
 int
-ActionOptimal::main(const strategy& g, const string_list& args) {
+ActionOptimal::main(const strategy& g, const string_list&) {
 	g.dump_optimal_actions(cout);
 	return CommandStatus::NORMAL;
 }
@@ -1588,7 +1588,7 @@ ActionOptimal::main(const strategy& g, const string_list& args) {
 DECLARE_STRATEGY_COMMAND_CLASS(AllInfo, "all-info",
 	": show all edge calculations")
 int
-AllInfo::main(const strategy& g, const string_list& args) {
+AllInfo::main(const strategy& g, const string_list&) {
 	g.dump(cout);
 	return CommandStatus::NORMAL;
 }

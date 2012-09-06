@@ -618,6 +618,7 @@ play_map::initialize_reverse_topo_order(void) {
 		ostream_iterator<size_t>(cout, ","));
 	cout << endl;
 #endif
+	return 1;
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
