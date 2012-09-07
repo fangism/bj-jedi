@@ -95,7 +95,9 @@ template <class Cmd>
 int
 command_registry<Cmd>::interpret(state_type& s) {
 	readline_wrapper rl(prompt);
+#ifdef	HAVE_GNUREADLINE
 	const readline_init __rli__;
+#endif
 	// do NOT delete this line string, it is already managed.
 	const char* line = NULL;
 	int status = CommandStatus::NORMAL;
@@ -296,6 +298,7 @@ command_registry<Command>::completion(const char* text, int start, int) {
 //=============================================================================
 // class command_registry::readline_init method definitions
 
+#ifdef	HAVE_GNUREADLINE
 template <class Cmd>
 command_registry<Cmd>::readline_init::readline_init() :
 		_compl(rl_attempted_completion_function, completion) {
@@ -304,6 +307,7 @@ command_registry<Cmd>::readline_init::readline_init() :
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 template <class Cmd>
 command_registry<Cmd>::readline_init::~readline_init() { }
+#endif
 
 //=============================================================================
 }	// end namespace util

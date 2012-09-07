@@ -35,6 +35,7 @@ libbj_la_LIBADD = util/libutil.la
 
 util_libutil_la_SOURCES = \
 	util/attributes.h \
+	util/algorithm.hh \
 	util/array.hh \
 	util/array.tcc \
 	util/command.hh \
@@ -42,6 +43,7 @@ util_libutil_la_SOURCES = \
 	util/configure_option.hh \
 	util/cppcat.h \
 	util/iosfmt_saver.hh \
+	util/member_select_iterator.hh \
 	util/probability.hh \
 	util/probability.tcc \
 	util/readline.h \

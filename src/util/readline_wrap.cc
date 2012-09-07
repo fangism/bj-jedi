@@ -215,6 +215,9 @@ do {
 		malloc(sizeof(char_type) *READLINE_BUFFER_SIZE)));
 	fgets(&*get_line, READLINE_BUFFER_SIZE, stdin);
 	hold_line = get_line;	// transfer ownership
+	if (!isatty(0)) {
+		cout << hold_line;
+	}
 #endif
 	// NOTE: BSD editline does not return NULL on EOF
 	// it returns a string with strlen() == 0

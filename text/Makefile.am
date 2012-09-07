@@ -36,7 +36,9 @@ GENERATED_TABLES = \
 	tables/player-stand-H17-post-peek.tex \
 	tables/player-stand-S17-pre-peek.tex \
 	tables/player-stand-S17-post-peek.tex \
+	tables/hit-stand-basic-H17.txt \
 	tables/hit-stand-basic-H17.tex \
+	tables/hit-stand-basic-S17.txt \
 	tables/hit-stand-basic-S17.tex \
 	tables/player-action-expectations-basic-H17.txt \
 	tables/player-action-expectations-basic-H17.tex \
