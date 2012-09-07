@@ -54,9 +54,22 @@ struct player_hand_base {
 
 	// lexicographical key compare
 	bool
+	compare(const player_hand_base& r) const {
+		if (state < r.state)
+			return -1;
+		else if (r.state < state)
+			return 1;
+		else if (player_options < r.player_options)
+			return -1;
+		else if (r.player_options < player_options)
+			return 1;
+		else	return 0;
+	}
+
+	// lexicographical key compare
+	bool
 	operator < (const player_hand_base& r) const {
-		return (state < r.state) ||
-			(state == r.state && player_options < r.player_options);
+		return compare(r) < 0;
 	}
 
 };	// end struct player_hand_base
@@ -101,14 +114,25 @@ struct dealer_hand_base {
 		return state == dealer_bust;
 	}
 
-	bool
-	operator < (const dealer_hand_base& r) const {
-		return peek_state < r.peek_state ||
-			(peek_state == r.peek_state &&
-			state < r.state);
+	int
+	compare(const dealer_hand_base& r) const {
+		if (peek_state < r.peek_state)
+			return -1;
+		else if (r.peek_state < peek_state)
+			return 1;
+		else if (state < r.state)
+			return -1;
+		else if (r.state < state)
+			return 1;
+		else	return 0;
 	}
 
-};	// end struct dealer_hand
+	bool
+	operator < (const dealer_hand_base& r) const {
+		return compare(r) < 0;
+	}
+
+};	// end struct dealer_hand_base
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 struct hand_common {
@@ -186,25 +210,8 @@ struct player_hand : public player_hand_base, public hand_common {
 		return action == DOUBLED_DOWN;
 	}
 
-#if 0
-	bool
-	splittable(void) const;
-#endif
-
 	void
 	split(player_hand&, const size_t, const size_t, const size_t);
-
-#if 0
-	bool
-	doubleable(void) const {
-		return cards.size() == 2;
-	}
-
-	bool
-	surrenderable(void) const {
-		return cards.size() == 2;
-	}
-#endif
 
 	/**
 		A hand is considered 'live' if it 
@@ -233,6 +240,10 @@ struct player_hand : public player_hand_base, public hand_common {
 };	// end struct player_hand
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
+	The full dealer's hand includes the reveal card.
+	The unknown hole card is kept elsewhere.
+ */
 struct dealer_hand : public dealer_hand_base, public hand_common {
 	// dealer's revealed card
 	size_t				reveal;
@@ -255,6 +266,7 @@ struct dealer_hand : public dealer_hand_base, public hand_common {
 	dump_dealer(ostream&) const;
 
 };	// end struct dealer_hand
+
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 }	// end namespace blackjack
 
