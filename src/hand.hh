@@ -88,6 +88,9 @@ struct dealer_hand_base {
 	dealer_hand_base() : state(0),
 		peek_state(NO_PEEK) { }
 
+	explicit
+	dealer_hand_base(const size_t d) : state(d), peek_state(NO_PEEK) { }
+
 	void
 	reveal_hole_card(void) {
 		// reset peek status after hole card is revealed

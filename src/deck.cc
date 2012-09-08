@@ -69,6 +69,38 @@ static const size_t __standard_deck_count_reduced[card_values] = {
 const deck_count_type
 standard_deck_count_reduced(__standard_deck_count_reduced);
 
+static const size_t __standard_deck_count_reduced_no_10[card_values] = {
+1,		// A
+1,		// 2
+1,		// 3
+1,		// 4
+1,		// 5
+1,		// 6
+1,		// 7
+1,		// 8
+1,		// 9
+0		// 10,J,Q,K
+};
+
+const deck_count_type
+standard_deck_count_reduced_no_10(__standard_deck_count_reduced_no_10);
+
+static const size_t __standard_deck_count_reduced_no_Ace[card_values] = {
+0,		// A
+1,		// 2
+1,		// 3
+1,		// 4
+1,		// 5
+1,		// 6
+1,		// 7
+1,		// 8
+1,		// 9
+4		// 10,J,Q,K
+};
+
+const deck_count_type
+standard_deck_count_reduced_no_Ace(__standard_deck_count_reduced_no_Ace);
+
 static const size_t __standard_deck_count[card_values] = {
 4*1,		// A
 4*1,		// 2

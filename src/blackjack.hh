@@ -7,6 +7,7 @@
 #include <string>
 #include <map>
 #include "outcome.hh"
+#include "card_state.hh"
 #include "variation.hh"
 #include "player_action.hh"
 

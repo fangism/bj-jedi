@@ -41,7 +41,13 @@ typedef	util::array<size_t, card_symbols>	extended_deck_count_type;
 
 // 13 card values, 2 through A
 extern	const deck_count_type			standard_deck_count_reduced;
+// the no_10 and no_Ace counts are used for post-peek conditions only
+extern	const deck_count_type			standard_deck_count_reduced_no_10;
+extern	const deck_count_type			standard_deck_count_reduced_no_Ace;
+
+/// standard_deck_count.sum() == 52
 extern	const deck_count_type			standard_deck_count;
+/// standard_deck_distribution.sum() == 1.0
 extern	const deck_distribution			standard_deck_distribution;
 
 extern
