@@ -83,6 +83,16 @@ perceived_deck_state::perceived_deck_state() : remaining(size_t(0)),
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+perceived_deck_state::perceived_deck_state(const perceived_deck_state& p,
+		const size_t r) :
+		remaining(p.remaining),
+		peeked_not_10s(p.peeked_not_10s),
+		peeked_not_Aces(p.peeked_not_Aces),
+		remaining_total(p.remaining_total) {
+	remove(r);
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void
 perceived_deck_state::initialize(const extended_deck_count_type& d) {
 	cards::simplify_deck_count(d, remaining);
@@ -104,6 +114,21 @@ perceived_deck_state::remove(const size_t c) {
 	--r;
 	assert(remaining_total);
 	--remaining_total;
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
+	Decrements count of card.
+	Only known cards are counted.
+ */
+void
+perceived_deck_state::remove_if_any(const size_t c) {
+	size_t& r(remaining[card_value_map[c]]);
+if (r) {
+	--r;
+	assert(remaining_total);
+	--remaining_total;
+}
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

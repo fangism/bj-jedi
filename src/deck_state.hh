@@ -62,6 +62,9 @@ protected:
 public:
 	perceived_deck_state();
 
+	// remove card from dist, and copy
+	perceived_deck_state(const perceived_deck_state&, const size_t);
+
 	void
 	initialize(const extended_deck_count_type&);
 
@@ -72,6 +75,9 @@ public:
 
 	void
 	remove(const size_t);	// translate with card_value_map
+
+	void
+	remove_if_any(const size_t);	// translate with card_value_map
 
 	void
 	peek_not_10(void);
@@ -92,6 +98,11 @@ public:
 	size_t
 	actual_remaining(void) const {
 		return remaining_total -peeked_not_10s -peeked_not_Aces;
+	}
+
+	size_t
+	get_remaining_total(void) const {
+		return remaining_total;
 	}
 
 	void

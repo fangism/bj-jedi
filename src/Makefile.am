@@ -8,6 +8,7 @@ pkglib_LTLIBRARIES = util/libutil.la libbj.la
 AM_CPPFLAGS = $(RL_INCLUDE)
 
 libbj_la_SOURCES = \
+	analysis.cc analysis.hh \
 	blackjack.cc blackjack.hh \
 	bookmark.cc bookmark.hh \
 	card_state.cc card_state.hh \
