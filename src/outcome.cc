@@ -1,7 +1,11 @@
 // "outcome.cc"
 
 #include <iostream>
+#include <iterator>
+#include <algorithm>
+
 #include "outcome.hh"
+#include "blackjack.hh"
 #include "util/array.tcc"
 
 namespace blackjack {
@@ -55,6 +59,15 @@ dump_outcome_vector(const outcome_vector& v, ostream& o) {
 	for (i=b; i!=e; ++i) {
 		o << '\t' << i->lose();
 	}
+	return o << endl;
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+ostream&
+dump_dealer_final_vector(ostream& o, const dealer_final_vector& d) {
+	play_map::dealer_final_table_header(o) << endl;
+	std::ostream_iterator<probability_type> osi(o, "\t");
+	std::copy(d.begin(), d.end(), osi);
 	return o << endl;
 }
 

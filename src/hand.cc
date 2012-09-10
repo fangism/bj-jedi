@@ -18,6 +18,32 @@ using cards::standard_deck_distribution;
 using cards::card_index;
 using cards::card_symbols;
 using cards::card_value_map;
+using cards::state_machine;
+
+//=============================================================================
+// class player_hand_base method definitions
+
+ostream&
+player_hand_base::dump(ostream& o, const state_machine& sm) const {
+	o << sm[state].name << ", ";
+//	return player_options.dump_verbose(o);
+	return player_options.dump_debug(o);	// more compact
+}
+
+//=============================================================================
+// class dealer_hand_base method definitions
+
+ostream&
+dealer_hand_base::dump(ostream& o, const state_machine& sm) const {
+	o << sm[state].name << ' ';
+	switch (peek_state) {
+	case PEEKED_NO_10: o << "peek!10"; break;
+	case PEEKED_NO_ACE: o << "peek!A "; break;
+	case NO_PEEK:
+	default: o << "no-peek"; break;
+	}
+	return o;
+}
 
 //=============================================================================
 // class player_hand method definitions

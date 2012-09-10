@@ -29,6 +29,7 @@ enum player_choice {
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
 	State machine table offsets.
+	TODO: hide these details
 	TODO: allow some of these to be variables to analyze game variants
 	TODO: split these into player enum and dealer enum, 
 		instead of passing around size_t's

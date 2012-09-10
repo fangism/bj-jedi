@@ -133,6 +133,19 @@ if (r) {
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
+	Decrements count of card.
+	Only known cards are counted.
+ */
+void
+perceived_deck_state::remove_all(const size_t c) {
+	size_t& r(remaining[card_value_map[c]]);
+	assert(remaining_total);
+	remaining_total -= r;
+	r = 0;
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
 	Increment number of peeked non-10 cards.
 	if peeked card is discarded, it may not be revealed!
  */
@@ -235,6 +248,23 @@ perceived_deck_state::compare(const perceived_deck_state& r) const {
 bool
 perceived_deck_state::operator < (const perceived_deck_state& r) const {
 	return compare(r) < 0;
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
+	Print one-liner
+ */
+ostream&
+perceived_deck_state::show_count_brief(ostream& o) const {
+	size_t i = 0;
+	for (; i<card_values; ++i) {
+		const size_t j = reveal_print_ordering[i];
+		o << ' ' << card_name[j] << ':' << remaining[j];
+	}
+	o << " !10:" << peeked_not_10s;
+	o << " !A:" << peeked_not_Aces;
+	o << " tot:" << actual_remaining() << endl;
+	return o;
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

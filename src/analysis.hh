@@ -7,13 +7,14 @@
 #ifndef	__BOC2_ANALYSIS_HH__
 #define	__BOC2_ANALYSIS_HH__
 
+#include <iosfwd>
 #include <map>
 #include "outcome.hh"
 #include "hand.hh"
 #include "deck_state.hh"
 
 namespace blackjack {
-class variation;
+using std::ostream;
 class play_map;
 
 /**
@@ -40,6 +41,10 @@ enum analysis_mode {
 	 */
 	ANALYSIS_EXACT
 };
+
+extern
+ostream&
+operator << (ostream& o, const analysis_mode);
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
@@ -78,6 +83,10 @@ struct analysis_parameters {
 		}
 		return mode;
 	}
+
+	ostream&
+	dump(ostream&) const;
+
 };	// end struct analysis_parameters
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -105,7 +114,7 @@ struct dealer_situation_key_type {
 	}
 
 	ostream&
-	dump(ostream&) const;
+	dump(ostream&, const play_map&) const;
 
 };	// end struct dealer_situation_key_type
 

@@ -8,6 +8,9 @@
 #include "enums.hh"		// for player_blackjack
 #include "player_action.hh"
 
+namespace cards {
+class state_machine;
+}
 namespace blackjack {
 class play_map;
 using std::string;
@@ -72,6 +75,9 @@ struct player_hand_base {
 		return compare(r) < 0;
 	}
 
+	ostream&
+	dump(ostream&, const cards::state_machine&) const;
+
 };	// end struct player_hand_base
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -134,6 +140,9 @@ struct dealer_hand_base {
 	operator < (const dealer_hand_base& r) const {
 		return compare(r) < 0;
 	}
+
+	ostream&
+	dump(ostream&, const cards::state_machine&) const;
 
 };	// end struct dealer_hand_base
 

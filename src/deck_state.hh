@@ -80,6 +80,9 @@ public:
 	remove_if_any(const size_t);	// translate with card_value_map
 
 	void
+	remove_all(const size_t);	// translate with card_value_map
+
+	void
 	peek_not_10(void);
 
 	void
@@ -123,6 +126,9 @@ public:
 
 	bool
 	operator < (const perceived_deck_state&) const;
+
+	ostream&
+	show_count_brief(ostream&) const;
 
 	ostream&
 	show_count(ostream&) const;
