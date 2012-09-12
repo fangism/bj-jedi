@@ -378,12 +378,12 @@ strategy::dump_dealer_final_table(ostream& o) const {
 void
 reveal_strategy::compute_showdown_odds(const play_map& play,
 		const dealer_final_vector& dfv,
-		const edge_type& bjp, outcome_vector& ps,
+		const edge_type& bjp, player_final_outcome_vector& ps,
 		player_stand_edges_vector& edges) {
 	static const size_t p_bj_ind = p_final_states -2;	// see enums.hh
 //	const size_t j = reveal_card;
-	play.compute_outcome_vector(dfv, ps);
-	const outcome_vector& cps(ps);
+	play.compute_player_final_outcome_vector(dfv, ps);
+	const player_final_outcome_vector& cps(ps);
 	transform(cps.begin(), cps.end(), edges.begin(), 
 		mem_fun_ref(&outcome_odds::edge));
 	// later, compensate for player blackjack, pays 3:2
@@ -414,11 +414,11 @@ reveal_strategy::compute_player_stand_odds(const play_map& play,
  */
 ostream&
 strategy::__dump_player_stand_odds(ostream& o,
-		outcome_vector reveal_strategy::*mem,
+		player_final_outcome_vector reveal_strategy::*mem,
 		const state_machine& d) const {
 #if 0
 	typedef	var_member_select_iterator<reveal_array_type::const_iterator,
-			const outcome_vector>
+			const player_final_outcome_vector>
 							const_iterator;
 	const const_iterator b(reveal.begin(), mem), e(reveal.end(), mem);
 #else
@@ -430,7 +430,7 @@ strategy::__dump_player_stand_odds(ostream& o,
 //	const precision_saver p(o, 3);
 	for ( ; i!=e; ++i) {
 		o << d[play_map::d_initial_card_map[i-b]].name << endl;
-		dump_outcome_vector(i->*mem, o);
+		dump_player_final_outcome_vector(i->*mem, o);
 		o << endl;
 	}
 	return o;
@@ -521,7 +521,7 @@ reveal_strategy::compute_action_expectations(const play_map& play,
 		reveal_strategy::player_final_state_probabilities(after_hit, fin);
 		// static_assert
 		assert(size_t(player_final_state_probability_vector::Size)
-			== size_t(outcome_vector::Size));
+			== size_t(player_final_outcome_vector::Size));
 		probability_type& p(player_actions[i].double_down());
 		// perform inner_product, weighted expectations
 		p = inner_product(fin.begin(), fin.end(), pse.begin(), 0.0);

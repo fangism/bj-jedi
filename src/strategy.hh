@@ -93,8 +93,8 @@ struct reveal_strategy {
 	player_final_state_probabilities(const probability_vector&, 
 		player_final_state_probability_vector&);
 
-	outcome_vector				player_stand_pre_peek;
-	outcome_vector				player_stand_post_peek;
+	player_final_outcome_vector				player_stand_pre_peek;
+	player_final_outcome_vector				player_stand_post_peek;
 
 	/**
 		For each entry in 'player_stand': win - lose = edge.
@@ -191,7 +191,7 @@ private:
 	void
 	compute_showdown_odds(const play_map&,
 		const dealer_final_vector&, const edge_type&,
-		outcome_vector&, player_stand_edges_vector&);
+		player_final_outcome_vector&, player_stand_edges_vector&);
 
 	void
 	compute_player_stand_odds(const play_map&, const edge_type);
@@ -355,7 +355,7 @@ public:
 
 	ostream&
 	__dump_player_stand_odds(ostream&,
-		outcome_vector reveal_strategy::*,
+		player_final_outcome_vector reveal_strategy::*,
 		const state_machine&) const;
 
 	ostream&

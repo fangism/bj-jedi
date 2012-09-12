@@ -94,11 +94,11 @@ struct outcome_odds {
 	check(void);
 };	// end struct outcome_odds
 
-typedef	array<outcome_odds, p_final_states>	outcome_vector;
+typedef	array<outcome_odds, p_final_states>	player_final_outcome_vector;
 
 extern
 ostream&
-dump_outcome_vector(const outcome_vector&, ostream&);
+dump_player_final_outcome_vector(const player_final_outcome_vector&, ostream&);
 
 extern
 ostream&

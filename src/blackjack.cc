@@ -194,6 +194,12 @@ play_map::initial_card_dealer(const size_t p1) const {
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 bool
+play_map::is_player_pair(const size_t state) const {
+	return state >= pair_offset && state < pair_offset +card_values;
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+bool
 play_map::is_player_terminal(const size_t state) const {
 	return player_hit[state].is_terminal();
 }
@@ -293,12 +299,14 @@ play_map::lookup_outcome(const size_t p, const size_t d) const {
 /**
 	Given a spread of dealer final states and outcome_array (win/lose/push)
 	compute the overall outcome odds for a given player (final) state.
+	\param ps is a player_final_state in [0, p_final_states)
  */
 void
-play_map::compute_outcome(const size_t p, const dealer_final_vector& dfv,
+play_map::compute_player_final_outcome(const size_t ps,
+		const dealer_final_vector& dfv,
 		outcome_odds& o) const {
-	const outcome_array_type& v(outcome_matrix[p]);
-	size_t d = 0;
+	const outcome_array_type& v(outcome_matrix[ps]);
+	size_t d;
 	for (d=0; d < d_final_states; ++d) {     // dealer's final state
 		const probability_type& p(dfv[d]);
 		o.prob(v[d]) += p;              // adds to win/push/lose
@@ -311,14 +319,14 @@ play_map::compute_outcome(const size_t p, const dealer_final_vector& dfv,
 	for all player final states.
  */
 void
-play_map::compute_outcome_vector(const dealer_final_vector& dfv,
-		outcome_vector& ps) const {
+play_map::compute_player_final_outcome_vector(const dealer_final_vector& dfv,
+		player_final_outcome_vector& ps) const {
 	fill(ps.begin(), ps.end(), outcome_odds());	// clear first
 	size_t k;
 	// player blackjack and bust is separate
 	for (k=0; k < p_final_states; ++k) {    // player's final state
 		outcome_odds& o(ps[k]);
-		compute_outcome(k, dfv, o);
+		compute_player_final_outcome(k, dfv, o);
 	}       // end for p_final_states
 }
 

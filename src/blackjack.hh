@@ -127,16 +127,20 @@ private:
 	int
 	initialize_reverse_topo_order(void);
 
+public:
 	void
-	compute_outcome(const size_t p, const dealer_final_vector&, 
+	compute_player_final_outcome(const size_t p,
+		const dealer_final_vector&, 
 		outcome_odds&) const;
 
-public:
 	bool
 	is_player_terminal(const size_t) const;
 
 	bool
 	is_dealer_terminal(const size_t) const;
+
+	bool
+	is_player_pair(const size_t) const;
 
 	// action transitions
 	size_t
@@ -158,8 +162,8 @@ public:
 	lookup_outcome(const size_t p, const size_t d) const;
 
 	void
-	compute_outcome_vector(const dealer_final_vector&,
-		outcome_vector&) const;
+	compute_player_final_outcome_vector(const dealer_final_vector&,
+		player_final_outcome_vector&) const;
 
 	ostream&
 	dump_dealer_policy(ostream&) const;

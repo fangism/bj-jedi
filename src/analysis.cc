@@ -19,9 +19,11 @@ using std::accumulate;
 using std::endl;
 using cards::TEN;
 using cards::ACE;
+using cards::state_machine;
 
 // initial default vector of all 0s
 static const dealer_final_vector dealer_final_null(0.0);
+static const expectations null_expectations;
 
 //=============================================================================
 ostream&
@@ -45,6 +47,7 @@ analysis_parameters::dump(ostream& o) const {
 
 //=============================================================================
 // class dealer_situation_key_type method definitions
+
 ostream&
 dealer_situation_key_type::dump(ostream& o, const play_map& p) const {
 	dealer.dump(o, p.dealer_hit);
@@ -62,13 +65,13 @@ dealer_outcome_cache_set::compute_dealer_final_distribution(
 	const analysis_mode m = p.get_auto_mode();
 	switch (m) {
 	case ANALYSIS_EXACT:
-		return __evaluate_exact(play, k, p);
+		return evaluate_dealer_exact(play, k, p);
 	case ANALYSIS_DYNAMIC:
-		return __evaluate_dynamic(play, k, p);
+		return evaluate_dealer_dynamic(play, k, p);
 	default: break;
 	}
 //	case ANALYSIS_BASIC:
-	return __evaluate_basic(play, k.dealer);
+	return evaluate_dealer_basic(play, k.dealer);
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -92,7 +95,7 @@ get_basic_reduced_count(const peek_state_enum e) {
 	based solely on the standard card distribution (w/ replacement).
  */
 const dealer_final_vector&
-dealer_outcome_cache_set::__evaluate_basic(const play_map& play,
+dealer_outcome_cache_set::evaluate_dealer_basic(const play_map& play,
 		const dealer_hand_base& k) {
 	STACKTRACE_BRIEF;
 #if ENABLE_STACKTRACE
@@ -107,7 +110,7 @@ if (bi.second) {
 	STACKTRACE_INDENT_PRINT("cache miss, calculating\n");
 	// cache-miss: then this is a newly inserted entry, compute it
 	// is this a hit or stand state?
-	const cards::state_machine::node& ds(play.dealer_hit[k.state]);
+	const state_machine::node& ds(play.dealer_hit[k.state]);
 	if (ds.is_terminal()) {
 		// dealer must stand
 		const size_t final = k.state -stop;
@@ -125,7 +128,7 @@ if (bi.second) {
 		if (w) {
 			dealer_hand_base nk(ds[i]);	// NO_PEEK
 			const dealer_final_vector
-				child(__evaluate_basic(play, nk));
+				child(evaluate_dealer_basic(play, nk));
 			// weight by card probability
 			size_t j = 0;
 			for ( ; j<d_final_states; ++j) {
@@ -155,7 +158,7 @@ if (bi.second) {
 	based solely on the current card distribution (w/ replacement).
  */
 const dealer_final_vector&
-dealer_outcome_cache_set::__evaluate_dynamic(const play_map& play,
+dealer_outcome_cache_set::evaluate_dealer_dynamic(const play_map& play,
 		const dealer_situation_key_type& k, 
 		const analysis_parameters& p) {
 	STACKTRACE_BRIEF;
@@ -170,7 +173,7 @@ dealer_outcome_cache_set::__evaluate_dynamic(const play_map& play,
 if (bi.second) {
 	// cache-miss: then this is a newly inserted entry, compute it
 	// is this a hit or stand state?
-	const cards::state_machine::node& ds(play.dealer_hit[k.dealer.state]);
+	const state_machine::node& ds(play.dealer_hit[k.dealer.state]);
 	if (ds.is_terminal()) {
 		// dealer must stand
 		const size_t final = k.dealer.state -stop;
@@ -202,7 +205,7 @@ if (bi.second) {
 			// NO_PEEK
 			const dealer_final_vector
 				child(compute_dealer_final_distribution(play, nk, psub));
-//				child(__evaluate_dynamic(play, nk, psub));
+//				child(evaluate_dealer_dynamic(play, nk, psub));
 			// weight by card probability
 			size_t j = 0;
 			for ( ; j<d_final_states; ++j) {
@@ -232,7 +235,7 @@ if (bi.second) {
 	based on the current card distribution (w/o replacement).
  */
 const dealer_final_vector&
-dealer_outcome_cache_set::__evaluate_exact(const play_map& play,
+dealer_outcome_cache_set::evaluate_dealer_exact(const play_map& play,
 		const dealer_situation_key_type& k, 
 		const analysis_parameters& p) {
 	STACKTRACE_BRIEF;
@@ -247,7 +250,7 @@ dealer_outcome_cache_set::__evaluate_exact(const play_map& play,
 if (bi.second) {
 	// cache-miss: then this is a newly inserted entry, compute it
 	// is this a hit or stand state?
-	const cards::state_machine::node& ds(play.dealer_hit[k.dealer.state]);
+	const state_machine::node& ds(play.dealer_hit[k.dealer.state]);
 	if (ds.is_terminal()) {
 		// dealer must stand
 		const size_t final = k.dealer.state -stop;
@@ -279,7 +282,7 @@ if (bi.second) {
 			// NO_PEEK
 			const dealer_final_vector
 				child(compute_dealer_final_distribution(play, nk, psub));
-//				child(__evaluate_exact(play, nk, psub));
+//				child(evaluate_dealer_exact(play, nk, psub));
 			// weight by card probability
 			size_t j = 0;
 			for ( ; j<d_final_states; ++j) {
@@ -303,7 +306,110 @@ if (bi.second) {
 	return ret;
 }
 
-//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+//=============================================================================
+// class player_situation_key_type method definitions
+
+ostream&
+player_situation_key_type::dump(ostream& o, const play_map& p) const {
+	player.dump(o, p.player_hit);
+	return card_dist.show_count_brief(o);
+}
+
+//=============================================================================
+// class player_situation_basic_key_type method definitions
+
+ostream&
+player_situation_basic_key_type::dump(ostream& o, const play_map& p) const {
+	player.dump(o, p.player_hit);
+	dealer.dump(o, p.dealer_hit);
+	return o;
+}
+
+//=============================================================================
+/**
+	Evaluate basic strategy odds of the dealer's final state, 
+	based solely on the standard card distribution (w/ replacement).
+ */
+const expectations&
+player_outcome_cache_set::evaluate_player_basic(const play_map& play,
+		const player_situation_basic_key_type& k) {
+	STACKTRACE_BRIEF;
+#if ENABLE_STACKTRACE
+	k.dump(STACKTRACE_STREAM, play) << endl;
+#endif
+	typedef	basic_map_type::value_type		pair_type;
+	const player_hand_base ak(k.player.state, play);
+	const pair_type probe(
+		player_situation_basic_key_type(ak, k.dealer),
+		null_expectations);
+	const pair<basic_map_type::iterator, bool>
+		bi(basic_cache.insert(probe));
+	expectations& ret(bi.first->second);
+if (bi.second) {
+	STACKTRACE_INDENT_PRINT("cache miss, calculating\n");
+	// cache-miss: then this is a newly inserted entry, compute it
+	// in basic analysis mode, dealer's final outcome spread
+	// is independent of card distribution and player action,
+	// thus we can look it up once.
+	const dealer_final_vector&
+		dfv(dealer_outcome_cache.evaluate_dealer_basic(play, k.dealer));
+	// current state
+	const state_machine::node& ps(play.player_hit[k.player.state]);
+	const action_mask& m(ak.player_options);
+	if (m.can_stand()) {
+		// stand is always a legal option
+		// (busted hands considered as stand)
+		// compute just the odds of standing with this hand
+		const size_t p_final =
+			play.player_final_state_map(k.player.state);
+		outcome_odds soo;
+		play.compute_player_final_outcome(p_final, dfv, soo);
+		ret.stand() = soo.edge();
+	}
+	if (!ps.is_terminal()) {
+		// consider all possible actions, even illegal ones
+		// let caller pick among the legal options
+		// TODO: don't forget to adjust action_mask
+		const deck_count_type&
+			dref(get_basic_reduced_count(k.dealer.peek_state));
+		const size_t total_weight =
+			accumulate(dref.begin(), dref.end(), 0);
+	if (m.can_double_down()) {
+		size_t i = 0;
+		for ( ; i<card_values; ++i) {
+			const size_t& w(dref[i]);
+		if (w) {
+			player_hand_base np(ps[i], play);
+			np.player_options &= play.post_double_down_actions;
+			const player_situation_basic_key_type nk(np, k.dealer);
+			const expectations
+				child(evaluate_player_basic(play, nk));
+			// weight by card probability
+			size_t j = 0;
+			for ( ; j<d_final_states; ++j) {
+				ret.double_down() += child.best(np.player_options) *w;
+			}
+		}
+			// else 0 weight, leave as vector of 0s
+		}	// end for all next card possibilities
+		// normalize weighted sum of probabilities
+		for (i=0; i< d_final_states; ++i) {
+			ret.double_down() *= play.var.double_multiplier
+				/total_weight;
+		}
+	}
+	if (m.can_split()) {
+	}
+	if (m.can_hit()) {
+	}
+	}	// else don't bother computing
+	// surrender (if allowed) is constant expectation
+} else {
+	STACKTRACE_INDENT_PRINT("cache hit\n");
+}
+	// else return cached entry
+	return ret;
+}
 
 //=============================================================================
 }	// end namespace blackjack

@@ -28,6 +28,7 @@ public:
 	static const action_mask		stand;
 	static const action_mask		stand_hit;
 	static const action_mask		all;
+	static const action_mask		all_but_split;
 	static const action_mask		no_stand;
 
 	struct dp_tag { };

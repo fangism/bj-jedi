@@ -42,9 +42,9 @@ operator << (ostream& o, const outcome_odds& r) {
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ostream&
-dump_outcome_vector(const outcome_vector& v, ostream& o) {
-	const outcome_vector::const_iterator b(v.begin()), e(v.end());
-	outcome_vector::const_iterator i(b);
+dump_player_final_outcome_vector(const player_final_outcome_vector& v, ostream& o) {
+	const player_final_outcome_vector::const_iterator b(v.begin()), e(v.end());
+	player_final_outcome_vector::const_iterator i(b);
 	o << "win";
 	for (; i!=e; ++i) {
 		o << '\t' << i->win();

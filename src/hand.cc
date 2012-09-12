@@ -23,6 +23,18 @@ using cards::state_machine;
 //=============================================================================
 // class player_hand_base method definitions
 
+/**
+	This constructor automatically sets the action mask depending
+	on whether or not the state is splittable.
+ */
+player_hand_base::player_hand_base(const size_t ps, const play_map& play) :
+		state(ps),
+		player_options(
+			play.is_player_pair(ps) ?
+			action_mask::all : action_mask::all_but_split) {
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ostream&
 player_hand_base::dump(ostream& o, const state_machine& sm) const {
 	o << sm[state].name << ", ";

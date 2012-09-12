@@ -45,6 +45,11 @@ struct player_hand_base {
 
 	player_hand_base() : state(0), player_options(action_mask::all) { }
 
+	player_hand_base(const size_t, const play_map&);
+
+	player_hand_base(const size_t ps, const action_mask& am) :
+		state(ps), player_options(am) { }
+
 	bool
 	has_blackjack(void) const {
 		return state == player_blackjack;
