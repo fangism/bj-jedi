@@ -398,9 +398,30 @@ if (bi.second) {
 				/total_weight;
 		}
 	}
-	if (m.can_split()) {
-	}
 	if (m.can_hit()) {
+		size_t i = 0;
+		for ( ; i<card_values; ++i) {
+			const size_t& w(dref[i]);
+		if (w) {
+			player_hand_base np(ps[i], play);
+			np.player_options &= play.post_hit_actions;
+			const player_situation_basic_key_type nk(np, k.dealer);
+			const expectations
+				child(evaluate_player_basic(play, nk));
+			// weight by card probability
+			size_t j = 0;
+			for ( ; j<d_final_states; ++j) {
+				ret.hit() += child.best(np.player_options) *w;
+			}
+		}
+			// else 0 weight, leave as vector of 0s
+		}	// end for all next card possibilities
+		// normalize weighted sum of probabilities
+		for (i=0; i< d_final_states; ++i) {
+			ret.hit() /= total_weight;
+		}
+	}
+	if (m.can_split()) {
 	}
 	}	// else don't bother computing
 	// surrender (if allowed) is constant expectation

@@ -27,6 +27,28 @@ using std::ostream;
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
+	To compute the exact expected value of splitting and resplitting,
+	the exact state of the hand must also capture:
+	1) the number of splits remaining (depending on maximum)
+	2) the number unplayed splittable hands
+	Each time a hand is split, splits-remaining decrements.
+	The number of splittable-hands is determined by
+	the new upcards on the split hands (probability vector).  
+
+	Consider a paired hand X,X.
+	After splitting, there are new hands X,Y and X,Z.
+	The order in which these are played does not affect the overall 
+	expected outcome.
+	Depending on Y and Z, the new state may have 0,1,2 newly 
+	resplittable hands, but number of splits remaining is one less.
+ */
+struct split_state {
+	size_t			splits_remaining;
+	size_t			unplayed_splittable_hands;
+};	// end struct split_state
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
 	The essential information about a player's hand.
 	Excludes exact composition.
 	This is used as a key to the situation map for analysis.

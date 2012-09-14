@@ -91,7 +91,7 @@ being assured that the dealer does not have blackjack.
 \label{sec:basic:hit-stand:hit}
 
 The obvious hit decisions are when the player's hand is 11 or lower,
-as it cannot result in a bust, and since any total $\le{}16$ is
+as hitting cannot result in a bust, and since any total $\le{}16$ is
 worth the same, the hand can only improve by hitting.  
 % If it is better to stand than hit at X, then it is also better to
 % stand than hit at all X+k (for hard totals).
@@ -100,7 +100,7 @@ The expected outcome of hitting in each state $s_i$
 can be computed recursively using the following equations:
 
 \begin{eqnarray}
-\ExpOpt{s_i} &=& \Max{\ExpAct{hit}{s_i}}{\ExpAct{stand}{s_i}}\\
+\ExpOpt{s_i} &=& \Max{\ExpAct{hit}{s_i},\ExpAct{stand}{s_i}}\\
 \ExpAct{hit}{s_i} &=& \Sum{j=1}{10}{\Prob{c=j}\ExpOpt{s_{i\rightarrow{}j}}}
 \end{eqnarray}
 
@@ -182,7 +182,7 @@ penalty, it is to the player's advantage to surrender.
 
 The player is always given the opportunity to split
 the initial hand when it consists of equal-valued cards.
-Any two 10-valued cards are also splittable.
+Any two 10-valued cards are also splittable under most blackjack variants.
 
 \subsection{Double-after-split}
 \label{sec:basic:DAS}
@@ -202,6 +202,60 @@ Paired Aces are often given exceptional rules in some games.
 Some variations limit the resplitting of Aces, 
 and another variation allows no further action after
 up-cards are dealt on the split aces.  
+
+\subsection{Expected Value of Splitting Hands}
+\label{sec:basic:split:calc}
+
+Precise calculations of expected value of splitting hands can be 
+compute-intensive, especially when exhausting the number of 
+possible hands and states after splitting and resplitting.
+Methods exist for accelerating exact calculations by 
+reusing sub-solutions in the recursively expanded 
+computation graph~\cite{ref:nairn08}.
+In practice, approximations of the expected value are adequate 
+substitutes for exact values\cite{ref:griffin99}.  
+This section presents an improved method for calculating exact 
+expected values of splitting hands.
+
+Consider an initially paired hand $XX$ with splitting allowed 
+up to $S+1$ hands.
+(We let $S$ be the number of times a player may split, 
+so with a maximum of 4 hands, $S=3$.)
+If the player decides to split, then the resulting state is
+two hands $XY$ and $XZ$ with further splitting allowed up to $S$ hands 
+(one less than before).  
+Depending on the values of $Y$ and $Z$, the new state may include 
+0 through 2 splittable hands (one less or one more than before).  
+By symmetry, the order in which hands $XY$ and $XZ$ are played 
+do not affect the overall expected value.  
+
+The state of split hands can be categorized with two parameters:
+$S$ the number of allowed splits remaining,
+$P$ the number of splittable hands in play.
+Let $H$ represent the total number of hands in play 
+(yet to be acted upon) in a given state, 
+and let $N=H-P$ denote the number of non-splittable hands.  
+$P$ is upper-bounded by $S$, so that the splittable
+hands in excess the number of splits remaining are treated 
+as non-splittable.
+We can express the expected value in any state
+with the splittable $XX$ hand recursively.
+
+For $P \le S$ and $S \ge 1$:
+
+\begin{eqnarray}
+\ExpAct{split}{X,S,P} &=& \Prob{P'=P-1}\ExpOpt{X,S-1,P-1}
+  +\Prob{P'=P}\ExpOpt{X,S-1,P}
+  +\Prob{P'=P+1}\ExpOpt{X,S-1,P+1}\\
+\ExpOpt{X,S,P} &=& \Max{\ExpAct{hit}{XX},\ExpAct{stand}{XX},\ExpAct{double}{XX},\ExpAct{split}{X,S,P}}
+\end{eqnarray}
+
+\noindent
+When no more splits are allowed:
+\begin{eqnarray}
+\ExpAct{split}{X,0,0} &=& \ExpOpt{XX}
+\end{eqnarray}
+
 
 \subsection{Action Expectations}
 \label{sec:basic:action-expectations}
