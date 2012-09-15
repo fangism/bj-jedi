@@ -133,8 +133,6 @@ The player's decision to hit, double-down, and split
 result in a probabilistic change of state, for better or worse.
 By computing expectations\index{expectations} in every state, 
 we can compute the optimal decision in every situation.  
-The analysis of the expectations begins with
-the dealer, who must act in accordance to his own hand only.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Dealer's Play}
@@ -155,6 +153,15 @@ the dealer, who must act in accordance to his own hand only.
 \end{center}
 \label{tab:dealer-hit-S17}
 \end{table}
+
+The dealer's process (to hit until terminal state is reached)
+is entirely pre-determined and summarized by Tables~\ref{tab:dealer-hit-H17}
+and~\ref{tab:dealer-hit-S17}.
+The only difference between these tables is that the former
+applies to the variation where the dealer must hit on a soft-17 (H17),
+and the latter applies when the dealer must stand on a soft-17 (S17).
+Proper analysis begins by evaluating the probability distribution
+of the dealer's terminal states given the dealer's revealed card. 
 
 The blank rows represent the dealer's terminal states.
 Since the dealer's actions are entirely independent of 
@@ -197,6 +204,8 @@ This state-transition process is also known as an
 \emph{absorbing Markov chain}\index{Markov chain!absorbing},
 since every state can reach an absorbing state.
 
+% TODO: figure
+% TODO: redistribution equation
 
 \subsection{Probability of Dealer's Terminal States}
 \label{sec:rules:dealer-play:final-pdf}

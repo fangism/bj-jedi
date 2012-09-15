@@ -49,13 +49,15 @@
 
 \newcommand{\Set}[1]{\left\{#1\right\}}
 \newcommand{\Paren}[1]{\left(#1\right)}
+\newcommand{\Brack}[1]{\left[#1\right]}
+\newcommand{\Angle}[1]{\langle#1\rangle}
 % summation, product
 \newcommand{\Sum}[3]{\sum_{#1}^{#2}{#3}}
 \newcommand{\Prod}[3]{\prod_{#1}^{#2}{#3}}
 % expectation
-\newcommand{\Exp}[1]{\textrm{E}\left[#1\right]}
-\newcommand{\ExpAct}[2]{\textrm{E}_{#1}\left[#2\right]}
-\newcommand{\ExpOpt}[1]{\hat{\textrm{E}}\left[#1\right]}
+\newcommand{\Exp}[1]{\textrm{E}\Brack{#1}}
+\newcommand{\ExpAct}[2]{\textrm{E}_{#1}\Brack{#2}}	% expected value of action
+\newcommand{\ExpOpt}[1]{\hat{\textrm{E}}\Brack{#1}}	% optimal expected value
 % maximum, minimum
 \newcommand{\Min}[1]{\textrm{min}\Paren{#1}}
 \newcommand{\Max}[1]{\textrm{max}\Paren{#1}}
@@ -64,7 +66,20 @@
 % limit
 \newcommand{\Lim}[2]{\lim_{#1}{#2}}
 % combinatorics
-\newcommand{\nCr}[2]{\binom{#1}{#2}}
+\newcommand{\nCr}[2]{\binom{#1}{#2}}	% provided by amsmath
+% vectors
+\let\Vec\vec
+% \renewcommand{\Vec}[1]{\vec{#1}}
+% \newcommand{\Vec}[1]{\boldsymbol{#1}}
+\newcommand{\ExpVec}[1]{\Vec{\textrm{E}}\Brack{#1}}
+
+% table commands
+% table's upper-left header cell
+\newcommand{\tblULhdr}[2]{$\frac{\textrm{#1}\rightarrow}{\textrm{#2}\downarrow}$}
+
+% for this paper
+\newcommand{\Trans}[2]{#1\rightarrow{}#2}	% transition by adding card #2
+\newcommand{\NextState}[3]{#1_{\Trans{#2}{#3}}}	% state reached by adding j
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{document}

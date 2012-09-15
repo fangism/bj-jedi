@@ -5,10 +5,50 @@
 
 This chapter not only reveals the well-known optimal basic strategy
 of Blackjack, but it also mathematically derives the strategy 
-in great detail.
+in full detail.  
 
-Assumptions: infinite deck approximation, as if cards drawn are
-immediately replaced to eliminate the effects of history.
+Basic strategy is just a summary of all the decisions 
+(hit, stand, double-down, split, surrender) that a player can 
+make that maximize her expected value.  
+Basic strategy can be computed with a few simplifications:
+\begin{itemize}
+\item Cards are replaced as they are drawn, thus maintaining the same
+	probability distribution of cards in the deck.
+\item An infinite deck is assumed, so conditional probabilities
+	involving the peeked cards are no different from
+	the unconditional probabilities.
+\item Hands are analyzed by only the value, not the composition.
+	In fact, using the same full-deck distribution essentially
+	ignores the fact that 2 player cards and 1 dealer card
+	are exposed.
+\item There is no memory of cards previously seen and discarded; 
+	the deck is always fresh.
+\end{itemize}
+
+\noindent
+These simplifications result in quickly computed approximations in the
+mathematical edges, that form these basis for decision optimization.  
+For increased accuracy at the expense of more computation time,
+the above simplifications can be omitted.
+
+Here are some of the mathematical conventions we use
+throughout this document.
+
+\begin{itemize}
+\item The value of a player's hand is represented in the state $s_i$.
+\item Let $\NextState{s}{i}{j}$ denote the state of the hand
+when the hit card $j$ is added to state $s_i$.
+\item Let $\Vec{c}=\Angle{c_1, \ldots, c_{10}}$ be the probability 10-vector
+	that represents the card probability distribution.
+\item Let $\ExpAct{a}{s_i}$ denote the expected value of taking action
+$a$ (enumerated $hit$, $stand$, $double$, $split$, $surrender$) in state $s_i$.
+\item Let $\ExpOpt{s_i}$ denote the optimal expected value in state $s_i$.
+\item Let $\Vec{s_i}$ denote the vector of states reached by adding 
+	one card to state $s_i$, that is, $\Angle{,j:10: \NextState{s}{i}{j}}$
+\item Let $\ExpVec{s_i}$ denote the vector of expected values of 
+	states reached by adding one card, that is, 
+	$\Angle{,j:10: \Exp{\NextState{s}{i}{j}}}$
+\end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Hit vs. Stand}
@@ -97,11 +137,11 @@ worth the same, the hand can only improve by hitting.
 % stand than hit at all X+k (for hard totals).
 
 The expected outcome of hitting in each state $s_i$ 
-can be computed recursively using the following equations:
+can be computed recursively:
 
 \begin{eqnarray}
 \ExpOpt{s_i} &=& \Max{\ExpAct{hit}{s_i},\ExpAct{stand}{s_i}}\\
-\ExpAct{hit}{s_i} &=& \Sum{j=1}{10}{\Prob{c=j}\ExpOpt{s_{i\rightarrow{}j}}}
+\ExpAct{hit}{s_i} &=& \Sum{j=1}{10}{\Prob{c=j}\ExpOpt{\NextState{s}{i}{j}}}
 \end{eqnarray}
 
 \noindent
@@ -113,11 +153,11 @@ must be evaluated starting from the player's terminal states
 \begin{longtable}{|c||c|c|c|c|c||c|c|c|c|c|}
 \caption{Player hit vs. stand expectations (H17)%
 \label{tab:hit-stand-expectations-H17}}\\ \hline
-$\frac{\textrm{reveal}\rightarrow}{\textrm{player}\downarrow}$
+\tblULhdr{reveal}{player}
 &2&3&4&5&6&7&8&9&10&A \\ \hline \hline
 \endfirsthead
 \caption[]{(continued)}\\ \hline \hline
-$\frac{\textrm{reveal}\rightarrow}{\textrm{player}\downarrow}$
+\tblULhdr{reveal}{player}
 &2&3&4&5&6&7&8&9&10&A \\ \hline \hline
 \endhead
 \input tables/hit-stand-basic-H17
@@ -128,11 +168,11 @@ $\frac{\textrm{reveal}\rightarrow}{\textrm{player}\downarrow}$
 \begin{longtable}{|c||c|c|c|c|c||c|c|c|c|c|}
 \caption{Player hit vs. stand expectations (S17)%
 \label{tab:hit-stand-expectations-S17}}\\ \hline
-$\frac{\textrm{reveal}\rightarrow}{\textrm{player}\downarrow}$
+\tblULhdr{reveal}{player}
 &2&3&4&5&6&7&8&9&10&A \\ \hline \hline
 \endfirsthead
 \caption[]{(continued)}\\ \hline \hline
-$\frac{\textrm{reveal}\rightarrow}{\textrm{player}\downarrow}$
+\tblULhdr{reveal}{player}
 &2&3&4&5&6&7&8&9&10&A \\ \hline \hline
 \endhead
 \input tables/hit-stand-basic-S17
@@ -146,6 +186,14 @@ $\frac{\textrm{reveal}\rightarrow}{\textrm{player}\downarrow}$
 \index{double-down}
 On the player's first two cards, the player is given the option to
 double-down: double the original bet and take exactly one more card.
+The expected value of doubling-down is computed as an inner-product
+of the card distribution vector and the vector of expected values for the
+post-double-down states.
+
+\begin{eqnarray}
+\ExpAct{double}{s_i} &=& \Vec{c}\cdot \Vec{\ExpAct{stand}{s_i}} \nonumber \\
+&=& \Sum{j=1}{10}{\Prob{c=j}\ExpAct{stand}{\NextState{s}{i}{j}}}
+\end{eqnarray}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Surrender}
@@ -244,9 +292,9 @@ with the splittable $XX$ hand recursively.
 For $P \le S$ and $S \ge 1$:
 
 \begin{eqnarray}
-\ExpAct{split}{X,S,P} &=& \Prob{P'=P-1}\ExpOpt{X,S-1,P-1}
-  +\Prob{P'=P}\ExpOpt{X,S-1,P}
-  +\Prob{P'=P+1}\ExpOpt{X,S-1,P+1}\\
+\ExpAct{split}{X,S,P} &=& \Prob{P'=P-1}\ExpOpt{X,S-1,P-1} \nonumber \\
+& & +\Prob{P'=P}\ExpOpt{X,S-1,P} \nonumber \\
+& & +\Prob{P'=P+1}\ExpOpt{X,S-1,P+1}\\
 \ExpOpt{X,S,P} &=& \Max{\ExpAct{hit}{XX},\ExpAct{stand}{XX},\ExpAct{double}{XX},\ExpAct{split}{X,S,P}}
 \end{eqnarray}
 
@@ -265,11 +313,11 @@ When no more splits are allowed:
 \begin{longtable}{|c||c|c|c|c|c||c|c|c|c|c|}
 \caption{Player's action expectations (H17)%
 \label{tab:player-action-expectations-H17}}\\ \hline
-$\frac{\textrm{reveal}\rightarrow}{\textrm{player}\downarrow}$
+\tblULhdr{reveal}{player}
 &2&3&4&5&6&7&8&9&10&A \\ \hline \hline
 \endfirsthead
 \caption[]{(continued)}\\ \hline \hline
-$\frac{\textrm{reveal}\rightarrow}{\textrm{player}\downarrow}$
+\tblULhdr{reveal}{player}
 &2&3&4&5&6&7&8&9&10&A \\ \hline \hline
 \endhead
 \input tables/player-action-expectations-basic-H17
@@ -280,11 +328,11 @@ $\frac{\textrm{reveal}\rightarrow}{\textrm{player}\downarrow}$
 \begin{longtable}{|c||c|c|c|c|c||c|c|c|c|c|}
 \caption{Player's action expectations (S17)%
 \label{tab:player-action-expectations-S17}}\\ \hline
-$\frac{\textrm{reveal}\rightarrow}{\textrm{player}\downarrow}$
+\tblULhdr{reveal}{player}
 &2&3&4&5&6&7&8&9&10&A \\ \hline \hline
 \endfirsthead
 \caption[]{(continued)}\\ \hline \hline
-$\frac{\textrm{reveal}\rightarrow}{\textrm{player}\downarrow}$
+\tblULhdr{reveal}{player}
 &2&3&4&5&6&7&8&9&10&A \\ \hline \hline
 \endhead
 \input tables/player-action-expectations-basic-S17
