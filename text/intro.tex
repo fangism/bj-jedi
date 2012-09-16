@@ -16,6 +16,8 @@ and continues to be popular today.
 This text details a raw, mathematical analysis of the game of Blackjack.
 The first sections derived many well-known results of Blackjack, 
 including optimal basic strategy and house edge.
+To get the most out of this text, the reader should have a 
+basic understanding of probability and matrix and vector arithmetic.
 
 % new insights?
 
@@ -25,6 +27,8 @@ including optimal basic strategy and house edge.
 \section{History}
 \label{sec:intro:history}
 
+% brief history
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Rules and Gameplay}
 \label{sec:intro:rules}
@@ -32,13 +36,14 @@ including optimal basic strategy and house edge.
 Blackjack can be played with one or more standard decks of cards.
 Cards numbered 2 thorugh 10 are worth their face value.  
 Face cards (Jack, Queen, King) are worth 10.
-Aces are worth 1 or 11, which is up to the player.
-Aces are worth 11 when the total does not exceed 21.
-For the remainder of this text, `10' shall refer to any 10-valued card.
-An Ace and a 10 form the highest-valued hand, a blackjack, 
-also known as a natural\index{natural}.
-Thus in standard decks of cards, there are 4 times as many 10-valued 
+Thus, in standard decks of cards, there are 4 times as many 10-valued 
 cards as there are any of the other cards.
+Aces are worth 11 when the total does not exceed 21, 
+otherwise they are worth 1.
+For the remainder of this text, `10' shall refer to any 10-valued card.
+An Ace and a 10 on the first two cards form the 
+highest-ranking hand, a blackjack, 
+also known as a natural\index{natural}.
 
 Blackjack has many simple variations around the world.
 We begin with an outline one of the most common variations of the game.
@@ -121,8 +126,15 @@ Since the dealer never stands below 17, all player hands $<=$ 16
 are considered equal; they can only win when the dealer busts.
 `BJ' is the natural or blackjack state, which is determined 
 before any player actions are allowed.
+When the player has a natural blackjack against any non-blackjack 
+dealer hand, she wins by the blackjack payoff amount, marked as `win*'
+in Table~\ref{tab:win-lose}.  
 `Push' is a special dealer state for a variant called Blackjack Switch, 
 discussed later.
+Note that player-BJ versus dealer-bust is somewhat irrelevant because
+the dealer doesn't even get a chance to take more cards, 
+except when playing against multiple players, 
+in which case the outcome is the same.  
 
 When either the player or dealer has a natural
 in the first two cards, the hand ends immediately
@@ -131,8 +143,8 @@ The interesting part of the game is the rest of the time when
 there are actions to be decided.
 The player's decision to hit, double-down, and split
 result in a probabilistic change of state, for better or worse.
-By computing expectations\index{expectations} in every state, 
-we can compute the optimal decision in every situation.  
+By computing expected value\index{expected value} of every action
+in every state, we can compute the optimal decision in every situation.  
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Dealer's Play}
@@ -154,16 +166,23 @@ we can compute the optimal decision in every situation.
 \label{tab:dealer-hit-S17}
 \end{table}
 
+The dealer's reveal card is essential in determining strategy.
+It present information about the likely progression of the dealer's
+play in the game, which in turn affects the player's optimal choices.
+
 The dealer's process (to hit until terminal state is reached)
 is entirely pre-determined and summarized by Tables~\ref{tab:dealer-hit-H17}
 and~\ref{tab:dealer-hit-S17}.
+Table entry row-$i$ (state), column-$j$ (hit card) is the enumeral value
+of state \Trans{i}{j}.
 The only difference between these tables is that the former
 applies to the variation where the dealer must hit on a soft-17 (H17),
 and the latter applies when the dealer must stand on a soft-17 (S17).
 Proper analysis begins by evaluating the probability distribution
 of the dealer's terminal states given the dealer's revealed card. 
 
-The blank rows represent the dealer's terminal states.
+The blank rows represent the dealer's terminal states --
+these rows can be filled with state $i$, representing no state change.
 Since the dealer's actions are entirely independent of 
 the players' actions, we can define the state-machine
 for the dealer's cards, following the rule that the dealer
@@ -190,10 +209,13 @@ as a terminal state.
 As a shorthand, we refer to the hit-on-soft-17 variation as H17, 
 and stand-on-soft-17 variation as S17.
 
-In these two tables, the transition edges for A$\rightarrow$10
-and 10$\rightarrow$A result in 21, and not a natural blackjack
-because the dealer has already peeked\index{peek} for blackjack
-with his first two cards (if an Ace or 10 was revealed).
+In reading these tables, 
+the first dealer `hit' simply reveals the hole card, 
+which was peeked\index{peek} and known not to give the 
+dealer a natural blackjack in his first two cards.
+Thus, the transition edges for \Trans{A}{10}
+and \Trans{10}{A} result in 21, and not a natural blackjack.
+Without peeking, these entries would be set to `BJ'.
 
 By the state-transition process defined in these tables,
 all non-terminal states will eventually reach
@@ -204,17 +226,84 @@ This state-transition process is also known as an
 \emph{absorbing Markov chain}\index{Markov chain!absorbing},
 since every state can reach an absorbing state.
 
+Tables~\ref{tab:dealer-hit-H17} and~\ref{tab:dealer-hit-S17}
+are compact representations of sparse state-transition matrices.
+With the set of dealers states $\Set{d}$ of size $N_d=\abs{\Set{d}}$,
+an expanded $N_d \times N_d$ state-transition matrix $\Mat{D}$ 
+would contain entries:
+
+\begin{eqnarray}
+\Mat{D}_{i,j} &=&
+\begin{cases}
+1 & i~\text{is terminal and } i=j \\
+0 & i~\text{is terminal and } i\neq{}j \\
+\Prob{c} & i~\text{is non-terminal and } \exists k : \Trans{i}{c} = j \\
+0 & i~\text{otherwise}
+\end{cases}
+\end{eqnarray}
+
+\noindent
+where $\Prob{c}$ is the probability of drawing card $c$,
+based solely on the card distribution.
+
+$D^\prime$ represents the dealer's state transitions
+when revealing the hole card,
+given that the hole card does not give the dealer a natural or 21.
+
+\begin{eqnarray}
+\Mat{D^\prime}_{i,j} &=&
+\begin{cases}
+1 & i~\text{is terminal and } i=j \\
+0 & i~\text{is terminal and } i\neq{}j \\
+\Prob{c|\Trans{i}{c}\neq{}\text{BJ}} &
+  i~\text{is non-terminal and } \exists k : \Trans{i}{c} = j \\
+0 & i~\text{otherwise}
+\end{cases}
+\end{eqnarray}
+
+\noindent
+The only difference between $\Mat{D}$ and $\Mat{D^\prime}$
+is in the probability expression.  
 % TODO: figure
 % TODO: redistribution equation
 
 \subsection{Probability of Dealer's Terminal States}
 \label{sec:rules:dealer-play:final-pdf}
 
-Given the dealer's revealed card, 
+Given the dealer's revealed card and state-transition matrix $\Mat{D}$, 
 one can calculate the probability of the dealer ending up in each state.
 At any given state, the probability distribution of the
 next state is simply based on the card probabilities.  
-The dealer's hit transition table is acyclic, i.e. 
+Given an initial state unit vector $\Vec{v_i}$ with elements:
+
+\begin{eqnarray}
+v_{i,j} &=& 
+\begin{cases}
+1 & i=j \\
+0 & \text{otherwise}
+\end{cases}
+\end{eqnarray}
+
+\noindent
+The probability column vector $\Vec{f_i}$ of the dealer's final states 
+can be evaluated as a limit:
+
+\begin{eqnarray}
+\Xpose{\Vec{f_i}} &=& \Lim{n\rightarrow\infty}{\Xpose{\Vec{v_i}}\Mat{D^\prime}\Mat{D}^n} \nonumber \\
+&=& \Xpose{\Vec{v_i}} \Lim{n\rightarrow\infty}{\Mat{D^\prime}\Mat{D}^n} \\
+\Mat{D^*} &=& \Lim{n\rightarrow\infty}{\Mat{D^\prime}\Mat{D}^n} \\
+\Vec{f_i} &=& \Paren{\Lim{n\rightarrow\infty}{\Mat{D^\prime}\Mat{D}^n}} \Vec{v_i} \nonumber \\
+&=& \Mat{D^*} \Vec{v_i}
+\end{eqnarray}
+
+% TODO: initial identity vector
+
+Since $\Mat{D^*}=\Mat{D^\prime}\Mat{D}^n$ is constant, it can be computed once
+for all initial state vectors.
+Fortunately, evaluating $\Mat{D^*}$ does not require infinite 
+matrix multiplication.
+Not only is the dealer's chain absorbing, 
+the dealer's hit transition table is \emph{acyclic}, i.e. 
 no state can ever reach itself again.  
 Thus, there exists a topological sort\index{topological sort}
 ordering of states that can be used to efficiently and iteratively 
@@ -236,12 +325,17 @@ in the probability vector are 0.0.
 The process described above assumes an invariant
 card distribution, when in fact, as each card is revealed and removed, 
 the probability distribution of remaining cards changes.
+\index{infinite deck}
 Assuming a constant distribution is akin to modeling
 the deck as infinite.
 For now we proceed using the infinite deck approximation.  
 (Perhaps in a later section, we compute the inaccuracy of
 assuming an infinite deck vs. a finite deck, where one 
 draws cards without replacement.)
+
+TODO: in another section address the outcome, given a finite deck,
+and accounting for the reveal card having been removed, 
+but no player cards dealt.
 
 % Pre-peek vs. Post-peek.
 

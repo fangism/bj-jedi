@@ -16,7 +16,7 @@ Basic strategy can be computed with a few simplifications:
 	probability distribution of cards in the deck.
 \item An infinite deck is assumed, so conditional probabilities
 	involving the peeked cards are no different from
-	the unconditional probabilities.
+	the unconditional probabilities.\index{infinite deck}
 \item Hands are analyzed by only the value, not the composition.
 	In fact, using the same full-deck distribution essentially
 	ignores the fact that 2 player cards and 1 dealer card
@@ -44,10 +44,10 @@ when the hit card $j$ is added to state $s_i$.
 $a$ (enumerated $hit$, $stand$, $double$, $split$, $surrender$) in state $s_i$.
 \item Let $\ExpOpt{s_i}$ denote the optimal expected value in state $s_i$.
 \item Let $\Vec{s_i}$ denote the vector of states reached by adding 
-	one card to state $s_i$, that is, $\Angle{,j:10: \NextState{s}{i}{j}}$
+	one card to state $s_i$, that is, $\Angle{\Loop{,}{j}{10} \NextState{s}{i}{j}}$
 \item Let $\ExpVec{s_i}$ denote the vector of expected values of 
 	states reached by adding one card, that is, 
-	$\Angle{,j:10: \Exp{\NextState{s}{i}{j}}}$
+	$\Angle{\Loop{,}{j}{10} \Exp{\NextState{s}{i}{j}}}$
 \end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -77,14 +77,17 @@ It is also the most important to learn and master first.
 \label{tab:player-stand-H17-post-peek}
 \end{table}
 
+% matrix
+Let us interpret Table~\ref{tab:win-lose} as a payoff matrix $R$
+(row $p$ for player state, column $d$ for dealer state)
+whose cell values $R_{p,d}$ are:
+$+1$ for a win, $-1$ for lose, and $0$ for push, 
+and $+1.5$ (or whatever the blackjack payoff is) for win*.
+
 If we combine Table~\ref{tab:win-lose} and
 Table~\ref{tab:dealer-final-H17-pre-peek} (pre-peek, H17) 
-using outcome weights of $+1$ for a win, $-1$ for lose, and $0$ for push, 
 the result is the expected winnings per unit bet, 
 is Table~\ref{tab:player-stand-H17-pre-peek}.
-Note that a player natural blackjack (row:BJ) is weighted by the 
-blackjack payoff of $3:2$ ($+1.5$).
-With any other blackjack payoff, this row would be re-computed accordingly.
 
 For post-peek conditions, Table~\ref{tab:win-lose} is combined with
 Table~\ref{tab:dealer-final-H17-post-peek} (post-peek, H17) to produce
@@ -191,7 +194,7 @@ of the card distribution vector and the vector of expected values for the
 post-double-down states.
 
 \begin{eqnarray}
-\ExpAct{double}{s_i} &=& \Vec{c}\cdot \Vec{\ExpAct{stand}{s_i}} \nonumber \\
+\ExpAct{double}{s_i} &=& \Vec{c}\cdot \ExpActVec{stand}{s_i} \nonumber \\
 &=& \Sum{j=1}{10}{\Prob{c=j}\ExpAct{stand}{\NextState{s}{i}{j}}}
 \end{eqnarray}
 

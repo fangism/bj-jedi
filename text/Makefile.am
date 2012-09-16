@@ -87,14 +87,13 @@ tables/win-lose-push.tex: $(BASIC_STRATEGY)
 	$(PRINTF) "\\\\begin{tabular}{|c||c|c|c|c|c|c|c|c|}\n\\hline\n" ; \
 	$(SED) -n '/final state outcomes/,/^$$/p' $< | \
 		$(SED) -e '1d' -e '$$d' $(SED_E_LE) | \
-		$(SED) -e '1s|P.D|$$\\frac{\\textrm{dealer}\\rightarrow}{\\textrm{player}\\downarrow}$$|' | \
+		$(SED) -e '/BJ/s|win|&*|g' | \
+		$(SED) -e '1s|P.D|\\tblULhdr{dealer}{player}|' | \
 		$(TABS_TO_TABULAR) | $(TABULAR_HEADER_HLINE) ; \
 	$(END_TABULAR) ;} > $@
 
-HOME_NEXT_CARD_DEALER = \
-	$(PRINTF) '$$\\frac{\\textrm{next card}\\rightarrow}{\\textrm{dealer}\\downarrow}$$'
-HOME_NEXT_CARD_PLAYER = \
-	$(PRINTF) '$$\\frac{\\textrm{next card}\\rightarrow}{\\textrm{player}\\downarrow}$$'
+HOME_NEXT_CARD_DEALER = $(PRINTF) '\\tblULhdr{next card}{dealer}'
+HOME_NEXT_CARD_PLAYER = $(PRINTF) '\\tblULhdr{next card}{player}'
 
 DEALER_HIT_TABLE_SCRIPT = \
 	{ $(TITLE_COMMENT) ; \
@@ -149,8 +148,7 @@ tables/player-resplit.tex: $(BASIC_STRATEGY)
 	$(END_TABULAR) ;} > $@
 
 SCALE_DEALER_FINAL = $(SCALE_PERCENT)
-HOME_DEALER_FINAL = \
-	$(PRINTF) '$$\\frac{\\textrm{reveal}\\rightarrow}{\\textrm{end state}\\downarrow}$$'
+HOME_DEALER_FINAL = $(PRINTF) '\\tblULhdr{reveal}{end state}'
 
 # needs shell variable pp defined to pre|post
 DEALER_FINAL_TABLE_SCRIPT = \
@@ -176,8 +174,7 @@ tables/dealer-final-S17-pre-peek.tex: $(S17_STRATEGY)
 tables/dealer-final-S17-post-peek.tex: $(S17_STRATEGY)
 	pp=post ; $(DEALER_FINAL_TABLE_SCRIPT)
 
-HOME_PLAYER_STAND = \
-	$(PRINTF) '$$\\frac{\\textrm{reveal}\\rightarrow}{\\textrm{$$E[S]$$}\\downarrow}$$'
+HOME_PLAYER_STAND = $(PRINTF) '\\tblULhdr{reveal}{$$\\Exp{S}$$}'
 
 PLAYER_STAND_TABLE_SCRIPT = \
 	{ $(TITLE_COMMENT) ; \
