@@ -9,20 +9,96 @@ of cards being drawn is stationary, when in fact,
 they are actually changing each time a card is revealed and discarded.
 The proportion of cards remaining in the deck or shoe
 affects the mathematical edges of the game.
-It was Edward Thorp who first quantified the effects of counting in 1962, 
+It was Edward O.\ Thorp who first quantified the effects of counting in 1962, 
 and published his findings on the counting principle,
 and subsequently proved it in practice
 with his own winnings~\cite{ref:thorp62}.  
+Numerous other counting strategies have been devised and analyzed since 
+the original findings were 
+published~\cite{ref:wong81, ref:uston98, ref:griffin99, ref:carlson10}.
 
 This chapter describes the mathematics behind card counting
 and derives some well-known results behind practical counting schemes, 
 and quantifies the fluctuations in edges.  
+From this point on, we no longer compute using infinite-deck
+approximations using the standard deck distribution.  
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{The Dealer's Up-card}
+\label{sec:counting:dealer-up}
+
+In Section~{sec:rules:dealer-play:final-pdf}, 
+we computed the probability distribution of the 
+dealer's final state, given the dealer's up-card (initial state), 
+before any player cards are dealt,
+assuming an \index{infinite deck}infinite deck.
+As an approximation, we neglected the effect of having removed
+the dealer's up-card from the deck, and used the same 
+standard deck probability distribution (fresh deck) for all sets of 
+state transitions.
+
+% % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % %
+\subsection{Static and Modified Distributions}
+\label{sec:counting:dealer-up:static}
+
+One step to improving accuracy is to account for
+the change in probabilities after removing the up-card.
+However, as an approximation, we still retain the same 
+card probability distribution after subsequent cards are removed. 
+
+Let $Mat{D_{R}}$ be the dealer's state transition matrix produced
+using a static probability distribution that results from
+removing the set of $R$ cards from the deck.  
+Then the resulting dealer final state matrix is:
+
+\begin{eqnarray}
+\Mat{D_R^*} &=& \LimInf{n}{\Mat{D_R^\prime}\Mat{D_R}^n}
+\end{eqnarray}
+
+\TODO:
+Show the update table for dealer's expected final state
+given reveal card, by removing the up-card from the distribution.
+(Still using a static distribution.)  
+
+\TODO:
+Show for single deck, 2, 4, compare with infinite deck.
+
+% % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % %
+\subsection{Exact Odds with Changing Distributions}
+\label{sec:counting:dealer-up:exact}
+
+Exact calculation of odds in any process requires
+one to account for the effect that \emph{each} removed card has
+on the probability distribution.  
+This means that evaluating $\Mat{D^*}$ precisely is no longer
+a chain-multiplication of constant matrices; 
+it requires probability distributions of $\Mat{D}$ to change
+at each step.
+The computation graph becomes a tree, which can be evaluated
+recursively, depth-first, bottom-up.
+
+Recursion stops (tree is pruned) when
+dealer reaches a terminal state.
+Can also stop when aggregate probability of subtree
+falls beneath a threshold.
+Beyond threshold, can fall back to an approximate calculation.
+
+\TODO:
+Repeat above analysis using exact calculation for 1, 2, 4 decks.  
+
+\TODO:
+discuss accuracy and sensitivity of approximation
+
+\TODO:
+discuss compute time, tradeoffs.  What is good enough?
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Sensitivity Analysis}
 \label{sec:counting:sensitivity}
 
 Assuming static, basic strategy.
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Dynamic Strategy}
 \label{sec:counting:dynamic}
 

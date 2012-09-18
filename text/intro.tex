@@ -264,6 +264,7 @@ given that the hole card does not give the dealer a natural or 21.
 \noindent
 The only difference between $\Mat{D}$ and $\Mat{D^\prime}$
 is in the probability expression.  
+
 % TODO: figure
 % TODO: redistribution equation
 
@@ -289,16 +290,17 @@ The probability column vector $\Vec{f_i}$ of the dealer's final states
 can be evaluated as a limit:
 
 \begin{eqnarray}
-\Xpose{\Vec{f_i}} &=& \Lim{n\rightarrow\infty}{\Xpose{\Vec{v_i}}\Mat{D^\prime}\Mat{D}^n} \nonumber \\
-&=& \Xpose{\Vec{v_i}} \Lim{n\rightarrow\infty}{\Mat{D^\prime}\Mat{D}^n} \\
-\Mat{D^*} &=& \Lim{n\rightarrow\infty}{\Mat{D^\prime}\Mat{D}^n} \\
-\Vec{f_i} &=& \Paren{\Lim{n\rightarrow\infty}{\Mat{D^\prime}\Mat{D}^n}} \Vec{v_i} \nonumber \\
+\Xpose{\Vec{f_i}} &=& \LimInf{n}{\Xpose{\Vec{v_i}}\Mat{D^\prime}\Mat{D}^n} \nonumber \\
+&=& \Xpose{\Vec{v_i}} \LimInf{n}{\Mat{D^\prime}\Mat{D}^n} \\
+\Mat{D^*} &=& \LimInf{n}{\Mat{D^\prime}\Mat{D}^n} \\
+\Vec{f_i} &=& \Paren{\LimInf{n}{\Mat{D^\prime}\Mat{D}^n}} \Vec{v_i} \nonumber \\
 &=& \Mat{D^*} \Vec{v_i}
 \end{eqnarray}
 
 % TODO: initial identity vector
 
-Since $\Mat{D^*}=\Mat{D^\prime}\Mat{D}^n$ is constant, it can be computed once
+$\Mat{D^*}$ is the overall dealer final state matrix.  
+Since $\Mat{D^*}$ is constant, it can be computed once
 for all initial state vectors.
 Fortunately, evaluating $\Mat{D^*}$ does not require infinite 
 matrix multiplication.

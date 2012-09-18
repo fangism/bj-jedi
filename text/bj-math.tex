@@ -47,6 +47,9 @@
 \newcommand{\absdelta}{\abs{\Delta}}
 \newcommand{\sizeof}[1]{\abs{#1}}
 
+% symbols
+\let\goesto\rightarrow
+
 % squeeze unit
 \newcommand{\Sqz}{\hspace{-.5ex}}
 
@@ -72,6 +75,7 @@
 \newcommand{\Prob}[1]{\textrm{P}\SqzParen{#1}}
 % limit
 \newcommand{\Lim}[2]{\lim_{#1}{#2}}
+\newcommand{\LimInf}[2]{\Lim{#1\goesto{}\infty}{#2}}
 % combinatorics
 \newcommand{\nCr}[2]{\binom{#1}{#2}}	% provided by amsmath
 % vectors
@@ -84,7 +88,7 @@
 % matrices
 \newcommand{\Mat}[1]{\mathbf{#1}}	% boldface matrix symbols
 \newcommand{\Xpose}[1]{#1^{\top}}	% matrix transpose
-% loop construct
+% loop construct (op,var,bounds)
 \newcommand{\Loop}[3]{#1#2\Sqz:\Sqz#3 :}
 
 % table commands
@@ -92,8 +96,9 @@
 \newcommand{\tblULhdr}[2]{$\frac{\textrm{#1}\rightarrow}{\textrm{#2}\downarrow}$}
 
 % for this paper
-\newcommand{\Trans}[2]{\ensuremath{#1\rightarrow{}#2}}	% transition by adding card #2
+\newcommand{\Trans}[2]{\ensuremath{#1\goesto{}#2}}	% transition by adding card #2
 \newcommand{\NextState}[3]{#1_{\Trans{#2}{#3}}}	% state reached by adding j
+\newcommand{\TODO}[0]{\textbf{TODO}}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{document}
