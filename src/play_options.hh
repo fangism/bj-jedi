@@ -136,6 +136,18 @@ struct play_options {
 		If true, prompt for count before reshuffling.
 	 */
 	bool				quiz_count_before_shuffle;
+#if 0
+	/**
+		If true, split hands are played in order, and
+		remaining split hands do not get a second card until
+		earlier hands have finished.  
+		When counting cards, this affects the
+		counts because cards are removed.
+		For analysis purposes, it is easier to withhold the 
+		second card on split hands until earlier hands are finished.
+	 */
+	bool				split_play_before_second_card;
+#endif
 	/**
 		Quiz count after every N hands.
 	 */

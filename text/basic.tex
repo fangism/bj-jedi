@@ -64,7 +64,9 @@ It is also the most important to learn and master first.
 \begin{table}[ht!]
 \caption{Player's stand edges (H17, pre-peek)}
 \begin{center}
+{\small
 \input tables/player-stand-H17-pre-peek
+}
 \end{center}
 \label{tab:player-stand-H17-pre-peek}
 \end{table}
@@ -72,7 +74,9 @@ It is also the most important to learn and master first.
 \begin{table}[ht!]
 \caption{Player's stand edges (H17, post-peek)}
 \begin{center}
+{\small
 \input tables/player-stand-H17-post-peek
+}
 \end{center}
 \label{tab:player-stand-H17-post-peek}
 \end{table}
@@ -107,7 +111,9 @@ hand value.
 \begin{table}[ht!]
 \caption{Player's stand edges (S17, pre-peek)}
 \begin{center}
+{\small
 \input tables/player-stand-S17-pre-peek
+}
 \end{center}
 \label{tab:player-stand-S17-pre-peek}
 \end{table}
@@ -115,7 +121,9 @@ hand value.
 \begin{table}[ht!]
 \caption{Player's stand edges (S17, post-peek)}
 \begin{center}
+{\small
 \input tables/player-stand-S17-post-peek
+}
 \end{center}
 \label{tab:player-stand-S17-post-peek}
 \end{table}
@@ -280,12 +288,24 @@ Depending on the values of $Y$ and $Z$, the new state may include
 By symmetry, the order in which hands $XY$ and $XZ$ are played 
 do not affect the overall expected value.  
 
-The state of split hands can be categorized with two parameters:
-$S$ the number of allowed splits remaining,
-$P$ the number of splittable hands in play.
-Let $H$ represent the total number of hands in play 
-(yet to be acted upon) in a given state, 
-and let $N=H-P$ denote the number of non-splittable hands.  
+Let us consider the cases where new cards
+$Y$ and $Z$ form 0, 1, or 2 newly splittable hands, 
+without concern for the values of the new cards on the non-splittable hands.
+If any splittable hands remain and the number of hands has not exceeded
+the limit, the player may elect to split further.
+Let us further restrict the players decision in each state to 
+split or not split.
+At each step of this simplified process, 
+the state of all yet-to-be-acted-upon hands can be 
+summarized with a few parameters:
+
+\begin{itemize}
+\item $S$ is the number of allowed splits remaining
+\item $P$ is the number of splittable hands in play
+\item $N$ is the number of non-splittable hands in play.
+\end{itemize}
+
+\noindent
 $P$ is upper-bounded by $S$, so that the splittable
 hands in excess the number of splits remaining are treated 
 as non-splittable.
