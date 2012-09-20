@@ -64,9 +64,7 @@ It is also the most important to learn and master first.
 \begin{table}[ht!]
 \caption{Player's stand edges (H17, pre-peek)}
 \begin{center}
-{\small
 \input tables/player-stand-H17-pre-peek
-}
 \end{center}
 \label{tab:player-stand-H17-pre-peek}
 \end{table}
@@ -74,9 +72,6 @@ It is also the most important to learn and master first.
 \begin{table}[ht!]
 \caption{Player's stand edges (H17, post-peek)}
 \begin{center}
-{\small
-\input tables/player-stand-H17-post-peek
-}
 \end{center}
 \label{tab:player-stand-H17-post-peek}
 \end{table}
@@ -111,9 +106,7 @@ hand value.
 \begin{table}[ht!]
 \caption{Player's stand edges (S17, pre-peek)}
 \begin{center}
-{\small
 \input tables/player-stand-S17-pre-peek
-}
 \end{center}
 \label{tab:player-stand-S17-pre-peek}
 \end{table}
@@ -121,9 +114,7 @@ hand value.
 \begin{table}[ht!]
 \caption{Player's stand edges (S17, post-peek)}
 \begin{center}
-{\small
 \input tables/player-stand-S17-post-peek
-}
 \end{center}
 \label{tab:player-stand-S17-post-peek}
 \end{table}
@@ -171,6 +162,7 @@ must be evaluated starting from the player's terminal states
 \tblULhdr{reveal}{player}
 &2&3&4&5&6&7&8&9&10&A \\ \hline \hline
 \endhead
+\small
 \input tables/hit-stand-basic-H17
 \end{longtable}
 \end{center}
@@ -186,6 +178,7 @@ must be evaluated starting from the player's terminal states
 \tblULhdr{reveal}{player}
 &2&3&4&5&6&7&8&9&10&A \\ \hline \hline
 \endhead
+\small
 \input tables/hit-stand-basic-S17
 \end{longtable}
 \end{center}
@@ -301,30 +294,48 @@ summarized with a few parameters:
 
 \begin{itemize}
 \item $S$ is the number of allowed splits remaining
-\item $P$ is the number of splittable hands in play
-\item $N$ is the number of non-splittable hands in play.
+\item $N$ is the number of non-paired hands in play
+\item $P$ is the number of paired hands $XX$ in play, which consists of:
+\begin{itemize}
+\item $P_p=\Min{P,S}$, the number of paired hands not exceeding $S$
+\item $P_n=P-P_p$, the number of paired hands in excess of $S$, 
+	and are treated as non-splittable
+\end{itemize}
 \end{itemize}
 
 \noindent
-$P$ is upper-bounded by $S$, so that the splittable
-hands in excess the number of splits remaining are treated 
-as non-splittable.
-We can express the expected value in any state
-with the splittable $XX$ hand recursively.
-
-For $P \le S$ and $S \ge 1$:
-
+Let $p_X$ be the probability of drawing card $X$ to form a newly paired hand, 
+and $q_X=1-p_X$.
+Let $P^\prime$ denote the new number of paired hands after 
+splitting one of the $P$ paired hands, which can range from $P-1$ to $P+1$.
+The outcomes of $P^\prime$ can be approximated with replacement
+(effectively infinite deck) as:
 \begin{eqnarray}
-\ExpAct{split}{X,S,P} &=& \Prob{P'=P-1}\ExpOpt{X,S-1,P-1} \nonumber \\
-& & +\Prob{P'=P}\ExpOpt{X,S-1,P} \nonumber \\
-& & +\Prob{P'=P+1}\ExpOpt{X,S-1,P+1}\\
-\ExpOpt{X,S,P} &=& \Max{\ExpAct{hit}{XX},\ExpAct{stand}{XX},\ExpAct{double}{XX},\ExpAct{split}{X,S,P}}
+\Prob{P^\prime=P-1} &=& q_X^2 \\
+\Prob{P^\prime=P} &=& 2 p_X q_X \\
+\Prob{P^\prime=P+1} &=& p_X^2
 \end{eqnarray}
 
 \noindent
-When no more splits are allowed:
+We can express the expected value in each state
+with an arbitrary number of paired $XX$ hands, recursively.
+For $S \ge 1$:
+
 \begin{eqnarray}
-\ExpAct{split}{X,0,0} &=& \ExpOpt{XX}
+\ExpAct{split}{XX,S,P,N} &=& \Prob{P^\prime=P-1}\ExpOpt{XX,S-1,P-1,N+2} \nonumber \\
+& & +\Prob{P^\prime=P}\ExpOpt{XX,S-1,P,N+1} \nonumber \\
+& & +\Prob{P^\prime=P+1}\ExpOpt{XX,S-1,P+1,N} \\
+\ExpOpt{XX,S,P,N} &=& \Max{\ExpAct{hit}{XX},\ExpAct{stand}{XX},\ExpAct{double}{XX},\ExpAct{split}{XX,S,P,N}}
+\end{eqnarray}
+
+\TODO: show some examples of expanded expressions
+
+\noindent
+When $S=0$, no more splits are allowed:
+\begin{eqnarray}
+\ExpAct{split}{XX,0,P,N} &=& P_n \ExpOpt{XX} +N \ExpOpt{XY}\\
+\ExpOpt{XY} &=& \Sum{j}{\neq{}X}{\Prob{c=j} \ExpOpt{\Trans{X,j}}}\\
+\ExpOpt{XX} &=& \Max{\ExpAct{hit}{XX},\ExpAct{stand}{XX},\ExpAct{double}{XX}}
 \end{eqnarray}
 
 
@@ -343,6 +354,7 @@ When no more splits are allowed:
 \tblULhdr{reveal}{player}
 &2&3&4&5&6&7&8&9&10&A \\ \hline \hline
 \endhead
+\small
 \input tables/player-action-expectations-basic-H17
 \end{longtable}
 \end{center}
@@ -358,6 +370,7 @@ When no more splits are allowed:
 \tblULhdr{reveal}{player}
 &2&3&4&5&6&7&8&9&10&A \\ \hline \hline
 \endhead
+\small
 \input tables/player-action-expectations-basic-S17
 \end{longtable}
 \end{center}
@@ -414,8 +427,10 @@ whereas the expected value of accepting even money is only 1.
 Since $\frac{27}{26}>1$, it is better to decline even money, 
 under basic strategy.
 
-As an exercise to the reader, analyze the even money proposition
+\begin{exercise}
+Analyze the even money proposition
 given a 6:5 payoff for natural blackjack.
+\end{exercise}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Peeking}
@@ -634,11 +649,12 @@ Applying Bayes' Theorem yields $\Prob{A_k|B^d}$:
 \noindent
 Substituting for $d=1$ gives us Equations~\ref{eqn:Am_B} and~\ref{eqn:A10_B}.
 
-Exercise.
+\begin{exercise}
 Verify that:
 \begin{eqnarray}
 \Sum{k}{10}{\Prob{A_k|B^d}} &=& 1
 \end{eqnarray}
+\end{exercise}
 
 If we consider the relative \emph{posteriori} weights $A_k|B^d$, 
 eliminating the common denominator resulst in:
