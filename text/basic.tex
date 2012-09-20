@@ -72,6 +72,7 @@ It is also the most important to learn and master first.
 \begin{table}[ht!]
 \caption{Player's stand edges (H17, post-peek)}
 \begin{center}
+\input tables/player-stand-H17-post-peek
 \end{center}
 \label{tab:player-stand-H17-post-peek}
 \end{table}
@@ -142,7 +143,7 @@ The expected outcome of hitting in each state $s_i$
 can be computed recursively:
 
 \begin{eqnarray}
-\ExpOpt{s_i} &=& \Max{\ExpAct{hit}{s_i},\ExpAct{stand}{s_i}}\\
+\ExpOpt{s_i} &=& \Max{\ExpAct{hit}{s_i},\ExpAct{stand}{s_i}} \label{eqn:opt:hit-stand}\\
 \ExpAct{hit}{s_i} &=& \Sum{j=1}{10}{\Prob{c=j}\ExpOpt{\NextState{s}{i}{j}}}
 \end{eqnarray}
 
@@ -199,6 +200,12 @@ post-double-down states.
 &=& \Sum{j=1}{10}{\Prob{c=j}\ExpAct{stand}{\NextState{s}{i}{j}}}
 \end{eqnarray}
 
+Where doubling-down is permitted, the expression for the
+optimal expected value (Equation~\ref{eqn:opt:hit-stand}) gains one more term:
+\begin{eqnarray}
+\ExpOpt{s_i} &=& \Max{\ExpAct{hit}{s_i},\ExpAct{stand}{s_i},\ExpAct{double}{s_i}} \label{eqn:opt:hit-stand-dbl}
+\end{eqnarray}
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Surrender}
 \label{sec:basic:surrender}
@@ -221,12 +228,24 @@ at the time the player is prompted to act on her first two cards,
 which always happens \emph{after} peeking for blackjack.  
 With late-surrender, the player still loses her whole bet against 
 a dealer natural.
-For now, we only evaluate late-surrender, as it is far more common.
 
+\subsection{Late Surrender (common)}
+\label{sec:basic:surrender:late}
 To evaluate late-surrender, one simply compares the expected outcome
 of any action (under post-peek conditions) against an outcome of $-0.5$.
 When all other actions have a worse expected outcome than the surrender
 penalty, it is to the player's advantage to surrender.
+
+\subsection{Early Surrender (rare)}
+\label{sec:basic:surrender:early}
+Since early surrender is rare, the reader may wish to skip this section.
+Early surrender (when allowed) gives the player the chance
+to surrender the hand before the dealer peeks at the hole card
+for a blackjack, when a 10 or Ace is showing.
+To determine early surrender when is favorable, 
+one must examine the \emph{pre-peek} expectations.
+
+\TODO: add columns to hit/stand tables vs. unpeeked 10 and A
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Split}
@@ -265,19 +284,19 @@ Methods exist for accelerating exact calculations by
 reusing sub-solutions in the recursively expanded 
 computation graph~\cite{ref:nairn08}.
 In practice, approximations of the expected value are adequate 
-substitutes for exact values\cite{ref:griffin99}.  
+substitutes for exact values~\cite{ref:griffin99}.  
 This section presents an improved method for calculating exact 
 expected values of splitting hands.
 
-Consider an initially paired hand $XX$ with splitting allowed 
-up to $S+1$ hands.
-(We let $S$ be the number of times a player may split, 
+Consider an initially paired hand $XX$ (composed of two $X$ cards)
+with splitting allowed up to $S+1$ hands.
+(We let $S$ be the number of \emph{times} a player may split, 
 so with a maximum of 4 hands, $S=3$.)
-If the player decides to split, then the resulting state is
-two hands $XY$ and $XZ$ with further splitting allowed up to $S$ hands 
+If the player decides to split, the resulting state is
+two new hands $XY$ and $XZ$ with further splitting allowed up to $S$ hands 
 (one less than before).  
 Depending on the values of $Y$ and $Z$, the new state may include 
-0 through 2 splittable hands (one less or one more than before).  
+0 through 2 splittable hands (one less to one more than before).  
 By symmetry, the order in which hands $XY$ and $XZ$ are played 
 do not affect the overall expected value.  
 
@@ -303,13 +322,19 @@ summarized with a few parameters:
 \end{itemize}
 \end{itemize}
 
+By definition, the following constraint must hold:
+\begin{eqnarray}
+N+P \le S+1 \nonumber \\
+N+P_p+P_n \le S+1
+\end{eqnarray}
+
 \noindent
-Let $p_X$ be the probability of drawing card $X$ to form a newly paired hand, 
-and $q_X=1-p_X$.
+Let $p_X=\Prob{c=X}$ be the probability of drawing card $X$ to form a 
+newly paired $XX$ hand, and $q_X=1-p_X$.
 Let $P^\prime$ denote the new number of paired hands after 
 splitting one of the $P$ paired hands, which can range from $P-1$ to $P+1$.
-The outcomes of $P^\prime$ can be approximated with replacement
-(effectively infinite deck) as:
+The outcome probability distribution of $P^\prime$ can be approximated 
+by assuming an infinite deck (same as drawing without replacement):
 \begin{eqnarray}
 \Prob{P^\prime=P-1} &=& q_X^2 \\
 \Prob{P^\prime=P} &=& 2 p_X q_X \\
@@ -319,26 +344,68 @@ The outcomes of $P^\prime$ can be approximated with replacement
 \noindent
 We can express the expected value in each state
 with an arbitrary number of paired $XX$ hands, recursively.
-For $S \ge 1$:
+For $S \ge 1$ and $P \ge 1$:
 
 \begin{eqnarray}
 \ExpAct{split}{XX,S,P,N} &=& \Prob{P^\prime=P-1}\ExpOpt{XX,S-1,P-1,N+2} \nonumber \\
-& & +\Prob{P^\prime=P}\ExpOpt{XX,S-1,P,N+1} \nonumber \\
-& & +\Prob{P^\prime=P+1}\ExpOpt{XX,S-1,P+1,N} \\
-\ExpOpt{XX,S,P,N} &=& \Max{\ExpAct{hit}{XX},\ExpAct{stand}{XX},\ExpAct{double}{XX},\ExpAct{split}{XX,S,P,N}}
-\end{eqnarray}
-
-\TODO: show some examples of expanded expressions
-
-\noindent
-When $S=0$, no more splits are allowed:
-\begin{eqnarray}
-\ExpAct{split}{XX,0,P,N} &=& P_n \ExpOpt{XX} +N \ExpOpt{XY}\\
-\ExpOpt{XY} &=& \Sum{j}{\neq{}X}{\Prob{c=j} \ExpOpt{\Trans{X,j}}}\\
+&+& \Prob{P^\prime=P}\ExpOpt{XX,S-1,P,N+1} \nonumber \\
+&+& \Prob{P^\prime=P+1}\ExpOpt{XX,S-1,P+1,N} \label{eqn:split:EV:recursion} \\
+\ExpOpt{XX,S,P,N} &=& \Max{\ExpOpt{XX},\ExpAct{split}{XX,S,P,N}} \\
 \ExpOpt{XX} &=& \Max{\ExpAct{hit}{XX},\ExpAct{stand}{XX},\ExpAct{double}{XX}}
 \end{eqnarray}
 
+\noindent
+$\ExpOpt{XX}$ is just the optimal action in a single hand in state $XX$
+without the option to split.
 
+When $S=0$ (no more splits are allowed), or $P=0$ (no more paired hands):
+\begin{eqnarray}
+\ExpAct{split}{XX,0,P,N} &=& P_n\cdot\ExpOpt{XX} +N\cdot\ExpOpt{XY}\\
+\ExpOpt{XY} &=& \Sum{j}{10}{\Prob{c=j|c\neq{}X} \ExpOpt{\Trans{X}{j}}}
+\end{eqnarray}
+
+In the evaluation of the expected value of splitting, 
+Equation~\ref{eqn:split:EV:recursion} is recursively expanded until
+no terms contain $S>0$.
+
+\TODO: show some examples of expanded expressions
+
+We illustrate the recursive expansion of the expected value expressions 
+with a more concrete example, 
+using the following shorthand notation that represents the 
+set of possible split hand configurations and their probabilities.
+
+\begin{itemize}
+\item $\Brack{\ldots}$ is a set of hands
+\item $P$ is a hand that is paired and may be split
+\item $X$ is a paired hand that may not be split
+\item $Y$ is a non-paired hand
+\item $p$ is the probability of drawing the paired card
+\item $q$ is $1-p$
+\end{itemize}
+
+For $S=1,P=1$:
+\begin{eqnarray}
+P &\goesto& p^2 \Brack{XX} +2pq \Brack{XY} +q^2 \Brack{YY}
+\end{eqnarray}
+
+For $S=2,P=1$:
+\begin{eqnarray}
+P &\goesto& p^2\Brack{PX} +2pq\Brack{PY} +q^2\Brack{YY} \\
+&\goesto& p^2\Brack{X\Paren{p^2\Brack{XX} +2pq\Brack{XY} +q^2\Brack{YY}}}
+ +2pq\Brack{Y\Paren{p^2\Brack{XX} +2pq\Brack{XY} +q^2\Brack{YY}}}
+ +q^2\Brack{YY} \\
+&\equiv& \ldots
+\end{eqnarray}
+
+For $S=3,P=1$:
+\begin{eqnarray}
+P &\goesto& PP +2PY +YY \\
+&\goesto& \ldots
+\end{eqnarray}
+
+
+% % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % %
 \subsection{Action Expectations}
 \label{sec:basic:action-expectations}
 
