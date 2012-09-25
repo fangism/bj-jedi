@@ -52,7 +52,11 @@ dnl AC_CHECK_PROG([TEXI2DVI], texi2dvi, texi2dvi)
 dnl AC_CHECK_PROG([TEXI2PDF], texi2pdf, texi2pdf)
 dnl AC_CHECK_PROG([TEXI2HTML], texi2html, texi2html)
 
+dnl check for graphviz
+AC_CHECK_PROG([DOT], dot, dot)
+
 dnl checks for xfig, transfig, fig2dev
+AC_CHECK_PROG([FIG2DEV], fig2dev, fig2dev)
 
 dnl future: gtk+2 will come from pkgconfig
 dnl AC_CHECK_PROG([PKG_CONFIG], pkg-config, pkg-config)

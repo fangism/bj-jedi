@@ -1,0 +1,61 @@
+# "Make.figtex"
+# $Id: Make.figtex,v 1.7 2008/03/16 05:47:49 fang Exp $
+# vi: ft=make
+#
+# Template makefile for xfig figure builds.
+# requires fig2dev in PATH
+# requires latex package ifpdf
+
+# FIG2DEV = fig2dev
+FIG2DEV = @FIG2DEV@
+
+# include the following line before including this file
+SUFFIXES += .fig .figtex .pstex .pstex_t .pdftex .pdftex_t .eps .png
+
+
+# don't use .tex extension, else make will chain suffix, using wrong rules
+.fig.figtex:
+	@echo "Generating $@ from $<" ; \
+	pdf=`echo $@ | sed 's|figtex$$|pdftex_t|'` ; \
+	ps=`echo $@ | sed 's|figtex$$|pstex_t|'` ; \
+	printf "\\\\ifpdf\\\\input{$$pdf}\\\\else\\\\input{$$ps}\\\\fi\\n" > $@
+
+# prefer .pdf because \includegraphics doesn't understand .pdftex extension
+.fig.pdf:
+	$(FIG2DEV) -Lpdftex $< $@
+#	$(FIG2DEV) -Lpdf $< $@
+
+.fig.pdftex:
+	$(FIG2DEV) -Lpdftex $< $@
+
+# include .pdf
+.fig.pdftex_t:
+	@echo "$(FIG2DEV) -Lpdftex_t $< > $@ ..." ; \
+	pdf=`echo $@ | sed 's|\.pdftex_t$$||'` ; \
+	{ printf "\\\\begin{picture}(0,0)%%\\n" ; \
+	printf "\\\\includegraphics{$$pdf}%%\\n" ; \
+	printf "\\\\end{picture}%%\\n" ; \
+	$(FIG2DEV) -Lpdftex_t $< ;} > $@
+
+# prefer .ps because \includegraphics doesn't understand .pstex extension
+.fig.ps:
+	$(FIG2DEV) -Lpstex $< $@
+#	$(FIG2DEV) -Lps $< $@
+
+.fig.eps:
+	$(FIG2DEV) -Leps $< $@
+
+.fig.pstex:
+	$(FIG2DEV) -Lpstex $< $@
+
+.fig.pstex_t:
+	@echo "$(FIG2DEV) -Lpstex_t $< > $@ ..." ; \
+	ps=`echo $@ | sed 's|\.pstex_t$$||'` ; \
+	{ printf "\\\\begin{picture}(0,0)%%\\n" ; \
+	printf "\\\\includegraphics{$$ps}%%\\n" ; \
+	printf "\\\\end{picture}%%\\n" ; \
+	$(FIG2DEV) -Lpstex_t $< ;} > $@
+
+.fig.png:
+	$(FIG2DEV) -Lpng $< $@
+

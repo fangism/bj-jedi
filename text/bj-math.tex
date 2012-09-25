@@ -1,4 +1,7 @@
 % "bj-math.tex"
+% TODO: make color and grayscale versions of this document
+% some tables/figures may require multi-formatting
+
 \documentclass[twoside]{book}
 
 \usepackage[twoside, top=1in, bottom=1in, inner=1.5in, outer=1in]{geometry}
@@ -6,6 +9,7 @@
 % \setlength\evensidemargin{0in}
 
 % for comment environment blocks
+\usepackage{ifpdf}
 \usepackage{verbatim}
 % \usepackage{float}		% for user-defined floating environments
 % \usepackage{subfigure}		% for sub-figure
@@ -22,7 +26,7 @@
 	pdftitle={Mathematics of Blackjack},
 	pdfauthor={David Fang},
 	pdfsubject={Blackjack,probability},
-	pdfkeywords={blackjack,card game,probability,strategy},
+	pdfkeywords={blackjack,card game,probability,strategy,optimization,card counting},
 	pdfpagemode={UseOutlines},
 %	pdfpagelayout={SinglePage},
 %	pdfstartview={Fit},
@@ -49,6 +53,11 @@
 % table formatting:
 \DeclareRobustCommand{\raisehalf}[1]{\raisebox{1.2ex}[0pt]{#1}}
 \DeclareRobustCommand{\lowerhalf}[1]{\raisebox{-1.2ex}[0pt]{#1}}
+
+% figures
+\newcommand{\xfig}[1]{\input{#1.figtex}}
+\newcommand{\resizex}[2]{\resizebox{#1}{!}{#2}}
+\newcommand{\resizey}[2]{\resizebox{!}{#1}{#2}}
 
 % math commands
 \newcommand{\abs}[1]{\left|#1\right|}

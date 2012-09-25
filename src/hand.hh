@@ -41,10 +41,44 @@ using std::ostream;
 	expected outcome.
 	Depending on Y and Z, the new state may have 0,1,2 newly 
 	resplittable hands, but number of splits remaining is one less.
+	See math text.
  */
 struct split_state {
-	size_t			splits_remaining;
-	size_t			unplayed_splittable_hands;
+	ssize_t			splits_remaining;
+	ssize_t			paired_hands;
+	ssize_t			unpaired_hands;
+
+	bool
+	is_splittable(void) const {
+		return splits_remaining && paired_hands;
+	}
+
+	ostream&
+	dump_code(ostream&) const;
+
+	void
+	post_split_states(split_state&, split_state&, split_state&) const;
+
+	int
+	compare(const split_state& r) const {
+	{
+		const ssize_t d = r.splits_remaining -splits_remaining;
+		if (d) return d;
+	}{
+		const ssize_t d = r.paired_hands -paired_hands;
+		if (d) return d;
+	}
+		return r.unpaired_hands -unpaired_hands;
+	}
+
+	bool
+	operator < (const split_state& r) const {
+		return compare(r) < 0;
+	}
+
+	ostream&
+	generate_graph(ostream&) const;
+
 };	// end struct split_state
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

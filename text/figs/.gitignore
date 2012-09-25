@@ -1,2 +1,8 @@
 *.figtex
+*.pdftex
+*.pdftex_t
 *.pdf
+*.pstex
+*.pstex_t
+*.ps
+split-graph-*.fig

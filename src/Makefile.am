@@ -3,6 +3,7 @@
 AUTOMAKE_OPTIONS = 1.9 gnu
 
 bin_PROGRAMS = boc2 bjswoc bjgrader
+noinst_PROGRAMS = bj-splitgen
 pkglib_LTLIBRARIES = util/libutil.la libbj.la
 
 AM_CPPFLAGS = $(RL_INCLUDE)
@@ -70,5 +71,8 @@ bjswoc_LDADD = libbj.la
 
 bjgrader_SOURCES = bjgrader.cc
 bjgrader_LDADD = libbj.la
+
+bj_splitgen_SOURCES = bj-splitgen.cc
+bj_splitgen_LDADD = libbj.la
 
 include $(top_srcdir)/globals.mk

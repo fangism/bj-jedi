@@ -368,22 +368,69 @@ In the evaluation of the expected value of splitting,
 Equation~\ref{eqn:split:EV:recursion} is recursively expanded until
 no terms contain $S>0$.
 
-\TODO: show some examples of expanded expressions
-
 We illustrate the recursive expansion of the expected value expressions 
 with a more concrete example, 
 using the following shorthand notation that represents the 
 set of possible split hand configurations and their probabilities.
 
 \begin{itemize}
-\item $\Brack{\ldots}$ is a set of hands
 \item $P$ is a hand that is paired and may be split
 \item $X$ is a paired hand that may not be split
 \item $Y$ is a non-paired hand
 \item $p$ is the probability of drawing the paired card
 \item $q$ is $1-p$
+\item $\Brack{\ldots}$ is a state with a string of
+$P$, $X$, and $Y$ hands, e.g. $\Brack{PPXYY}$.
+As a convention, we sort $P$s before $X$s, $X$s before $Y$s.
+\item any leading coefficient is the repetition count for a state
+\item Let $M_P$, $M_X$, and $M_Y$ be the number of $P$, $X$, and $Y$
+hands in a string, respectively.  
 \end{itemize}
 
+\begin{figure}[ht!]
+\centerline{\resizex{2in}{\xfig{figs/split-graph-2}}}
+\caption{Evaluation graph for splitting allowed up to 2 hands}
+\label{fig:split-2}
+\end{figure}
+
+\begin{figure}[ht!]
+\centerline{\resizex{3in}{\xfig{figs/split-graph-3}}}
+\caption{Evaluation graph for splitting allowed up to 3 hands}
+\label{fig:split-3}
+\end{figure}
+
+\begin{figure}[ht!]
+\centerline{\resizex{4in}{\xfig{figs/split-graph-4}}}
+\caption{Evaluation graph for splitting allowed up to 4 hands}
+\label{fig:split-4}
+\end{figure}
+
+\noindent
+The expected value of splitting in a given state
+is just the probability weighted sum of 
+the maximum expected values of the post-split states. 
+Figures~\ref{fig:split-2}, \ref{fig:split-3}, \ref{fig:split-4}
+show the evaluation graphs
+for splitting up to 2, 3, and 4 hands, respectively.  
+The initial state in each graph is a single paired hand, $P$.  
+The $N$ in $N:\ldots$ represents the number of splits remaining.
+Red edges are transitions with probability $p^2$,
+green edges have probability $2pq$,
+and blue edges have probability $q^2$.
+
+Note that these evaluation graphs may contain reconvergent paths
+to the same state; there is more than one way to reach some states.
+Computed purely recursively, the same state (and all of its descendants)
+would be evaluated multiple times, 
+often resulting in an exponentially growing amount of computation.  
+Conventional techniques for accelerating such computations
+include memoization and caching of intermediate results.  
+
+\TODO: count paths to terminal nodes before and after caching,
+compare number of node evaluations
+% write generic dot-graph reader to count paths from root to terminals?
+
+\begin{comment}
 For $S=1,P=1$:
 \begin{eqnarray}
 P &\goesto& p^2 \Brack{XX} +2pq \Brack{XY} +q^2 \Brack{YY}
@@ -403,6 +450,7 @@ For $S=3,P=1$:
 P &\goesto& PP +2PY +YY \\
 &\goesto& \ldots
 \end{eqnarray}
+\end{comment}
 
 
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % %
