@@ -14,7 +14,13 @@ SUFFIXES += .dot .fig
 	$(DOT) -Tfig $< -o $@
 
 ###############################################################################
-BOOK_INPUTS = bj-math.tex intro.tex basic.tex counting.tex betting.tex \
+BOOK_INPUTS = bj-math.tex \
+	preface.tex \
+	intro.tex \
+	basic.tex \
+	composition.tex \
+	counting.tex \
+	betting.tex \
 	bj-math.bib
 EXTRA_DIST = $(BOOK_INPUTS) scantexdepend.awk state-machine-tabular.awk \
 	transpose-matrix.awk scale.awk hit-vs-stand-table.awk

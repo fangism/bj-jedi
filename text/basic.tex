@@ -17,10 +17,16 @@ Basic strategy can be computed with a few simplifications:
 \item An infinite deck is assumed, so conditional probabilities
 	involving the peeked cards are no different from
 	the unconditional probabilities.\index{infinite deck}
-\item Hands are analyzed by only the value, not the composition.
+\item The strategy discussed in this chapter only depends on the 
+	total value of each hand, known as
+	\emph{total-dependent}\index{total-dependent}, 
+	as opposed to \emph{composition-dependent}\index{composition-dependent}.
 	In fact, using the same full-deck distribution essentially
 	ignores the fact that 2 player cards and 1 dealer card
 	are exposed.
+	A composition-dependent strategy
+	(discussed in Chapter~\ref{sec:composition})
+	accounts for the exposed cards.
 \item There is no memory of cards previously seen and discarded; 
 	the deck is always fresh.
 \end{itemize}

@@ -109,41 +109,46 @@ public:
 
 private:
 	index_map_type::iterator
-	add(const split_state& r) {
-		const std::pair<index_map_type::iterator, bool>
-			p(index_map.insert(std::make_pair(r, nodes.size())));
-		const size_t ind = nodes.size();
-	if (p.second) {
-		nodes.push_back(node());
-		if (r.is_splittable()) {
-			split_state s[3];
-			r.post_split_states(s[0], s[1], s[2]);
-			nodes.back().out_edges.reserve(3);
-			// each call to add() invalidates reference b(nodes.back())
-			index_map_type::iterator i[3];
-			i[0] = add(s[0]);
-			i[1] = add(s[1]);
-			i[2] = add(s[2]);
-			node& b(nodes[ind]);
-			b.out_edges.push_back(i[0]);
-			b.out_edges.push_back(i[1]);
-			b.out_edges.push_back(i[2]);
-#if 0
-			cout << "sub indices: " <<
-				b.out_edges[0]->second << ' ' <<
-				b.out_edges[1]->second << ' ' <<
-				b.out_edges[2]->second << endl;
-#endif
-			b.path_count = 
-				nodes[b.out_edges[0]->second].path_count
-				+nodes[b.out_edges[1]->second].path_count 
-				+nodes[b.out_edges[2]->second].path_count;
-		}	// already existed
-	}
-		return p.first;
-	}
+	add(const split_state& r);
 };	// end class split_graph
 
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+split_graph::index_map_type::iterator
+split_graph::add(const split_state& r) {
+	const std::pair<index_map_type::iterator, bool>
+		p(index_map.insert(std::make_pair(r, nodes.size())));
+	const size_t ind = nodes.size();
+if (p.second) {
+	nodes.push_back(node());
+	if (r.is_splittable()) {
+		split_state s[3];
+		r.post_split_states(s[0], s[1], s[2]);
+		nodes.back().out_edges.reserve(3);
+		// each call to add() invalidates reference b(nodes.back())
+		index_map_type::iterator i[3];
+		i[0] = add(s[0]);
+		i[1] = add(s[1]);
+		i[2] = add(s[2]);
+		node& b(nodes[ind]);
+		b.out_edges.push_back(i[0]);
+		b.out_edges.push_back(i[1]);
+		b.out_edges.push_back(i[2]);
+#if 0
+		cout << "sub indices: " <<
+			b.out_edges[0]->second << ' ' <<
+			b.out_edges[1]->second << ' ' <<
+			b.out_edges[2]->second << endl;
+#endif
+		b.path_count = 
+			nodes[b.out_edges[0]->second].path_count
+			+nodes[b.out_edges[1]->second].path_count 
+			+nodes[b.out_edges[2]->second].path_count;
+	}	// already existed
+}
+	return p.first;
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
 	Construct edge-weighted, directed acyclic dependency graph of states.
 	Output formate: dot (graphviz, digraph)

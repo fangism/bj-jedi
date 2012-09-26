@@ -9,6 +9,8 @@ a dealer, an opponent whose actions are predetermined.
 No player's decisions will influence the dealer's decision.  
 The winner of each hand is whoever (player or dealer)
 has a card total closest to, but not exceeding, 21.  
+A hand that exceeds 21 is called a
+\emph{bust}\index{bust} and automatically loses.
 This seemingly simple game has captivated millions of gamblers
 and card game enthusiasts for centuries, 
 and continues to be popular today.
@@ -33,13 +35,18 @@ basic understanding of probability and matrix and vector arithmetic.
 \section{Rules and Gameplay}
 \label{sec:intro:rules}
 
-Blackjack can be played with one or more standard decks of cards.
+Blackjack can be played with one or more decks of cards.
 Cards numbered 2 thorugh 10 are worth their face value.  
 Face cards (Jack, Queen, King) are worth 10.
 Thus, in standard decks of cards, there are 4 times as many 10-valued 
 cards as there are any of the other cards.
-Aces are worth 11 when the total does not exceed 21, 
+Aces are worth 11 when the total does not bust,
 otherwise they are worth 1.
+A \emph{hard} hand\index{hard total} is either a hand with no Aces,
+or a hand with Aces that must be counted as 1.
+A \emph{soft} hand\index{soft total} contains one Ace that can be 
+counted as 11 without busting, for example, $A,5$ can count as 6 or 16.
+Soft totals will always use the notation $A,x$.
 For the remainder of this text, `10' shall refer to any 10-valued card.
 An Ace and a 10 on the first two cards form the 
 highest-ranking hand, a blackjack, 
@@ -80,7 +87,7 @@ because he has already `peeked' for blackjack\index{peek}.
 \begin{enumerate}
 \item \textbf{Double-down}:\index{double-down} player takes exactly 1 more card 
 and doubles her bet, ending all of her actions.
-\item \textbf{Split}:\index{split} turn paired hand into two hands, 
+\item \textbf{Split}:\index{split} divides a paired hand into two hands, 
 each of which is dealt an additional up-card.  
 Each new hand is then played normally.
 A total of 21 on any of the newly split hands is treated as 21, 
@@ -94,21 +101,27 @@ the original bet (also known as late surrender), and keeping the other half.
 \item If none of these options are exercised, the hand resumes normally.
 \end{enumerate}
 \item The player elects to hit (take additional cards) until either
-she busts (total exceeds 21) or stands, taking no more cards.
+she busts\index{bust} (total exceeds 21) or stands, taking no more cards.
 In the case of a player bust, the bet is lost immediately.
 \item Once the player stands, the dealer hits until his hand either busts
 or his cards' total is 17 or higher.  
 If the dealer busts, then the player wins the bet immediately.  
 \item Whoever has the total closest to 21 wins the hand.
-In the event of a push (tie), no money is exchanged.
+In the event of a push\index{push} (tie), no money is exchanged.
 \end{enumerate}
 
 % hand signals when playing at a live table
 
-In the presence of multiple players playing against the dealer, 
-all of the players act first before the dealer reveals the hole card
-and plays.  
+The presence of multiple players playing against the dealer does not
+change the flow of the game.
 Players win or lose only against the dealer, not against each other.
+A dealer blackjack ends the hands for all players,
+and players who do not also have blackjack lose their bet.
+When the dealer does not have blackjack,
+each player that has blackjack is paid off immediately, ending her hand, 
+while the dealer continues to play against other live players.  
+Every player act on her own hand before the dealer reveals the 
+hole card and plays.  
 The presence of multiple players does not impact the overall 
 odds of the game; nor do their decisions impact your odds.
 
