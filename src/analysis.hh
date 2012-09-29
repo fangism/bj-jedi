@@ -170,17 +170,45 @@ public:
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
+	Just a pair.
+ */
+struct player_situation_base {
+	player_hand_base			hand;
+	split_state				splits;
+
+	player_situation_base(const player_hand_base& h, 
+		const split_state& s) : hand(h), splits(s) { }
+
+	ostream&
+	dump(ostream&) const;
+
+	int
+	compare(const player_situation_base& r) const {
+		const int sc = splits.compare(r.splits);
+		if (sc) return sc;
+		return hand.compare(r.hand);
+	}
+
+	bool
+	operator < (const player_situation_base& r) const {
+		return compare(r) < 0;
+	}
+
+};	// end struct player_situation_base
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
 	Lookup key for cached outcome vector results.  
  */
 struct player_situation_key_type : public dealer_situation_key_type {
 	typedef	dealer_situation_key_type	parent_type;
-	player_hand_base			player;
+	player_situation_base			player;
 
-	player_situation_key_type(const size_t ps,
-			const action_mask& am,
+	player_situation_key_type(const player_hand_base& ph,
+			const split_state& ss,
 			const dealer_hand_base& dh,
 			const perceived_deck_state& d) :
-		parent_type(dh, d), player(ps, am) { }
+		parent_type(dh, d), player(ph, ss) { }
 
 	int
 	compare(const player_situation_key_type& r) const {
@@ -200,11 +228,15 @@ struct player_situation_key_type : public dealer_situation_key_type {
 };	// end struct player_situation_key_type
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
+	This key type excludes the deck_count information, 
+	and is used for basic strategy.
+ */
 struct player_situation_basic_key_type {
-	player_hand_base			player;
+	player_situation_base			player;
 	dealer_hand_base			dealer;
 
-	player_situation_basic_key_type(const player_hand_base& p, 
+	player_situation_basic_key_type(const player_situation_base& p, 
 		const dealer_hand_base& d) : player(p), dealer(d) { }
 
 	int

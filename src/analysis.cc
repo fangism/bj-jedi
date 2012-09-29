@@ -311,7 +311,7 @@ if (bi.second) {
 
 ostream&
 player_situation_key_type::dump(ostream& o, const play_map& p) const {
-	player.dump(o, p.player_hit);
+	player.hand.dump(o, p.player_hit);
 	return card_dist.show_count_brief(o);
 }
 
@@ -320,7 +320,7 @@ player_situation_key_type::dump(ostream& o, const play_map& p) const {
 
 ostream&
 player_situation_basic_key_type::dump(ostream& o, const play_map& p) const {
-	player.dump(o, p.player_hit);
+	player.hand.dump(o, p.player_hit);
 	dealer.dump(o, p.dealer_hit);
 	return o;
 }
@@ -338,9 +338,10 @@ player_outcome_cache_set::evaluate_player_basic(const play_map& play,
 	k.dump(STACKTRACE_STREAM, play) << endl;
 #endif
 	typedef	basic_map_type::value_type		pair_type;
-	const player_hand_base ak(k.player.state, play);
+	const player_hand_base ak(k.player.hand.state, play);
+	const player_situation_base psb(ak, k.player.splits);
 	const pair_type probe(
-		player_situation_basic_key_type(ak, k.dealer),
+		player_situation_basic_key_type(psb, k.dealer),
 		null_expectations);
 	const pair<basic_map_type::iterator, bool>
 		bi(basic_cache.insert(probe));
@@ -354,14 +355,14 @@ if (bi.second) {
 	const dealer_final_vector&
 		dfv(dealer_outcome_cache.evaluate_dealer_basic(play, k.dealer));
 	// current state
-	const state_machine::node& ps(play.player_hit[k.player.state]);
+	const state_machine::node& ps(play.player_hit[k.player.hand.state]);
 	const action_mask& m(ak.player_options);
 	if (m.can_stand()) {
 		// stand is always a legal option
 		// (busted hands considered as stand)
 		// compute just the odds of standing with this hand
 		const size_t p_final =
-			play.player_final_state_map(k.player.state);
+			play.player_final_state_map(k.player.hand.state);
 		outcome_odds soo;
 		play.compute_player_final_outcome(p_final, dfv, soo);
 		ret.stand() = soo.edge();
@@ -381,7 +382,8 @@ if (bi.second) {
 		if (w) {
 			player_hand_base np(ps[i], play);
 			np.player_options &= play.post_double_down_actions;
-			const player_situation_basic_key_type nk(np, k.dealer);
+			const player_situation_base npb(np, k.player.splits);
+			const player_situation_basic_key_type nk(npb, k.dealer);
 			const expectations
 				child(evaluate_player_basic(play, nk));
 			// weight by card probability
@@ -405,7 +407,8 @@ if (bi.second) {
 		if (w) {
 			player_hand_base np(ps[i], play);
 			np.player_options &= play.post_hit_actions;
-			const player_situation_basic_key_type nk(np, k.dealer);
+			const player_situation_base npb(np, k.player.splits);
+			const player_situation_basic_key_type nk(npb, k.dealer);
 			const expectations
 				child(evaluate_player_basic(play, nk));
 			// weight by card probability
