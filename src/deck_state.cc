@@ -78,13 +78,13 @@ zpow(const size_t b, size_t p) {
 //=============================================================================
 // class perceived_deck_state method definitions
 
-perceived_deck_state::perceived_deck_state() : remaining(size_t(0)),
+perceived_deck_state::perceived_deck_state() : remaining(count_type(0)),
 	peeked_not_10s(0), peeked_not_Aces(0), remaining_total(0) {
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 perceived_deck_state::perceived_deck_state(const perceived_deck_state& p,
-		const size_t r) :
+		const card_type r) :
 		remaining(p.remaining),
 		peeked_not_10s(p.peeked_not_10s),
 		peeked_not_Aces(p.peeked_not_Aces),
@@ -108,8 +108,8 @@ perceived_deck_state::initialize(const extended_deck_count_type& d) {
 	Only known cards are counted.
  */
 void
-perceived_deck_state::remove(const size_t c) {
-	size_t& r(remaining[card_value_map[c]]);
+perceived_deck_state::remove(const card_type c) {
+	card_type& r(remaining[card_value_map[c]]);
 	assert(r);
 	--r;
 	assert(remaining_total);
@@ -122,8 +122,8 @@ perceived_deck_state::remove(const size_t c) {
 	Only known cards are counted.
  */
 void
-perceived_deck_state::remove_if_any(const size_t c) {
-	size_t& r(remaining[card_value_map[c]]);
+perceived_deck_state::remove_if_any(const card_type c) {
+	card_type& r(remaining[card_value_map[c]]);
 if (r) {
 	--r;
 	assert(remaining_total);
@@ -137,8 +137,8 @@ if (r) {
 	Only known cards are counted.
  */
 void
-perceived_deck_state::remove_all(const size_t c) {
-	size_t& r(remaining[card_value_map[c]]);
+perceived_deck_state::remove_all(const card_type c) {
+	card_type& r(remaining[card_value_map[c]]);
 	assert(remaining_total);
 	remaining_total -= r;
 	r = 0;
@@ -161,17 +161,17 @@ perceived_deck_state::peek_not_Ace(void) {
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void
-perceived_deck_state::reveal_peek_10(const size_t c) {
+perceived_deck_state::reveal_peek_10(const card_type c) {
 	--peeked_not_10s;
-//	const size_t d = card_value_map[c];
+//	const card_type d = card_value_map[c];
 	remove(c);
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void
-perceived_deck_state::reveal_peek_Ace(const size_t c) {
+perceived_deck_state::reveal_peek_Ace(const card_type c) {
 	--peeked_not_Aces;
-//	const size_t d = card_value_map[c];
+//	const card_type d = card_value_map[c];
 	remove(c);
 }
 
@@ -186,17 +186,17 @@ void
 perceived_deck_state::distribution_weight_adjustment(deck_count_type& d) const {
 	// computing integer power, just multiply
 	// unlikely to have high powers
-	const size_t p_nA = remaining_total -remaining[ACE];
-	const size_t p_n10 = remaining_total -remaining[TEN];
-	const size_t p_nA_1 = p_nA -1;
-	const size_t p_n10_1 = p_n10 -1;
-	const size_t w_10 = zpow(p_n10, peeked_not_10s);
-	const size_t w_10_1 = zpow(p_n10_1, peeked_not_10s);
-	const size_t w_A = zpow(p_nA, peeked_not_10s);
-	const size_t w_A_1 = zpow(p_nA_1, peeked_not_10s);
-	const size_t f_x = w_A_1 *w_10_1;
-	const size_t f_10 = w_A_1 *w_10;
-	const size_t f_A = w_A *w_10_1;
+	const count_type p_nA = remaining_total -remaining[ACE];
+	const count_type p_n10 = remaining_total -remaining[TEN];
+	const count_type p_nA_1 = p_nA -1;
+	const count_type p_n10_1 = p_n10 -1;
+	const count_type w_10 = zpow(p_n10, peeked_not_10s);
+	const count_type w_10_1 = zpow(p_n10_1, peeked_not_10s);
+	const count_type w_A = zpow(p_nA, peeked_not_10s);
+	const count_type w_A_1 = zpow(p_nA_1, peeked_not_10s);
+	const count_type f_x = w_A_1 *w_10_1;
+	const count_type f_10 = w_A_1 *w_10;
+	const count_type f_A = w_A *w_10_1;
 	// loop bounds depend on card enum in deck.hh
 	d[ACE] = f_A;
 	fill(&d[ACE+1], &d[TEN], f_x);
@@ -256,9 +256,9 @@ perceived_deck_state::operator < (const perceived_deck_state& r) const {
  */
 ostream&
 perceived_deck_state::show_count_brief(ostream& o) const {
-	size_t i = 0;
+	card_type i = 0;
 	for (; i<card_values; ++i) {
-		const size_t j = reveal_print_ordering[i];
+		const card_type j = reveal_print_ordering[i];
 		o << ' ' << card_name[j] << ':' << remaining[j];
 	}
 	o << " !10:" << peeked_not_10s;
@@ -271,16 +271,16 @@ perceived_deck_state::show_count_brief(ostream& o) const {
 ostream&
 perceived_deck_state::show_count(ostream& o) const {
 	o << "perceived count:" << endl;
-	size_t i = 0;
+	card_type i = 0;
 	o << "card:\t";
 	for (; i<card_values; ++i) {
-		const size_t j = reveal_print_ordering[i];
+		const card_type j = reveal_print_ordering[i];
 		o << "   " << card_name[j];
 	}
 	o << "   !10  !A\ttotal\n";
 	o << "rem:\t";
 	for (i=0; i<card_values; ++i) {
-		const size_t j = reveal_print_ordering[i];
+		const card_type j = reveal_print_ordering[i];
 		o << setw(4) << remaining[j];
 	}
 	o << "  " << setw(4) << peeked_not_10s;
@@ -309,7 +309,7 @@ deck_state::reshuffle(void) {
 	// ACE is at index 0
 	cards_remaining = num_decks*52;
 	cards_spent = 0;
-	const size_t f = num_decks*4;
+	const count_type f = num_decks*4;
 	std::fill(used_cards.begin(), used_cards.end(), 0);
 	std::fill(cards.begin(), cards.end(), f);
 }
@@ -347,7 +347,7 @@ deck_state::draw_ten_probability(void) const {
 	Counts specified card as drawn from deck.
  */
 void
-deck_state::magic_draw(const size_t r) {
+deck_state::magic_draw(const card_type r) {
 	// TODO: safe-guard against drawing non-existent
 	if (!cards[r]) {
 		show_count(cerr, true, true);
@@ -365,9 +365,9 @@ deck_state::magic_draw(const size_t r) {
 	Removes one card from remaining deck at random.
 	Does NOT re-compute probabilities.
  */
-size_t
+card_type
 deck_state::quick_draw(void) {
-	const size_t ret = quick_draw_uncounted();
+	const card_type ret = quick_draw_uncounted();
 	magic_draw(ret);
 	return ret;
 }
@@ -378,11 +378,11 @@ deck_state::quick_draw(void) {
 	Does NOT re-compute real-valued probabilities; just uses integers.
 	Accounts for the fact that a hole card was drawn.
  */
-size_t
+card_type
 deck_state::quick_draw_uncounted(void) {
 if (hole_reserved) {
-	size_t& count(cards[hole_card]);
-	const value_saver<size_t> __tmp(count);	// save value
+	count_type& count(cards[hole_card]);
+	const value_saver<count_type> __tmp(count);	// save value
 	assert(count);
 	--count;		// the actual count (unknown to player)
 	return util::random_draw_from_integer_pdf(cards);
@@ -399,9 +399,9 @@ if (hole_reserved) {
 	This is useful after peeking for blackjack.  
 	\return index of a random card.
  */
-size_t
-deck_state::quick_draw_uncounted_except(const size_t i) {
-	const value_saver<size_t> __tmp(cards[i], 0);
+card_type
+deck_state::quick_draw_uncounted_except(const card_type i) {
+	const value_saver<count_type> __tmp(cards[i], 0);
 	return quick_draw_uncounted();
 }
 
@@ -412,7 +412,7 @@ deck_state::quick_draw_uncounted_except(const size_t i) {
 	\param m if true, prompt user to choose a specific card.
 	\param s if true, show result of random draw.
  */
-size_t
+card_type
 deck_state::option_draw_uncounted(const bool m, istream& i, ostream& o,
 		const bool s) {
 if (m) {
@@ -421,13 +421,13 @@ if (m) {
 		o << "card? ";
 		i >> line;
 	} while (line.empty() && i);
-	const size_t c = card_index(line[0]);
-	if (c != size_t(-1)) {
+	const card_type c = card_index(line[0]);
+	if (c != card_type(-1)) {
 		assert(c < cards.size());
 		assert(cards[c]);		// count check
 		return c;
 	} else {
-		const size_t ret = quick_draw_uncounted();
+		const card_type ret = quick_draw_uncounted();
 		o << "drawing randomly... ";
 		if (s) {
 			o << card_name[ret];
@@ -441,9 +441,9 @@ if (m) {
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-size_t
+card_type
 deck_state::option_draw(const bool m, istream& i, ostream& o) {
-	const size_t ret = option_draw_uncounted(m, i, o, true);
+	const card_type ret = option_draw_uncounted(m, i, o, true);
 	magic_draw(ret);
 	return ret;
 }
@@ -452,9 +452,9 @@ deck_state::option_draw(const bool m, istream& i, ostream& o) {
 /**
 	Removes one card from remaining deck at random.
  */
-size_t
+card_type
 deck_state::draw(void) {
-	const size_t ret = quick_draw();
+	const card_type ret = quick_draw();
 	return ret;
 }
 
@@ -485,7 +485,7 @@ deck_state::replace_hole_card(void) {
 /**
 	This should only be called once per hole card draw.
  */
-size_t
+card_type
 deck_state::reveal_hole_card(void) {
 	assert(hole_reserved);
 	hole_reserved = false;
@@ -502,9 +502,9 @@ deck_state::reveal_hole_card(void) {
 ostream&
 deck_state::show_count(ostream& o, const bool ex, const bool used) const {
 	o << "actual count:" << endl;
-	const size_t N = ex ? card_symbols : card_values;
+	const card_type N = ex ? card_symbols : card_values;
 	const util::precision_saver p(o, 2);
-	const size_t* const po = ex ? extended_reveal_print_ordering
+	const card_type* const po = ex ? extended_reveal_print_ordering
 		: reveal_print_ordering;
 	deck_count_type s_cards_rem(&cards[0]);
 	deck_count_type s_cards_used(&used_cards[0]);
@@ -514,23 +514,23 @@ deck_state::show_count(ostream& o, const bool ex, const bool used) const {
 		s_cards_used[TEN] += used_cards[JACK]
 			+used_cards[QUEEN] +used_cards[KING];
 	}
-	const size_t* const _cards_rem =
+	const count_type* const _cards_rem =
 		ex ? &cards[0] : &s_cards_rem[0];
-	const size_t* const _cards_used =
+	const count_type* const _cards_used =
 		ex ? &used_cards[0] : &s_cards_used[0];
 {
 	const util::width_saver ws(o, 4);
-	size_t i = 0;
+	card_type i = 0;
 	o << "card:\t";
 	for (i=0 ; i<N; ++i) {
-		const size_t j = po[i];
+		const card_type j = po[i];
 		o << "   " << card_name[j];
 	}
 	o << "\ttotal\t%" << endl;
 if (used) {
 	o << "used:\t";
 	for (i=0 ; i<N; ++i) {
-		const size_t j = po[i];
+		const card_type j = po[i];
 		o << setw(4) << _cards_used[j];
 	}
 	o << "\t" << cards_spent << "\t(" <<
@@ -538,7 +538,7 @@ if (used) {
 }
 	o << "rem:\t";
 	for (i=0; i<N; ++i) {
-		const size_t j = po[i];
+		const card_type j = po[i];
 		o << setw(4) << _cards_rem[j];
 	}
 	// note: altered decks will have nonsense values
@@ -550,8 +550,8 @@ if (used) {
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 bool
-deck_state::__check_edit_deck_args(const size_t c, const int n) {
-	const size_t N = card_symbols;
+deck_state::__check_edit_deck_args(const card_type c, const int n) {
+	const card_type N = card_symbols;
 	if (c >= N) {
 		cerr << "error: invalid card index " << c << endl;
 		return true;
@@ -570,7 +570,7 @@ deck_state::__check_edit_deck_args(const size_t c, const int n) {
 	\param n the number of those cards to keep in deck
  */
 bool
-deck_state::edit_deck(const size_t c, const int n) {
+deck_state::edit_deck(const card_type c, const int n) {
 	if (__check_edit_deck_args(c, n)) {
 		return true;
 	}
@@ -583,8 +583,8 @@ deck_state::edit_deck(const size_t c, const int n) {
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 bool
-deck_state::edit_deck_add(const size_t c, const int n) {
-	const size_t N = cards.size();
+deck_state::edit_deck_add(const card_type c, const int n) {
+	const card_type N = cards.size();
 	if (c >= N) {
 		cerr << "error: invalid card index " << c << endl;
 		return true;
@@ -594,8 +594,8 @@ deck_state::edit_deck_add(const size_t c, const int n) {
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 bool
-deck_state::edit_deck_sub(const size_t c, const int n) {
-	const size_t N = cards.size();
+deck_state::edit_deck_sub(const card_type c, const int n) {
+	const card_type N = cards.size();
 	if (c >= N) {
 		cerr << "error: invalid card index " << c << endl;
 		return true;
@@ -610,13 +610,13 @@ deck_state::edit_deck_sub(const size_t c, const int n) {
  */
 bool
 deck_state::edit_deck_all(istream& i, ostream& o) {
-	const size_t N = cards.size();
+	const card_type N = cards.size();
 	o << "Enter quantity of each card.\n"
 "\t. for unchanged\n"
 "\t[+|-] value : for relative count change" << endl;
-	size_t j = 0;
+	card_type j = 0;
 for ( ; j<N; ++j) {
-	const size_t k = extended_reveal_print_ordering[j];
+	const card_type k = extended_reveal_print_ordering[j];
 	bool accept = true;
 	do {
 	o << "card: " << card_name[k] << " (" << cards[k] << "): ";

@@ -98,7 +98,7 @@ struct dealer_situation_key_type {
 	dealer_hand_base			dealer;
 	perceived_deck_state			card_dist;
 
-	dealer_situation_key_type(const size_t ds,
+	dealer_situation_key_type(const dealer_state_type ds,
 			const perceived_deck_state& d) :
 		dealer(ds), card_dist(d) { }
 

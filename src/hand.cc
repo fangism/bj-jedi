@@ -24,24 +24,25 @@ using cards::card_index;
 using cards::card_symbols;
 using cards::card_value_map;
 using cards::state_machine;
+using cards::count_type;
 
 //=============================================================================
 // class split_state method definitions
 
 ostream&
 split_state::dump_code(ostream& o) const {
-	const size_t Ps = std::min(splits_remaining, paired_hands);
-	const size_t Pn = paired_hands -Ps;
+	const count_type Ps = std::min(splits_remaining, paired_hands);
+	const count_type Pn = paired_hands -Ps;
 #if 0
 	o << Ps << ',' << Pn << ',' << unpaired_hands;	// debug
 #else
 {
-	size_t i=0;
+	count_type i=0;
 	for ( ; i<Ps; ++i) {
 		o << 'P';
 	}
 }{
-	size_t i=0;
+	count_type i=0;
 	for ( ; i<Pn; ++i) {
 		o << 'X';
 	}
@@ -88,11 +89,11 @@ split_state::post_split_states(
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 class split_graph {
-	typedef	map<split_state, size_t>		index_map_type;
+	typedef	map<split_state, state_type>		index_map_type;
 	typedef	vector<index_map_type::iterator>	edges_type;
 	struct node {
 		edges_type				out_edges;
-		size_t					path_count;
+		state_type				path_count;
 		node() : out_edges(), path_count(1) { }
 	};
 	index_map_type				index_map;
@@ -191,7 +192,8 @@ split_state::generate_graph(ostream& o) const {
 	This constructor automatically sets the action mask depending
 	on whether or not the state is splittable.
  */
-player_hand_base::player_hand_base(const size_t ps, const play_map& play) :
+player_hand_base::player_hand_base(const player_state_type ps,
+		const play_map& play) :
 		state(ps),
 		player_options(
 			play.is_player_pair(ps) ?
@@ -200,7 +202,7 @@ player_hand_base::player_hand_base(const size_t ps, const play_map& play) :
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void
-player_hand_base::hit(const play_map& play, const size_t c) {
+player_hand_base::hit(const play_map& play, const card_type c) {
 	assert(c < card_symbols);
 	state = play.hit_player(state, card_value_map[c]);
 }
@@ -213,7 +215,7 @@ player_hand_base::split(const play_map& play) {
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void
-player_hand_base::split(const play_map& play, const size_t c) {
+player_hand_base::split(const play_map& play, const card_type c) {
 	assert(c < card_symbols);
 	state = play.split_player(state, card_value_map[c]);
 	// assume re-splittable
@@ -246,7 +248,7 @@ dealer_hand_base::dump(ostream& o, const state_machine& sm) const {
 // class player_hand method definitions
 
 void
-player_hand::initial_card_player(const size_t p1) {
+player_hand::initial_card_player(const card_type p1) {
 	// the string stores the card names, not card indices
 	assert(p1 < card_symbols);
 	cards.clear();
@@ -259,10 +261,10 @@ player_hand::initial_card_player(const size_t p1) {
 	\param p1 reveal card can be A,2-9,T-K, will be translated to value
  */
 void
-dealer_hand::initial_card_dealer(const size_t p1) {
+dealer_hand::initial_card_dealer(const card_type p1) {
 	// the string stores the card names, not card indices
 	assert(p1 < card_symbols);
-	const size_t reveal_value = card_value_map[p1];
+	const card_type reveal_value = card_value_map[p1];
 	reveal = p1;
 //	reveal = card_value_map[p1];
 	cards.clear();
@@ -275,7 +277,7 @@ dealer_hand::initial_card_dealer(const size_t p1) {
 	Appends card and updates allowable actions.
  */
 void
-player_hand::hit_player(const size_t p2) {
+player_hand::hit_player(const card_type p2) {
 	player_hand_base::hit(*play, p2);
 	cards.push_back(card_name[p2]);
 	player_options &= play->post_hit_actions;
@@ -283,7 +285,7 @@ player_hand::hit_player(const size_t p2) {
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void
-dealer_hand::hit_dealer(const size_t p2) {
+dealer_hand::hit_dealer(const card_type p2) {
 	assert(p2 < card_symbols);
 	reveal_hole_card();
 	cards.push_back(card_name[p2]);
@@ -301,8 +303,8 @@ dealer_hand::hit_dealer(const size_t p2) {
 	\param dr dealer's reveal card
  */
 void
-player_hand::deal_player(const size_t p1, const size_t p2, const bool nat, 
-		const size_t dr) {
+player_hand::deal_player(const card_type p1, const card_type p2, const bool nat, 
+		const card_type dr) {
 	cards.clear();
 	cards.push_back(card_name[p1]);
 	cards.push_back(card_name[p2]);
@@ -317,7 +319,7 @@ player_hand::deal_player(const size_t p1, const size_t p2, const bool nat,
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void
-player_hand::double_down(const size_t p2) {
+player_hand::double_down(const card_type p2) {
 	hit_player(p2);
 	action = DOUBLED_DOWN;
 	player_options &= play->post_double_down_actions;
@@ -335,8 +337,8 @@ player_hand::double_down(const size_t p2) {
  */
 void
 player_hand::split(player_hand& nh,
-		const size_t s1, const size_t s2, const size_t dr) {
-	const size_t split_card = pair_card();
+		const card_type s1, const card_type s2, const card_type dr) {
+	const card_type split_card = pair_card();
 	// 21 should not be considered blackjack when splitting (variation)?
 	deal_player(split_card, s1, false, dr);
 	player_options &= play->post_split_actions;

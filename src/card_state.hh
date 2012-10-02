@@ -29,7 +29,7 @@ typedef	std::vector<probability_type>		probability_vector;
  */
 class state_machine {
 public:
-	typedef	std::vector<size_t>		edge_vector;
+	typedef	std::vector<state_type>		edge_vector;
 	struct node {
 		string			name;	///< e.g. "busted" or "21"
 		/**
@@ -46,8 +46,8 @@ public:
 		size_t
 		size(void) const { return out_edges.size(); }
 
-		const size_t&
-		operator [] (const size_t i) const { return out_edges[i]; }
+		const state_type&
+		operator [] (const card_type i) const { return out_edges[i]; }
 
 		// verify that all entries are non-zero
 		void
@@ -82,22 +82,22 @@ public:
 	size(void) const { return states.size(); }
 
 	const node&
-	operator [] (const size_t i) const { return states[i]; }
+	operator [] (const state_type i) const { return states[i]; }
 
 	node&
-	operator [] (const size_t i) { return states[i]; }
+	operator [] (const state_type i) { return states[i]; }
 
 	void
-	name_state(const size_t, const string&);
+	name_state(const state_type, const string&);
 
 	void
-	add_edge(const size_t, const size_t, const size_t, const size_t);
+	add_edge(const state_type, const state_type, const card_type, const size_t);
 
 	void
-	copy_edge_set(const size_t, const size_t);
+	copy_edge_set(const state_type, const state_type);
 
 	void
-	copy_edge_set(const state_machine&, const size_t, const size_t);
+	copy_edge_set(const state_machine&, const state_type, const state_type);
 
 	/// compute terminal probabilities (solve)
 	void

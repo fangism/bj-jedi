@@ -122,9 +122,9 @@ statistics::dump(ostream& o, const play_map& play) const {
 	fill(vtotals.begin(), vtotals.end(), 0);
 	o << "initial deal histogram: {" << endl;
 	o << "\tP\\D\t";
-	size_t j = 0;
+	card_type j = 0;
 	for ( ; j<card_values; ++j) {
-		const size_t k = reveal_print_ordering[j];
+		const card_type k = reveal_print_ordering[j];
 		o << "   " << card_name[k];
 //		o << '(' << k << ')';
 	}
@@ -134,9 +134,9 @@ statistics::dump(ostream& o, const play_map& play) const {
 		o << '\t' << play.player_hit[j].name << '\t';
 		const dealer_reveal_histogram_type&
 			row(initial_state_histogram[j]);
-		size_t i = 0;
+		card_type i = 0;
 		for ( ; i<card_values; ++i) {
-			const size_t k = reveal_print_ordering[i];
+			const card_type k = reveal_print_ordering[i];
 			o << setw(4) << row[k];
 			vtotals[k] += row[k];
 		}
@@ -144,7 +144,7 @@ statistics::dump(ostream& o, const play_map& play) const {
 	}
 	o << "\n\ttotal\t";
 	for (j=0; j<card_values; ++j) {
-		const size_t k = reveal_print_ordering[j];
+		const card_type k = reveal_print_ordering[j];
 		o << setw(4) << vtotals[k];
 	}
 	o << '\t' << accumulate(vtotals.begin(), vtotals.end(), 0) << endl;

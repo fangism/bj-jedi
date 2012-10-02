@@ -115,24 +115,24 @@ if (bi.second) {
 	const state_machine::node& ds(play.dealer_hit[k.state]);
 	if (ds.is_terminal()) {
 		// dealer must stand
-		const size_t final = k.state -stop;
+		const dealer_state_type final = k.state -stop;
 		ret[final] = 1.0;
 	} else {
 		// dealer must hit
 		// what distribution to use? (any peek?)
 		const deck_count_type&
 			dref(get_basic_reduced_count(k.peek_state));
-		const size_t total_weight =
+		const count_type total_weight =
 			accumulate(dref.begin(), dref.end(), 0);
-		size_t i = 0;
+		card_type i = 0;
 		for ( ; i<card_values; ++i) {
-			const size_t& w(dref[i]);
+			const count_type& w(dref[i]);
 		if (w) {
 			dealer_hand_base nk(ds[i]);	// NO_PEEK
 			const dealer_final_vector
 				child(evaluate_dealer_basic(play, nk));
 			// weight by card probability
-			size_t j = 0;
+			dealer_state_type j = 0;
 			for ( ; j<d_final_states; ++j) {
 				ret[j] += child[j] * w;
 			}
@@ -178,7 +178,7 @@ if (bi.second) {
 	const state_machine::node& ds(play.dealer_hit[k.dealer.state]);
 	if (ds.is_terminal()) {
 		// dealer must stand
-		const size_t final = k.dealer.state -stop;
+		const dealer_state_type final = k.dealer.state -stop;
 		ret[final] = 1.0;
 	} else {
 		// dealer must hit
@@ -192,10 +192,11 @@ if (bi.second) {
 		// effective weights, given peeked not-10, not-Ace
 		deck_count_type wd;
 		d.distribution_weight_adjustment(wd);
-		const size_t total_weight = accumulate(wd.begin(), wd.end(), 0);
-		size_t i = 0;
+		const count_type total_weight =
+			accumulate(wd.begin(), wd.end(), 0);
+		card_type i = 0;
 		for ( ; i<card_values; ++i) {
-			const size_t& w(wd[i]);
+			const count_type& w(wd[i]);
 		if (w) {
 			analysis_parameters psub(p);
 			// branch probability diminishes
@@ -209,7 +210,7 @@ if (bi.second) {
 				child(compute_dealer_final_distribution(play, nk, psub));
 //				child(evaluate_dealer_dynamic(play, nk, psub));
 			// weight by card probability
-			size_t j = 0;
+			dealer_state_type j = 0;
 			for ( ; j<d_final_states; ++j) {
 				ret[j] += child[j] * w;
 			}
@@ -255,7 +256,7 @@ if (bi.second) {
 	const state_machine::node& ds(play.dealer_hit[k.dealer.state]);
 	if (ds.is_terminal()) {
 		// dealer must stand
-		const size_t final = k.dealer.state -stop;
+		const dealer_state_type final = k.dealer.state -stop;
 		ret[final] = 1.0;
 	} else {
 		// dealer must hit
@@ -269,10 +270,11 @@ if (bi.second) {
 		// effective weights, given peeked not-10, not-Ace
 		deck_count_type wd;
 		d.distribution_weight_adjustment(wd);
-		const size_t total_weight = accumulate(wd.begin(), wd.end(), 0);
-		size_t i = 0;
+		const count_type total_weight =
+			accumulate(wd.begin(), wd.end(), 0);
+		card_type i = 0;
 		for ( ; i<card_values; ++i) {
-			const size_t& w(wd[i]);
+			const count_type& w(wd[i]);
 		if (w) {
 			analysis_parameters psub(p);
 			// branch probability diminishes
@@ -286,7 +288,7 @@ if (bi.second) {
 				child(compute_dealer_final_distribution(play, nk, psub));
 //				child(evaluate_dealer_exact(play, nk, psub));
 			// weight by card probability
-			size_t j = 0;
+			dealer_state_type j = 0;
 			for ( ; j<d_final_states; ++j) {
 				ret[j] += child[j] * w;
 			}
@@ -363,7 +365,7 @@ if (bi.second) {
 		// stand is always a legal option
 		// (busted hands considered as stand)
 		// compute just the odds of standing with this hand
-		const size_t p_final =
+		const player_state_type p_final =
 			play.player_final_state_map(k.player.hand.state);
 		outcome_odds soo;
 		play.compute_player_final_outcome(p_final, dfv, soo);
@@ -375,14 +377,14 @@ if (bi.second) {
 		// TODO: don't forget to adjust action_mask
 		const deck_count_type&
 			dref(get_basic_reduced_count(k.dealer.peek_state));
-		const size_t total_weight =
+		const count_type total_weight =
 			accumulate(dref.begin(), dref.end(), 0);
 		player_situation_basic_key_type nk(k);	// copy-and-modify state
 	if (m.can_double_down()) {
 		nk.player.hand.player_options &= play.post_double_down_actions;
-		size_t i = 0;
+		card_type i = 0;
 		for ( ; i<card_values; ++i) {
-			const size_t& w(dref[i]);
+			const count_type& w(dref[i]);
 		if (w) {
 			const value_saver<player_hand_base> __bs(nk.player.hand);
 			nk.player.hand.hit(play, i);
@@ -398,9 +400,9 @@ if (bi.second) {
 	}
 	if (m.can_hit()) {
 		nk.player.hand.player_options &= play.post_double_down_actions;
-		size_t i = 0;
+		card_type i = 0;
 		for ( ; i<card_values; ++i) {
-			const size_t& w(dref[i]);
+			const count_type& w(dref[i]);
 		if (w) {
 			const value_saver<player_hand_base> __bs(nk.player.hand);
 			nk.player.hand.hit(play, i);
@@ -414,14 +416,14 @@ if (bi.second) {
 		ret.hit() /= total_weight;
 	}
 	if (m.can_split() && k.player.hand.is_paired()) {
-		const size_t pc = k.player.hand.pair_card();
+		const card_type pc = k.player.hand.pair_card();
 		// divide this into cases, based on post-split-state
-		const size_t& pw(dref[pc]);		// pairing cards
+		const count_type& pw(dref[pc]);		// pairing cards
 		// here, using weights that account for pair-card removal
 		// instead of p^2, q^2, 2pq
-		const size_t npw = total_weight -pw;	// non-pairing cards
-		const size_t pwt = npw *(npw -1);
-		size_t pwa[3];	// should be const
+		const count_type npw = total_weight -pw;	// non-pairing cards
+		const count_type pwt = npw *(npw -1);
+		count_type pwa[3];	// should be const
 		pwa[2] = pw *(pw -1);	// 2 new pairs
 		pwa[0] = npw *(npw -1);	// 0 new pairs
 		pwa[1] = pwt -pwa[2] -pwa[0];	// 1 new pair
@@ -446,9 +448,9 @@ if (bi.second) {
 		// compute non-pairing edges (Y)
 		edge_type X = 0.0;	// possible pair card next
 		edge_type Y = 0.0;	// non-paired only
-		size_t i = 0;
+		card_type i = 0;
 		for ( ; i<card_values; ++i) {
-			const size_t& w(dref[i]);
+			const count_type& w(dref[i]);
 		if (w) {
 			const value_saver<player_hand_base> __bs(sk.player.hand);
 			sk.player.hand.split(play, i);

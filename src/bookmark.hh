@@ -15,13 +15,14 @@ class counter_base;
 }
 
 namespace blackjack {
+using cards::card_type;
 
 /**
 	Decision situation bookmark.
 	Doesn't support insurance offers.
  */
 struct bookmark {
-	size_t				dealer_reveal;
+	card_type			dealer_reveal;
 //	hand				d_hand;
 	player_hand			p_hand;
 //	player_hand_base		p_hand;
@@ -31,7 +32,7 @@ struct bookmark {
 
 	bookmark();
 
-	bookmark(const size_t, const player_hand&, const perceived_deck_state&);
+	bookmark(const card_type, const player_hand&, const perceived_deck_state&);
 
 	~bookmark();
 

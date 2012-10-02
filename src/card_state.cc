@@ -27,13 +27,13 @@ using std::endl;
 void
 state_machine::node::check(void) const {
 	const edge_vector::const_iterator e(out_edges.end());
-	assert(find(out_edges.begin(), e, size_t(0)) == e);
+	assert(find(out_edges.begin(), e, state_type(0)) == e);
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ostream&
 state_machine::node::dump_edges(ostream& o) const {
-	std::ostream_iterator<size_t> osi(o, ",");
+	std::ostream_iterator<state_type> osi(o, ",");
 	copy(out_edges.begin(), out_edges.end(), osi);
 	return o;
 }
@@ -63,7 +63,7 @@ state_machine::resize(const size_t n)  {
 	Change the name of the state. 
  */
 void
-state_machine::name_state(const size_t i, const string& n) {
+state_machine::name_state(const state_type i, const string& n) {
 	assert(i < states.size());
 	states[i].name = n;
 }
@@ -77,8 +77,8 @@ state_machine::name_state(const size_t i, const string& n) {
 	\param n size of edge array, for resizing
  */
 void
-state_machine::add_edge(const size_t i, const size_t j, 
-		const size_t d, const size_t n) {
+state_machine::add_edge(const state_type i, const state_type j, 
+		const card_type d, const size_t n) {
 	node& nd(states[i]);
 	nd.out_edges.resize(n, 0);	// default
 	assert(d < n);		// allow offset state indices
@@ -90,13 +90,14 @@ state_machine::add_edge(const size_t i, const size_t j,
 	Copy an entire edge set from state i to state j.
  */
 void
-state_machine::copy_edge_set(const size_t i, const size_t j) {
+state_machine::copy_edge_set(const state_type i, const state_type j) {
 	states[j].out_edges = states[i].out_edges;
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void
-state_machine::copy_edge_set(const state_machine& s, const size_t i, const size_t j) {
+state_machine::copy_edge_set(const state_machine& s,
+		const state_type i, const state_type j) {
 	states[j].out_edges = s.states[i].out_edges;
 }
 
@@ -124,7 +125,7 @@ cout << "::convolve()" << endl;
 	std::fill(final.begin(), final.end(), 0.0);
 	bool more = false;		// whether or not solution converged
 	state_set_type::const_iterator i(states.begin()), e(states.end());
-	size_t j = 0;
+	state_type j = 0;
 	for ( ; i!=e; ++i, ++j) {
 	if (i->is_terminal()) {
 		final[j] += init[j];
@@ -176,7 +177,7 @@ state_machine::check(void) const {
 
 ostream&
 state_machine::dump(ostream& o) const {
-	size_t i;
+	state_type i;
 	for (i=0; i<states.size(); ++i) {
 		states[i].dump(o << i << '\t') << endl;
 	}

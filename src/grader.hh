@@ -87,7 +87,7 @@ private:
 	/**
 		Dealer's hidden card.
 	 */
-	size_t					dealer_hole;
+	card_type					dealer_hole;
 public:
 	/**
 		Collection of statistics of play.
@@ -180,14 +180,14 @@ private:
 	bool
 	offer_insurance(const bool);
 
-	size_t
+	card_type
 	draw_up_card(const char*);
 
-	size_t
+	card_type
 	draw_hole_card(const char*);
 
 	void
-	reveal_hole_card(const size_t);
+	reveal_hole_card(const card_type);
 
 	void
 	replace_hole_card(void);
@@ -216,7 +216,7 @@ private:
 	dump_situation(const size_t) const;
 
 	pair<expectations, expectations>
-	assess_action(const size_t, const size_t, ostream&, 
+	assess_action(const player_state_type, const card_type, ostream&, 
 		const action_mask&);
  
 };	// end class grader

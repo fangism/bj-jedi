@@ -152,19 +152,19 @@ grader::show_count(void) const {
 	TODO: take into account peek_state_enum, and adjust odds.
 	See text section on Peeking.
  */
-size_t
+card_type
 grader::draw_up_card(const char* prompt) {
 	if (opt.pick_cards && prompt) {
 		ostr << prompt << endl;
 	}
-	const size_t ret = C.option_draw(opt.pick_cards, istr, ostr);
+	const card_type ret = C.option_draw(opt.pick_cards, istr, ostr);
 	P.remove(ret);
 	hi_lo_counter.second.incremental_count_card(ret);
 	return ret;
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-size_t
+card_type
 grader::draw_hole_card(const char* prompt) {
 	if (opt.pick_cards && prompt) {
 		ostr << prompt << endl;
@@ -175,7 +175,7 @@ grader::draw_hole_card(const char* prompt) {
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void
-grader::reveal_hole_card(const size_t hole_card) {
+grader::reveal_hole_card(const card_type hole_card) {
 	dealer.hit_dealer(hole_card);
 	// also calls dealer_hand::reveal_hole_card()
 	C.reveal_hole_card();	// only now, count the hole card
@@ -252,11 +252,11 @@ grader::deal_hand(void) {
 }
 	player_hand iph(play);
 	player_hands.push_back(iph);
-	const size_t p1 = draw_up_card("choose player's first card.");
-	const size_t p2 = draw_up_card("choose player's second card.");
+	const card_type p1 = draw_up_card("choose player's first card.");
+	const card_type p2 = draw_up_card("choose player's second card.");
 	player_hand& pih(player_hands.front());
-	const size_t dealer_reveal = draw_up_card("choose dealer's up-card.");
-	const size_t dealer_reveal_value = card_value_map[dealer_reveal];
+	const card_type dealer_reveal = draw_up_card("choose dealer's up-card.");
+	const card_type dealer_reveal_value = card_value_map[dealer_reveal];
 	pih.deal_player(p1, p2, true, dealer_reveal_value);
 	dealer.initial_card_dealer(dealer_reveal);
 	// TODO: first query whether hold card makes dealer blackjack
@@ -281,8 +281,8 @@ grader::deal_hand(void) {
 	// TODO: option-draw hole card 2-stage prompt
 	// if peek, ask if dealer has blackjack
 	// if not, then draw among remaining non-blackjack cards
-	const size_t hole_card = draw_hole_card("choose dealer's hole-card.");
-	const size_t hole_card_value = card_value_map[hole_card];
+	const card_type hole_card = draw_hole_card("choose dealer's hole-card.");
+	const card_type hole_card_value = card_value_map[hole_card];
 	ostr << "dealer: " << card_name[dealer_reveal] << endl;
 	// TODO: if early_surrender (rare) ...
 	// prompt for insurance
@@ -525,8 +525,8 @@ switch (pc) {
 	case SPLIT: {
 		player_hand nh(play);	// new hand
 		// avoid sequence-point
-		const size_t s1 = draw_up_card("choose player's second card.");
-		const size_t s2 = draw_up_card("choose player's second card.");
+		const card_type s1 = draw_up_card("choose player's second card.");
+		const card_type s2 = draw_up_card("choose player's second card.");
 		ph.split(nh, s1, s2, card_value_map[dealer.reveal]);
 		player_hands.push_back(nh);
 		// show new hands and other split hand for counting purposes
@@ -702,7 +702,7 @@ do {
 	TODO: compute exact strategy here
  */
 pair<expectations, expectations>
-grader::assess_action(const size_t ps, const size_t dlr, ostream& o,
+grader::assess_action(const player_state_type ps, const card_type dlr, ostream& o,
 		const action_mask& m) {
 	// basic:
 	const expectations& be(basic_strategy
@@ -1207,7 +1207,7 @@ case 3: {
 	string_list::const_iterator i(++args.begin());
 	const string& cn(*i++);		// card name [2-9AT]
 	const string& qs(*i);		// quantity
-	const size_t ci = card_index(cn[0]);
+	const card_type ci = card_index(cn[0]);
 	int q;
 	if (string_to_num(qs, q)) {
 		g.ostr << "error: invalid quantity" << endl;
@@ -1223,7 +1223,7 @@ case 4: {
 	const string& cn(*i++);		// card name [2-9AT]
 	const string& sn(*i++);		// [+-=]
 	const string& qs(*i);		// quantity
-	const size_t ci = card_index(cn[0]);
+	const card_type ci = card_index(cn[0]);
 	int q;
 	if (string_to_num(qs, q)) {
 		g.ostr << "error: invalid quantity" << endl;

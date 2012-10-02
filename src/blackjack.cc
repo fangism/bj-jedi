@@ -32,10 +32,10 @@ static const std::ios_base::Init __init;
 	value: player state index
 	ACE is mapped to the lone ace state.
  */
-const size_t
+const player_state_type
 play_map::p_initial_card_map[card_values] =
 	{ player_bust+1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
-const size_t
+const dealer_state_type
 play_map::d_initial_card_map[card_values] =
 	{ dealer_push+1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
 
@@ -88,10 +88,10 @@ const char play_map::dealer_final_states[][d_final_states] = {
 	"push"	// switch variation only
 };
 
-vector<size_t>
+vector<state_type>
 play_map::__reverse_topo_order;
 
-const vector<size_t>&
+const vector<state_type>&
 play_map::reverse_topo_order(play_map::__reverse_topo_order);
 
 const int
@@ -140,7 +140,7 @@ play_map::initialize_action_masks(void) {
 		&initial_actions_per_state[pair_offset+card_values],
 		default_init_split);
 	// terminal states: stand only
-	size_t i = 0;
+	player_state_type i = 0;
 	for ( ; i<p_action_states; ++i) {
 		if (player_hit[i].is_terminal()) {
 			initial_actions_per_state[i] = action_mask::stand;
@@ -179,40 +179,40 @@ play_map::initialize_action_masks(void) {
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-size_t
-play_map::initial_card_player(const size_t p1) const {
+player_state_type
+play_map::initial_card_player(const card_type p1) const {
 	assert(p1 < card_values);
 	return p_initial_card_map[p1];
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-size_t
-play_map::initial_card_dealer(const size_t p1) const {
+dealer_state_type
+play_map::initial_card_dealer(const card_type p1) const {
 	assert(p1 < card_values);
 	return d_initial_card_map[p1];
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 bool
-play_map::is_player_pair(const size_t state) const {
+play_map::is_player_pair(const player_state_type state) const {
 	return state >= pair_offset && state < pair_offset +card_values;
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 bool
-play_map::is_player_terminal(const size_t state) const {
+play_map::is_player_terminal(const player_state_type state) const {
 	return player_hit[state].is_terminal();
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 bool
-play_map::is_dealer_terminal(const size_t state) const {
+play_map::is_dealer_terminal(const dealer_state_type state) const {
 	return dealer_hit[state].is_terminal();
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-size_t
-play_map::hit_player(const size_t state, const size_t c) const {
+player_state_type
+play_map::hit_player(const player_state_type state, const card_type c) const {
 	assert(c < card_values);
 	const state_machine::node& current(player_hit[state]);
 	if (!current.is_terminal()) {
@@ -226,8 +226,8 @@ play_map::hit_player(const size_t state, const size_t c) const {
 /**
 	For now, assume re-splittable.
  */
-size_t
-play_map::split_player(const size_t state, const size_t c) const {
+player_state_type
+play_map::split_player(const player_state_type state, const card_type c) const {
 	assert(c < card_values);
 	const state_machine::node& current(player_resplit[state]);
 	if (!current.is_terminal()) {
@@ -238,8 +238,8 @@ play_map::split_player(const size_t state, const size_t c) const {
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-size_t
-play_map::hit_dealer(const size_t state, const size_t c) const {
+dealer_state_type
+play_map::hit_dealer(const dealer_state_type state, const card_type c) const {
 	assert(c < card_values);
 	const state_machine::node& current(dealer_hit[state]);
 	if (!current.is_terminal()) {
@@ -255,12 +255,13 @@ play_map::hit_dealer(const size_t state, const size_t c) const {
 	\param nat true if 21 should be considered natural blackjack,
 		false if should just be considered 21.
  */
-size_t
-play_map::deal_player(const size_t p1, const size_t p2, const bool nat) const {
+player_state_type
+play_map::deal_player(const card_type p1, const card_type p2,
+		const bool nat) const {
 	if (p1 == p2) {
 		return pair_offset +p1;
 	}
-	size_t state = hit_player(initial_card_player(p1), p2);
+	player_state_type state = hit_player(initial_card_player(p1), p2);
 	if (nat && (state == goal)) {
 		return player_blackjack;
 	}
@@ -273,8 +274,8 @@ play_map::deal_player(const size_t p1, const size_t p2, const bool nat) const {
 	\param i is player *action* state index.
 	\return an index [0,p_final_states) into an array of player final states.
  */
-size_t
-play_map::player_final_state_map(const size_t i) {
+player_state_type
+play_map::player_final_state_map(const player_state_type i) {
 	assert(i < p_action_states);
 	if (i < stop) {
 		return 0;	// represents <= 16
@@ -306,7 +307,8 @@ play_map::player_final_state_map(const size_t i) {
 	\return win-lose-push outcome
  */
 const outcome&
-play_map::lookup_outcome(const size_t p, const size_t d) const {
+play_map::lookup_outcome(const player_state_type p,
+		const dealer_state_type d) const {
 	return outcome_matrix[player_final_state_map(p)][d -stop];
 }
 
@@ -317,11 +319,11 @@ play_map::lookup_outcome(const size_t p, const size_t d) const {
 	\param ps is a player_final_state in [0, p_final_states)
  */
 void
-play_map::compute_player_final_outcome(const size_t ps,
+play_map::compute_player_final_outcome(const player_state_type ps,
 		const dealer_final_vector& dfv,
 		outcome_odds& o) const {
 	const outcome_array_type& v(outcome_matrix[ps]);
-	size_t d;
+	dealer_state_type d;
 	for (d=0; d < d_final_states; ++d) {     // dealer's final state
 		const probability_type& p(dfv[d]);
 		o.prob(v[d]) += p;              // adds to win/push/lose
@@ -337,7 +339,7 @@ void
 play_map::compute_player_final_outcome_vector(const dealer_final_vector& dfv,
 		player_final_outcome_vector& ps) const {
 	fill(ps.begin(), ps.end(), outcome_odds());	// clear first
-	size_t k;
+	player_state_type k;
 	// player blackjack and bust is separate
 	for (k=0; k < p_final_states; ++k) {    // player's final state
 		outcome_odds& o(ps[k]);
@@ -354,7 +356,7 @@ play_map::compute_player_final_outcome_vector(const dealer_final_vector& dfv,
 void
 play_map::set_dealer_policy(void) {
 	// enumerating edges:
-	const size_t soft_max = var.H17 ? 7 : 6;	// 6-16, 7-17
+	const dealer_state_type soft_max = var.H17 ? 7 : 6;	// 6-16, 7-17
 	// 0-21 are hard values (no ace)
 	// 22 is blackjack
 	// 23 is bust
@@ -362,13 +364,14 @@ play_map::set_dealer_policy(void) {
 	// 25-31 are soft 11 through soft 17
 	dealer_hit.resize(d_action_states);
 	// first handle hard values (no ACE)
-	size_t i, c;
+	dealer_state_type i;
+	card_type c;
 	for (i=0; i<stop; ++i) {	// hit through hard 16
 		ostringstream oss;
 		oss << i;
 		dealer_hit.name_state(i, oss.str());
 	for (c=1; c<card_values; ++c) {
-		const size_t t = i +c +1;	// sum value
+		const dealer_state_type t = i +c +1;	// sum value
 		if (t > goal) {			// bust
 			if ((t == goal+1) && var.push22) {
 				dealer_hit.add_edge(i, dealer_push, c, card_values);
@@ -380,8 +383,8 @@ play_map::set_dealer_policy(void) {
 		}
 	}
 		// for c=0 (ace)
-		const size_t t = i+1;		// A = 1
-		const size_t tA = t+card_values;	// A = 11
+		const dealer_state_type t = i+1;		// A = 1
+		const dealer_state_type tA = t+card_values;	// A = 11
 		if (t >= soft_min && t <= soft_max) {
 			dealer_hit.add_edge(i, t +dealer_soft -soft_min, 0, card_values);
 		} else if (tA <= goal) {
@@ -398,15 +401,15 @@ play_map::set_dealer_policy(void) {
 		dealer_hit.name_state(i, oss.str());
 	}
 	// soft-values
-	const size_t offset = dealer_push;
+	const dealer_state_type offset = dealer_push;
 	for (i=soft_min; i<=soft_max; ++i) {
 		ostringstream oss;
 		oss << "A";
 		if (i>soft_min) { oss << "," << i-1; }
 		dealer_hit.name_state(i+offset, oss.str());
 	for (c=0; c<card_values; ++c) {		// A = 1 only
-		const size_t t = i+c;
-		const size_t tA = t +card_values +1;
+		const dealer_state_type t = i+c;
+		const dealer_state_type tA = t +card_values +1;
 		if (tA > goal) {
 			dealer_hit.add_edge(i+offset, t +1, c, card_values);
 		} else if (tA > soft_max +card_values) {
@@ -449,19 +452,20 @@ play_map::dump_dealer_policy(ostream& o) const {
  */
 void
 play_map::compute_player_hit_state(void) {
-	static const size_t soft_max = 10;
+	static const player_state_type soft_max = 10;
 	// 0-21 are hard values (no ace)
 	// 22-30 are soft 12 through soft 20
 	// 31 is bust
 	player_hit.resize(p_action_states);
 	// first handle hard values (no ACE)
-	size_t i, c;
+	player_state_type i;
+	card_type c;
 	for (i=0; i<goal; ++i) {	// hit through hard 16
 		ostringstream oss;
 		oss << i;
 		player_hit.name_state(i, oss.str());
 	for (c=1; c<card_values; ++c) {
-		const size_t t = i +c +1;	// sum value
+		const player_state_type t = i +c +1;	// sum value
 		if (t > goal) {			// bust
 			player_hit.add_edge(i, player_bust, c, card_values);
 		} else {
@@ -469,8 +473,8 @@ play_map::compute_player_hit_state(void) {
 		}
 	}
 		// for c=0 (ace)
-		const size_t t = i+1;		// A = 1
-		const size_t tA = t+card_values;	// A = 11
+		const player_state_type t = i+1;		// A = 1
+		const player_state_type tA = t+card_values;	// A = 11
 		if (t >= soft_min && t <= soft_max) {
 			player_hit.add_edge(i, t +player_soft -soft_min, 0, card_values);
 		} else if (tA <= goal) {
@@ -487,7 +491,7 @@ play_map::compute_player_hit_state(void) {
 		player_hit.name_state(i, oss.str());
 	}
 	// player doesn't have a push state like the dealer
-	const size_t offset = player_bust+1;
+	const player_state_type offset = player_bust+1;
 	// soft-values: A, A1, A2, ...
 	for (i=0; i<=card_values; ++i) {
 		ostringstream oss;
@@ -495,8 +499,8 @@ play_map::compute_player_hit_state(void) {
 		if (i) { oss << "," << i; }
 		player_hit.name_state(i+offset, oss.str());
 	for (c=0; c<card_values; ++c) {		// A = 1 only
-		const size_t t = i+c+1;
-		const size_t tA = t +card_values +1;
+		const player_state_type t = i+c+1;
+		const player_state_type tA = t +card_values +1;
 		if (tA > goal) {
 			player_hit.add_edge(i+offset, t +1, c, card_values);
 		} else if (tA > soft_max +card_values) {
@@ -515,7 +519,8 @@ play_map::compute_player_hit_state(void) {
 		oss << cc << ',' << cc;
 		player_hit.name_state(i+pair_offset, oss.str());
 		// copy from non-paired equivalent value
-		const size_t equiv = (i ? (i+1)<<1 : i+player_soft +1);
+		const player_state_type equiv =
+			(i ? (i+1)<<1 : i+player_soft +1);
 		// b/c cards are indexed A234...
 		player_hit.copy_edge_set(equiv, i+pair_offset);
 	}
@@ -542,7 +547,7 @@ play_map::dump_player_hit_state(ostream& o) const {
 void
 play_map::compute_player_split_state(void) {
 	last_split.resize(card_values);
-	size_t i;
+	player_state_type i;
 	for (i=ACE; i<card_values; ++i) {
 		// TODO: just use string and +=
 		ostringstream oss;
@@ -576,15 +581,15 @@ play_map::dump_player_split_state(ostream& o) const {
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void
 play_map::initialize_outcome_matrix(void) {
-	size_t k;
+	player_state_type k;
 	// player blackjack and bust is separate
 	for (k=0; k < p_final_states -2; ++k) {	// player's final state
-	size_t d;
+	dealer_state_type d;
 		outcome_array_type& v(outcome_matrix[k]);
 	// -1: blackjack, push, and bust states separate
 	for (d=0; d < d_final_states -3; ++d) {	// dealer's final state
 		outcome& o(v[d]);
-		int diff = k -d -1;
+		int diff = int(k -d -1);
 		if (diff > 0) {
 			o = WIN;
 		} else if (!diff) {
@@ -617,10 +622,10 @@ play_map::initialize_outcome_matrix(void) {
 int
 play_map::initialize_reverse_topo_order(void) {
 	// reordering for-loop: player states
-	vector<size_t>& reorder(__reverse_topo_order);
+	vector<state_type>& reorder(__reverse_topo_order);
 	reorder.reserve(p_action_states);
 	// backwards, starting from high hard value states
-	size_t i;
+	state_type i;
 	for (i=goal-1; i>goal-card_values; --i) {
 		reorder.push_back(i);
 	}
@@ -638,7 +643,7 @@ play_map::initialize_reverse_topo_order(void) {
 	}
 #if 0
 	copy(reorder.begin(), reorder.end(),
-		ostream_iterator<size_t>(cout, ","));
+		ostream_iterator<state_type>(cout, ","));
 	cout << endl;
 #endif
 	return 1;
@@ -647,7 +652,7 @@ play_map::initialize_reverse_topo_order(void) {
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ostream&
 play_map::dealer_final_table_header(ostream& o) {
-	size_t d = 0;
+	dealer_state_type d = 0;
 	for (; d<d_final_states; ++d) {
 		o << '\t' << dealer_final_states[d];
 	}
@@ -657,7 +662,7 @@ play_map::dealer_final_table_header(ostream& o) {
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ostream&
 play_map::player_final_table_header(ostream& o) {
-	size_t j = 0;
+	player_state_type j = 0;
 	for (; j<p_final_states; ++j) {
 		o << '\t' << player_final_states[j];
 	}
@@ -670,11 +675,11 @@ play_map::dump_final_outcomes(ostream& o) const {
 	static const char header[] = "P\\D";
 	o << "Dealer vs. player final state outcomes." << endl;
 	dealer_final_table_header(o << header) << endl;
-	size_t k;
+	player_state_type k;
 	for (k=0; k<p_final_states; ++k) {
 		o << player_final_states[k];
 		const outcome_array_type& v(outcome_matrix[k]);
-	size_t d;
+	dealer_state_type d;
 	for (d=0; d<d_final_states; ++d) {
 		o << '\t' << v[d];
 	}

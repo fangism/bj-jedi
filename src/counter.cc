@@ -63,7 +63,7 @@ counter_base::evaluate(const extended_deck_count_type& e) const {
 		This is not necessarily == the sum, due to perceived_deck_state.
  */
 ostream&
-counter_base::dump_count(ostream& o, const char* name, const size_t rem, 
+counter_base::dump_count(ostream& o, const char* name, const count_type rem, 
 		const int running_count) const {
 	const util::precision_saver p(o, 2);	// fix precision
 	const double true_count = (double(running_count) * 52) / double(rem);
@@ -79,7 +79,7 @@ counter_base::dump_count(ostream& o, const char* name, const size_t rem,
 	Auto-computes running-count based on deck distribution.
  */
 ostream&
-counter_base::dump_count(ostream& o, const char* name, const size_t rem, 
+counter_base::dump_count(ostream& o, const char* name, const count_type rem, 
 		const deck_count_type& d) const {
 	return dump_count(o, name, rem, evaluate(d));
 }
@@ -124,8 +124,8 @@ counter::deck_signature_balanced(const extended_deck_count_type& d) const {
 	c may include face cards J,Q,K, which get mapped to T.
  */
 void
-counter::incremental_count_card(const size_t c) {
-	const size_t d = card_value_map[c];
+counter::incremental_count_card(const card_type c) {
+	const card_type d = card_value_map[c];
 	running_count -= signature[d];
 }
 
@@ -174,7 +174,7 @@ counter::initialize(const extended_deck_count_type& d) {
 	\param rem total number of cards remaining, used to obtain true-count.
  */
 ostream&
-counter::dump(ostream& o, const char* name, const size_t rem) const {
+counter::dump(ostream& o, const char* name, const count_type rem) const {
 #if 0
 	const util::precision_saver p(o, 2);	// fix precision
 	const double true_count = (double(running_count) * 52) / double(rem);

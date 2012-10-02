@@ -16,6 +16,8 @@ using cards::standard_deck_count;
 using cards::deck_count_type;
 using cards::probability_type;
 using cards::reveal_print_ordering;
+using cards::card_type;
+using cards::count_type;
 using blackjack::variation;
 using blackjack::play_map;
 using blackjack::strategy;
@@ -50,9 +52,9 @@ main(int, char*[]) {
 	cout <<
 "Sensitivity analysis: relative probability increase per card = "
 		<< pdel << endl;
-	size_t j;		// which card to vary probability
+	card_type j;		// which card to vary probability
 	for (j=0; j<card_values; ++j) {
-		const size_t i = reveal_print_ordering[j];
+		const card_type i = reveal_print_ordering[j];
 		deck_count_type pd(standard_deck_count);
 		deck_count_type nd(standard_deck_count);
 		pd[i] += 1;
@@ -69,10 +71,10 @@ main(int, char*[]) {
 		<< " ------------------" << endl;
 	cout << "card odds: (A,2,...T)" << endl;
 	copy(pd.begin(), pd.end(),
-		ostream_iterator<size_t>(cout, "\t"));
+		ostream_iterator<count_type>(cout, "\t"));
 	cout << "(+)" << endl;
 	copy(nd.begin(), nd.end(),
-		ostream_iterator<size_t>(cout, "\t"));
+		ostream_iterator<count_type>(cout, "\t"));
 	cout << "(-)" << endl;
 		
 	del.dump_reveal_edges(cout << "+1: ");
@@ -108,10 +110,10 @@ main(int, char*[]) {
 		const edge_type ndiff_edge = ndel.overall_edge();
 	cout << "card odds: (A,2,...T)" << endl;
 	copy(pd.begin(), pd.end(),
-		ostream_iterator<size_t>(cout, "\t"));
+		ostream_iterator<count_type>(cout, "\t"));
 	cout << "(+)" << endl;
 	copy(nd.begin(), nd.end(),
-		ostream_iterator<size_t>(cout, "\t"));
+		ostream_iterator<count_type>(cout, "\t"));
 	cout << "(-)" << endl;
 		
 	del.dump_reveal_edges(cout << "+1: ");

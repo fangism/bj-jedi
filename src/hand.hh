@@ -6,6 +6,7 @@
 #include <iosfwd>
 #include <string>
 #include "enums.hh"		// for player_blackjack
+#include "num.hh"
 #include "player_action.hh"
 
 namespace cards {
@@ -15,6 +16,9 @@ namespace blackjack {
 class play_map;
 using std::string;
 using std::ostream;
+using cards::card_type;
+using cards::player_state_type;
+using cards::dealer_state_type;
 
 /**
 	Define to 1 to keep player_options action_mask with hand struct.
@@ -101,7 +105,7 @@ struct player_hand_base {
 		Enumerated state, from the state machine.
 		Also encodes the value of the hand, the total.
 	 */
-	size_t					state;
+	player_state_type				state;
 	// player's actions may be limited by state
 	action_mask				player_options;
 	// TODO: splits remaining (countdown to 0)
@@ -109,9 +113,9 @@ struct player_hand_base {
 
 	player_hand_base() : state(0), player_options(action_mask::all) { }
 
-	player_hand_base(const size_t, const play_map&);
+	player_hand_base(const player_state_type, const play_map&);
 
-	player_hand_base(const size_t ps, const action_mask& am) :
+	player_hand_base(const player_state_type ps, const action_mask& am) :
 		state(ps), player_options(am) { }
 
 	bool
@@ -129,13 +133,13 @@ struct player_hand_base {
 		return state >= pair_offset && state < pair_offset +card_values;
 	}
 
-	size_t
+	card_type
 	pair_card(void) const {
 		return state - pair_offset;
 	}
 
 	void
-	hit(const play_map&, const size_t);
+	hit(const play_map&, const card_type);
 
 	// split without taking next card
 	void
@@ -143,7 +147,7 @@ struct player_hand_base {
 
 	// split and take next card
 	void
-	split(const play_map&, const size_t);
+	split(const play_map&, const card_type);
 
 	// lexicographical key compare
 	bool
@@ -178,14 +182,15 @@ struct player_hand_base {
 	TODO: use bitfield or enum for peek status
  */
 struct dealer_hand_base {
-	size_t					state;
+	dealer_state_type			state;
 	peek_state_enum				peek_state;
 
 	dealer_hand_base() : state(0),
 		peek_state(NO_PEEK) { }
 
 	explicit
-	dealer_hand_base(const size_t d) : state(d), peek_state(NO_PEEK) { }
+	dealer_hand_base(const dealer_state_type d) :
+		state(d), peek_state(NO_PEEK) { }
 
 	void
 	reveal_hole_card(void) {
@@ -281,17 +286,17 @@ struct player_hand : public player_hand_base, public hand_common {
 
 	// initial deal
 	void
-	initial_card_player(const size_t);
+	initial_card_player(const card_type);
 
 	void
-	deal_player(const size_t, const size_t, const bool, const size_t);
+	deal_player(const card_type, const card_type, const bool, const card_type);
 
 	// hit state transition -- use this for double-down too
 	void
-	hit_player(const size_t);
+	hit_player(const card_type);
 
 	void
-	double_down(const size_t);
+	double_down(const card_type);
 
 	void
 	stand(void) {
@@ -313,7 +318,7 @@ struct player_hand : public player_hand_base, public hand_common {
 	}
 
 	void
-	split(player_hand&, const size_t, const size_t, const size_t);
+	split(player_hand&, const card_type, const card_type, const card_type);
 
 	/**
 		A hand is considered 'live' if it 

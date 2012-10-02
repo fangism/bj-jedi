@@ -63,11 +63,11 @@ public:
 	evaluate(const extended_deck_count_type&) const;
 
 	ostream&
-	dump_count(ostream&, const char*, const size_t, 
+	dump_count(ostream&, const char*, const count_type, 
 		const int) const;
 
 	ostream&
-	dump_count(ostream&, const char*, const size_t, 
+	dump_count(ostream&, const char*, const count_type, 
 		const deck_count_type&) const;
 
 };	// end class counter_base
@@ -103,13 +103,13 @@ public:
 	get_running_count(void) const { return running_count; }
 
 	void
-	incremental_count_card(const size_t);
+	incremental_count_card(const card_type);
 
 	bool
 	deck_signature_balanced(const extended_deck_count_type&) const;
 
 	ostream&
-	dump(ostream&, const char*, const size_t) const;
+	dump(ostream&, const char*, const count_type) const;
 
 };	// end class counter
 

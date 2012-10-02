@@ -37,6 +37,10 @@ using cards::probability_vector;
 using cards::deck_distribution;
 using cards::deck_count_type;
 using cards::state_machine;
+using cards::card_type;
+using cards::state_type;
+using cards::player_state_type;
+using cards::dealer_state_type;
 
 extern
 const char* action_names[];
@@ -52,8 +56,8 @@ public:
 	// mapping of initial card to initial state
 	// for both dealer AND player
 	// these could go into a struct for rules
-	static const size_t		p_initial_card_map[card_values];
-	static const size_t		d_initial_card_map[card_values];
+	static const player_state_type		p_initial_card_map[card_values];
+	static const dealer_state_type		d_initial_card_map[card_values];
 private:
 	static const char		player_final_states[][p_final_states];
 	static const char		dealer_final_states[][d_final_states];
@@ -94,18 +98,18 @@ private:
 	outcome_matrix_type		outcome_matrix;
 
 private:
-	static vector<size_t>		__reverse_topo_order;
-	static const int		init_reverse_topo_order;
+	static vector<state_type>		__reverse_topo_order;
+	static const int			init_reverse_topo_order;
 public:
-	static const vector<size_t>&	reverse_topo_order;
+	static const vector<state_type>&	reverse_topo_order;
 public:
 	explicit
 	play_map(const variation&);
 
 	/// maps player state index to player_final_outcome state
 	static
-	size_t
-	player_final_state_map(const size_t);
+	player_state_type
+	player_final_state_map(const player_state_type);
 
 private:
 	void
@@ -129,40 +133,40 @@ private:
 
 public:
 	void
-	compute_player_final_outcome(const size_t p,
+	compute_player_final_outcome(const player_state_type p,
 		const dealer_final_vector&, 
 		outcome_odds&) const;
 
 	bool
-	is_player_terminal(const size_t) const;
+	is_player_terminal(const player_state_type) const;
 
 	bool
-	is_dealer_terminal(const size_t) const;
+	is_dealer_terminal(const dealer_state_type) const;
 
 	bool
-	is_player_pair(const size_t) const;
+	is_player_pair(const player_state_type) const;
 
 	// action transitions
-	size_t
-	initial_card_player(const size_t) const;
+	player_state_type
+	initial_card_player(const card_type) const;
 
-	size_t
-	initial_card_dealer(const size_t) const;
+	dealer_state_type
+	initial_card_dealer(const card_type) const;
 
-	size_t
-	deal_player(const size_t, const size_t, const bool) const;
+	player_state_type
+	deal_player(const card_type, const card_type, const bool) const;
 
-	size_t
-	hit_player(const size_t, const size_t) const;
+	player_state_type
+	hit_player(const player_state_type, const card_type) const;
 
-	size_t
-	split_player(const size_t, const size_t) const;
+	player_state_type
+	split_player(const player_state_type, const card_type) const;
 
-	size_t
-	hit_dealer(const size_t, const size_t) const;
+	dealer_state_type
+	hit_dealer(const dealer_state_type, const card_type) const;
 
 	const outcome&
-	lookup_outcome(const size_t p, const size_t d) const;
+	lookup_outcome(const player_state_type p, const dealer_state_type d) const;
 
 	void
 	compute_player_final_outcome_vector(const dealer_final_vector&,

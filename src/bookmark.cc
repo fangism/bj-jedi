@@ -20,7 +20,8 @@ using util::yn;
 bookmark::bookmark() :
 		dealer_reveal(cards::ACE), p_hand(), cards() {
 }
-bookmark::bookmark(const size_t dr, const player_hand& h, const perceived_deck_state& c) :
+bookmark::bookmark(const card_type dr, const player_hand& h,
+		const perceived_deck_state& c) :
 		dealer_reveal(dr), p_hand(h), cards(c) {
 }
 

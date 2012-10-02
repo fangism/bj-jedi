@@ -25,6 +25,8 @@ using cards::deck_distribution;
 using cards::extended_deck_count_type;
 using cards::deck_count_type;
 using cards::state_machine;
+using cards::card_type;
+using cards::player_state_type;
 
 /**
 	Have strategy struct contain an array of calculated strategies,
@@ -46,7 +48,7 @@ struct reveal_strategy {
 	/**
 		The index of the revealed card.
 	 */
-	size_t					reveal_card;
+	card_type				reveal_card;
 	/**
 		"Hit until it's not good to hit..."
 		One player decision state machine for each dealer reveal card
@@ -199,7 +201,7 @@ private:
 	static
 	void
 	__compute_player_hit_stand_edges(
-//		const size_t r,
+//		const card_type r,
 		const player_stand_edges_vector&, 
 		const player_final_state_probability_matrix&,
 		const expectations_vector&,
@@ -312,7 +314,7 @@ public:
 	evaluate(void);
 
 	void
-	evaluate(const size_t);
+	evaluate(const card_type);
 
 private:
 	void
@@ -325,14 +327,14 @@ private:
 	check_odds(void) const;
 
 	ostream&
-	dump_expectations(const size_t state, ostream&) const;
+	dump_expectations(const player_state_type state, ostream&) const;
 
 	ostream&
-	dump_optimal_actions(const size_t state, ostream&, 
+	dump_optimal_actions(const player_state_type state, ostream&, 
 		const size_t, const char*) const;
 
 	ostream&
-	dump_optimal_edges(const size_t state, ostream&) const;
+	dump_optimal_edges(const player_state_type state, ostream&) const;
 
 	void
 	compute_overall_edge(void);
@@ -388,10 +390,10 @@ public:
 	dump(ostream&) const;
 
 	edge_type
-	lookup_pre_peek_initial_edge(const size_t, const size_t) const;
+	lookup_pre_peek_initial_edge(const player_state_type, const card_type) const;
 
 	const expectations&
-	lookup_player_action_expectations(const size_t, const size_t) const;
+	lookup_player_action_expectations(const player_state_type, const card_type) const;
 
 	int
 	command(const string_list&) const;

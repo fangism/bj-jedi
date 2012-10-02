@@ -14,7 +14,7 @@ using std::accumulate;
 const char card_name[card_symbols+1] = "A23456789TJQK";
 
 // really should just be a public function
-size_t
+card_type
 card_index(const char c) {
 	if (std::isalpha(c)) {
 		switch (std::toupper(c)) {
@@ -28,12 +28,12 @@ card_index(const char c) {
 	} else if (c >= '2' && c <= '9') {
 		return c -'1';
 	}
-	return size_t(-1);
+	return card_type(-1);
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // maps JACK-KING to TEN
-const size_t
+const card_type
 card_value_map[card_symbols] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 9, 9, 9 };
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -44,16 +44,16 @@ card_value_map[card_symbols] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 9, 9, 9 };
 	index: sequence index
 	value: card index (re-ordered)
  */
-const size_t
+const card_type
 reveal_print_ordering[card_values] =
 	{ 1, 2, 3, 4, 5, 6, 7, 8, TEN, ACE};
 
-const size_t
+const card_type
 extended_reveal_print_ordering[card_symbols] =
 	{ 1, 2, 3, 4, 5, 6, 7, 8, TEN, JACK, QUEEN, KING, ACE};
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-static const size_t __standard_deck_count_reduced[card_values] = {
+static const count_type __standard_deck_count_reduced[card_values] = {
 1,		// A
 1,		// 2
 1,		// 3
@@ -69,7 +69,7 @@ static const size_t __standard_deck_count_reduced[card_values] = {
 const deck_count_type
 standard_deck_count_reduced(__standard_deck_count_reduced);
 
-static const size_t __standard_deck_count_reduced_no_10[card_values] = {
+static const count_type __standard_deck_count_reduced_no_10[card_values] = {
 1,		// A
 1,		// 2
 1,		// 3
@@ -85,7 +85,7 @@ static const size_t __standard_deck_count_reduced_no_10[card_values] = {
 const deck_count_type
 standard_deck_count_reduced_no_10(__standard_deck_count_reduced_no_10);
 
-static const size_t __standard_deck_count_reduced_no_Ace[card_values] = {
+static const count_type __standard_deck_count_reduced_no_Ace[card_values] = {
 0,		// A
 1,		// 2
 1,		// 3
@@ -101,7 +101,7 @@ static const size_t __standard_deck_count_reduced_no_Ace[card_values] = {
 const deck_count_type
 standard_deck_count_reduced_no_Ace(__standard_deck_count_reduced_no_Ace);
 
-static const size_t __standard_deck_count[card_values] = {
+static const count_type __standard_deck_count[card_values] = {
 4*1,		// A
 4*1,		// 2
 4*1,		// 3

@@ -17,6 +17,8 @@ using cards::extended_deck_count_type;
 using cards::deck_count_type;
 using cards::state_machine;
 using cards::counter;
+using cards::count_type;
+using cards::card_type;
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
@@ -44,26 +46,26 @@ protected:
 		Number of discarded peeked cards that are not 10s.
 		Revealed cards no longer count as peeked.
 	 */
-	size_t					peeked_not_10s;
+	count_type				peeked_not_10s;
 	/**
 		Partial information.
 		Number of discarded peeked cards that are not Aces.
 		Revealed cards no longer count as peeked.
 	 */
-	size_t					peeked_not_Aces;
+	count_type				peeked_not_Aces;
 #if 0
 	// non-peeked discards offer no information, and need not be counted
-	size_t					discards;
+	count_type				discards;
 #endif
 	/**
 		property: remaining.sum().
 	 */
-	size_t					remaining_total;
+	count_type				remaining_total;
 public:
 	perceived_deck_state();
 
 	// remove card from dist, and copy
-	perceived_deck_state(const perceived_deck_state&, const size_t);
+	perceived_deck_state(const perceived_deck_state&, const card_type);
 
 	void
 	initialize(const extended_deck_count_type&);
@@ -74,13 +76,13 @@ public:
 	}
 
 	void
-	remove(const size_t);	// translate with card_value_map
+	remove(const card_type);	// translate with card_value_map
 
 	void
-	remove_if_any(const size_t);	// translate with card_value_map
+	remove_if_any(const card_type);	// translate with card_value_map
 
 	void
-	remove_all(const size_t);	// translate with card_value_map
+	remove_all(const card_type);	// translate with card_value_map
 
 	void
 	peek_not_10(void);
@@ -89,21 +91,21 @@ public:
 	peek_not_Ace(void);
 
 	void
-	reveal_peek_10(const size_t);
+	reveal_peek_10(const card_type);
 
 	void
-	reveal_peek_Ace(const size_t);
+	reveal_peek_Ace(const card_type);
 
 	/**
 		Peeked unknown discards are not counted as removed
 		from the remaining_total count.
 	 */
-	size_t
+	count_type
 	actual_remaining(void) const {
 		return remaining_total -peeked_not_10s -peeked_not_Aces;
 	}
 
-	size_t
+	count_type
 	get_remaining_total(void) const {
 		return remaining_total;
 	}
@@ -168,7 +170,7 @@ private:
 	/**
 		Dealer is dealt one hole card (face-down).
 	 */
-	size_t					hole_card;
+	card_type				hole_card;
 	/**
 		When a hole card is drawn reserved, the remaining
 		cards needs to be updated for random drawing purpose,
@@ -180,13 +182,13 @@ private:
 		This is the actual count, which may include
 		discarded cards that the player never sees.
 	 */
-	size_t					cards_remaining;
-	size_t					cards_spent;
+	count_type				cards_remaining;
+	count_type				cards_spent;
 	/**
 		When cards_remaining falls below this, reshuffle.
 		Maximum allowed should be .90 (90%)
 	 */
-	size_t					maximum_penetration;
+	count_type				maximum_penetration;
 public:
 	explicit
 	deck_state(const variation&);
@@ -199,7 +201,7 @@ public:
 		return cards;		// remaining
 	}
 
-	size_t
+	count_type
 	get_cards_remaining(void) const {
 		return cards_remaining;
 	}
@@ -208,26 +210,24 @@ public:
 	draw_ten_probability(void) const;
 
 	void
-	magic_draw(const size_t);
+	magic_draw(const card_type);
 
-	size_t
+	card_type
 	quick_draw(void);
 
-	size_t
+	card_type
 	quick_draw_uncounted(void);
 
-	size_t
-	quick_draw_uncounted_except(const size_t);
+	card_type
+	quick_draw_uncounted_except(const card_type);
 
-	// TODO: support post-peek conditions for drawing probabilities
-
-	size_t
+	card_type
 	option_draw_uncounted(const bool, istream&, ostream&, const bool);
 
-	size_t
+	card_type
 	option_draw(const bool, istream&, ostream&);
 
-	size_t
+	card_type
 	draw(void);
 
 	void
@@ -236,12 +236,12 @@ public:
 	void
 	option_draw_hole_card(const bool, istream&, ostream&);
 
-	size_t
+	card_type
 	peek_hole_card(void) const {
 		return hole_card;
 	}
 
-	size_t
+	card_type
 	reveal_hole_card(void);
 
 	void
@@ -272,13 +272,13 @@ public:
 #endif
 
 	bool
-	edit_deck(const size_t, const int);
+	edit_deck(const card_type, const int);
 
 	bool
-	edit_deck_add(const size_t, const int);
+	edit_deck_add(const card_type, const int);
 
 	bool
-	edit_deck_sub(const size_t, const int);
+	edit_deck_sub(const card_type, const int);
 
 	bool
 	edit_deck_all(istream&, ostream&);
@@ -286,7 +286,7 @@ public:
 private:
 	static
 	bool
-	__check_edit_deck_args(const size_t, const int);
+	__check_edit_deck_args(const card_type, const int);
 
 };	// end class deck_state
 
