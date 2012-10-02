@@ -199,6 +199,27 @@ player_hand_base::player_hand_base(const size_t ps, const play_map& play) :
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+void
+player_hand_base::hit(const play_map& play, const size_t c) {
+	assert(c < card_symbols);
+	state = play.hit_player(state, card_value_map[c]);
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+void
+player_hand_base::split(const play_map& play) {
+	state = play.p_initial_card_map[pair_card()];
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+void
+player_hand_base::split(const play_map& play, const size_t c) {
+	assert(c < card_symbols);
+	state = play.split_player(state, card_value_map[c]);
+	// assume re-splittable
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ostream&
 player_hand_base::dump(ostream& o, const state_machine& sm) const {
 	o << sm[state].name << ", ";
@@ -250,11 +271,13 @@ dealer_hand::initial_card_dealer(const size_t p1) {
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
+	Appends card and updates allowable actions.
+ */
 void
 player_hand::hit_player(const size_t p2) {
-	assert(p2 < card_symbols);
+	player_hand_base::hit(*play, p2);
 	cards.push_back(card_name[p2]);
-	state = play->hit_player(state, card_value_map[p2]);
 	player_options &= play->post_hit_actions;
 }
 
@@ -313,7 +336,7 @@ player_hand::double_down(const size_t p2) {
 void
 player_hand::split(player_hand& nh,
 		const size_t s1, const size_t s2, const size_t dr) {
-	const size_t split_card = state - pair_offset;
+	const size_t split_card = pair_card();
 	// 21 should not be considered blackjack when splitting (variation)?
 	deal_player(split_card, s1, false, dr);
 	player_options &= play->post_split_actions;

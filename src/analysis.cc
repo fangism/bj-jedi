@@ -12,6 +12,7 @@
 #include "blackjack.hh"
 #include "util/array.tcc"
 #include "util/stacktrace.hh"
+#include "util/value_saver.hh"
 
 namespace blackjack {
 using std::pair;
@@ -20,6 +21,7 @@ using std::endl;
 using cards::TEN;
 using cards::ACE;
 using cards::state_machine;
+using util::value_saver;
 
 // initial default vector of all 0s
 static const dealer_final_vector dealer_final_null(0.0);
@@ -356,7 +358,7 @@ if (bi.second) {
 		dfv(dealer_outcome_cache.evaluate_dealer_basic(play, k.dealer));
 	// current state
 	const state_machine::node& ps(play.player_hit[k.player.hand.state]);
-	const action_mask& m(ak.player_options);
+	const action_mask& m(k.player.hand.player_options);
 	if (m.can_stand()) {
 		// stand is always a legal option
 		// (busted hands considered as stand)
@@ -375,58 +377,104 @@ if (bi.second) {
 			dref(get_basic_reduced_count(k.dealer.peek_state));
 		const size_t total_weight =
 			accumulate(dref.begin(), dref.end(), 0);
+		player_situation_basic_key_type nk(k);	// copy-and-modify state
 	if (m.can_double_down()) {
+		nk.player.hand.player_options &= play.post_double_down_actions;
 		size_t i = 0;
 		for ( ; i<card_values; ++i) {
 			const size_t& w(dref[i]);
 		if (w) {
-			player_hand_base np(ps[i], play);
-			np.player_options &= play.post_double_down_actions;
-			const player_situation_base npb(np, k.player.splits);
-			const player_situation_basic_key_type nk(npb, k.dealer);
-			const expectations
-				child(evaluate_player_basic(play, nk));
+			const value_saver<player_hand_base> __bs(nk.player.hand);
+			nk.player.hand.hit(play, i);
+			// yes, actually do recursion, in case of variations
+			const expectations child(evaluate_player_basic(play, nk));
 			// weight by card probability
-			size_t j = 0;
-			for ( ; j<d_final_states; ++j) {
-				ret.double_down() += child.best(np.player_options) *w;
-			}
+			ret.double_down() += child.best(nk.player.hand.player_options) *w;
 		}
 			// else 0 weight, leave as vector of 0s
 		}	// end for all next card possibilities
 		// normalize weighted sum of probabilities
-		for (i=0; i< d_final_states; ++i) {
-			ret.double_down() *= play.var.double_multiplier
-				/total_weight;
-		}
+		ret.double_down() *= play.var.double_multiplier / total_weight;
 	}
 	if (m.can_hit()) {
+		nk.player.hand.player_options &= play.post_double_down_actions;
 		size_t i = 0;
 		for ( ; i<card_values; ++i) {
 			const size_t& w(dref[i]);
 		if (w) {
-			player_hand_base np(ps[i], play);
-			np.player_options &= play.post_hit_actions;
-			const player_situation_base npb(np, k.player.splits);
-			const player_situation_basic_key_type nk(npb, k.dealer);
-			const expectations
-				child(evaluate_player_basic(play, nk));
+			const value_saver<player_hand_base> __bs(nk.player.hand);
+			nk.player.hand.hit(play, i);
+			const expectations child(evaluate_player_basic(play, nk));
 			// weight by card probability
-			size_t j = 0;
-			for ( ; j<d_final_states; ++j) {
-				ret.hit() += child.best(np.player_options) *w;
-			}
+			ret.hit() += child.best(nk.player.hand.player_options) *w;
 		}
 			// else 0 weight, leave as vector of 0s
 		}	// end for all next card possibilities
 		// normalize weighted sum of probabilities
-		for (i=0; i< d_final_states; ++i) {
-			ret.hit() /= total_weight;
+		ret.hit() /= total_weight;
+	}
+	if (m.can_split() && k.player.hand.is_paired()) {
+		const size_t pc = k.player.hand.pair_card();
+		// divide this into cases, based on post-split-state
+		const size_t& pw(dref[pc]);		// pairing cards
+		// here, using weights that account for pair-card removal
+		// instead of p^2, q^2, 2pq
+		const size_t npw = total_weight -pw;	// non-pairing cards
+		const size_t pwt = npw *(npw -1);
+		size_t pwa[3];	// should be const
+		pwa[2] = pw *(pw -1);	// 2 new pairs
+		pwa[0] = npw *(npw -1);	// 0 new pairs
+		pwa[1] = pwt -pwa[2] -pwa[0];	// 1 new pair
+		split_state ps[3];
+		k.player.splits.post_split_states(ps[2], ps[1], ps[0]);
+		player_situation_basic_key_type sk(k);
+		sk.player.hand.player_options &= play.post_split_actions;
+	if (k.player.splits.is_splittable()) {
+		// weighted sum expected value of 3 sub cases
+		size_t j = 0;
+		for ( ; j<3; ++j) {
+			const value_saver<split_state> __ss(sk.player.splits, ps[j]);
+			const expectations child(evaluate_player_basic(play, sk));
+			ret.split() += child.best(sk.player.hand.player_options) *pwa[j];
 		}
-	}
-	if (m.can_split()) {
-	}
-	}	// else don't bother computing
+		ret.split() /= pwt;
+	} else {
+		// no more splittable pairs
+		sk.player.hand.player_options -= SPLIT;
+		// splitting: hit card on top of base card
+		// assume that order of Xs and Ys are independent
+		// compute non-pairing edges (Y)
+		edge_type X = 0.0;	// possible pair card next
+		edge_type Y = 0.0;	// non-paired only
+		size_t i = 0;
+		for ( ; i<card_values; ++i) {
+			const size_t& w(dref[i]);
+		if (w) {
+			const value_saver<player_hand_base> __bs(sk.player.hand);
+			sk.player.hand.split(play, i);
+			const expectations
+				child(evaluate_player_basic(play, sk));
+			// weight by card probability
+			const edge_type sub = child.best(sk.player.hand.player_options) *w;
+			if (i != pc) {
+				Y += sub;
+			}
+			X += sub;
+		}
+		}
+		Y /= npw;
+		X /= total_weight;
+		// TODO: cache X and Y, this is a basic approximation
+		size_t j = 0;
+		for ( ; j<3; ++j) {
+			const edge_type nX = X *ps[j].nonsplit_pairs();
+			const edge_type nY = Y *ps[j].unpaired_hands;
+			ret.split() += pwa[j] *(nX +nY);
+		}
+		ret.split() /= pwt;
+	}	// splittable pairs remaining
+	}	// is paired, can split
+	}	// is terminal, else don't bother computing
 	// surrender (if allowed) is constant expectation
 } else {
 	STACKTRACE_INDENT_PRINT("cache hit\n");

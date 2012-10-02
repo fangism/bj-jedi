@@ -59,6 +59,14 @@ struct split_state {
 	void
 	post_split_states(split_state&, split_state&, split_state&) const;
 
+	ssize_t
+	nonsplit_pairs(void) {
+		if (paired_hands > splits_remaining) {
+			return paired_hands -splits_remaining;
+		}
+		return paired_hands;
+	}
+
 	int
 	compare(const split_state& r) const {
 	{
@@ -115,6 +123,27 @@ struct player_hand_base {
 	player_busted(void) const {
 		return state == player_bust;
 	}
+
+	bool
+	is_paired(void) const {
+		return state >= pair_offset && state < pair_offset +card_values;
+	}
+
+	size_t
+	pair_card(void) const {
+		return state - pair_offset;
+	}
+
+	void
+	hit(const play_map&, const size_t);
+
+	// split without taking next card
+	void
+	split(const play_map&);
+
+	// split and take next card
+	void
+	split(const play_map&, const size_t);
 
 	// lexicographical key compare
 	bool

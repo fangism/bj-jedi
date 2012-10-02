@@ -223,6 +223,21 @@ play_map::hit_player(const size_t state, const size_t c) const {
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
+	For now, assume re-splittable.
+ */
+size_t
+play_map::split_player(const size_t state, const size_t c) const {
+	assert(c < card_values);
+	const state_machine::node& current(player_resplit[state]);
+	if (!current.is_terminal()) {
+		return current[c];
+	} else {
+		return state;
+	}
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 size_t
 play_map::hit_dealer(const size_t state, const size_t c) const {
 	assert(c < card_values);

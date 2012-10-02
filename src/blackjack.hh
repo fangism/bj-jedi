@@ -156,6 +156,9 @@ public:
 	hit_player(const size_t, const size_t) const;
 
 	size_t
+	split_player(const size_t, const size_t) const;
+
+	size_t
 	hit_dealer(const size_t, const size_t) const;
 
 	const outcome&
