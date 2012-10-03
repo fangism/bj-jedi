@@ -432,6 +432,9 @@ often resulting in an exponentially growing amount of computation.
 Conventional techniques for accelerating such computations
 include memoization and caching of intermediate results.  
 
+% In Figures~\ref{fig:split-2} through~\ref{fig:split-4}, 
+% the nodes are also annotated with a number $(M)$, 
+% that represents the ...
 \TODO: count paths to terminal nodes before and after caching,
 compare number of node evaluations
 % write generic dot-graph reader to count paths from root to terminals?
@@ -457,6 +460,24 @@ P &\goesto& PP +2PY +YY \\
 &\goesto& \ldots
 \end{eqnarray}
 \end{comment}
+
+% subsubsection: inaccuracies and approximations
+It is important to note that above method is still an approximation,
+due to the fact that:
+
+\begin{enumerate}
+\item We have not accounted for the effect of card removal as 
+each split hand receives new cards.
+\item Enumerating split states with hand counts $(M_P, M_X, M_Y)$ 
+ignores permutation, 
+and disregards the \emph{sequence} in which the set of live hands is played. 
+\end{enumerate}
+
+\noindent
+With an infinite deck, the exposure of cards has no effect on the
+card distribution for subsequent hands, therefore all hands can be 
+treated \emph{independently}.  
+The effect of card removal will be addressed in Chapter~\ref{sec:counting}.
 
 
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % %

@@ -21,6 +21,8 @@ BOOK_INPUTS = bj-math.tex \
 	composition.tex \
 	counting.tex \
 	betting.tex \
+	variations.tex \
+	experimental.tex \
 	bj-math.bib
 EXTRA_DIST = $(BOOK_INPUTS) scantexdepend.awk state-machine-tabular.awk \
 	transpose-matrix.awk scale.awk hit-vs-stand-table.awk

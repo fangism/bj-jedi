@@ -107,6 +107,8 @@
 \newcommand{\Xpose}[1]{#1^{\top}}	% matrix transpose
 % loop construct (op,var,bounds)
 \newcommand{\Loop}[3]{#1#2\Sqz:\Sqz#3 :}
+% sets
+\let\cross\times
 
 % table commands
 % table's upper-left header cell
@@ -122,6 +124,8 @@
 \frontmatter
 \pagenumbering{roman}
 \title{Mathematics of Blackjack}
+% \title{Blackjack-o-pedia}
+% \title{The Book of Blackjack}
 \author{David Fang}
 % \date{March 2012}
 % \date{\today}
@@ -154,6 +158,8 @@
 \input counting
 % \input variations	% the impact of rule variations on edges
 \input betting
+\input variations
+\input experimental
 
 % appendices
 \appendix

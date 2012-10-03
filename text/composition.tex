@@ -14,7 +14,35 @@ the sensitivity of distribution to card exposure,
 so the analyses presented in this chapter 
 will be repeated for different numbers of decks.
 
+The analyses in this chapter make a few assumptions and approximations:
+\begin{itemize}
+\item The deck is fresh, i.e. starts with the standard deck distribution before
+any cards are dealt.
+\item The distribution of cards remaining in the deck is \emph{static} 
+after considering the initially exposed cards, i.e. subsequently exposed 
+cards (after hitting) do not affect change the distribution.  
+\end{itemize}
 
+We introduce a few more conventions used throughout this chapter:
+\begin{itemize}
+\item Let $\Vec{c^*}$ represent the standard deck card distribution.  
+\item Let $\Vec{c}\Set{R}$ represent the distribution of cards
+	after cards $R$ have been removed from a single deck.
+\item Let $\Vec{Nc}\Set{R}$ represent the distribution of cards
+	after cards $R$ have been removed from $N$ decks.
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Single-deck Strategy}
+\label{sec:composition:strategy}
+
+Recompute dealer final states given
+\begin{itemize}
+\item only dealer's revealed card (10 cases)
+\item player's cards and dealer's revealed card (900 cases)
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Composition-dependence Effectiveness}
 \label{sec:composition:eff}
 

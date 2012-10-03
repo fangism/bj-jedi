@@ -93,6 +93,40 @@ discuss accuracy and sensitivity of approximation
 discuss compute time, tradeoffs.  What is good enough?
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Recomputing the Odds}
+\label{sec:counting:odds}
+
+In this section, we recompute the odds and edges from Chapter~\ref{sec:basic}
+while accounting for card removal.
+The new results are presented for 1, 2, and 4 decks, 
+and for the H17 and S17 variations.  
+
+% dealer's final state odds
+
+\subsection{Hit vs. Stand}
+\label{sec:counting:odds:hit-stand}
+
+\subsection{Double-down}
+\label{sec:counting:odds:double}
+
+\subsection{Splitting}
+\label{sec:counting:odds:split}
+
+If one were to account for hand permutation, then the player's set of hands
+would be represented with an unsorted string of $\Set{P,X,Y}$.
+For $S=1,P=1$ (only one split allowed), 
+since re-splitting is not an option,
+let $H$ encompass all hand possibilities for $X$ and $Y$.
+the resulting states of pairs of hands would be $H\cross{}H$, or
+$\Set{XX, XY, YX, YY}$.
+
+\begin{eqnarray}
+\ExpAct{split}{P} &=& \Sum{i}{}{\Sum{j}{}{\ldots}}
+\end{eqnarray}
+
+(This was also stated in~\cite{ref:griffin99, ref:nairn08}.)
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Sensitivity Analysis}
 \label{sec:counting:sensitivity}
 
