@@ -9,7 +9,7 @@ dnl and have "src/config.h" wrap around this.
 AC_CONFIG_HEADERS([src/__config__.h])
 AC_CONFIG_AUX_DIR(config)
 AC_CONFIG_MACRO_DIR([config])
-AC_CONFIG_SRCDIR([src/strategy.cc])
+AC_CONFIG_SRCDIR([src/bj/core/strategy.cc])
 
 # Propagate the make warning flags recursively
 AM_INIT_AUTOMAKE([1.9 -Wall -Werror])

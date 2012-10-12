@@ -1,39 +1,43 @@
 # "src/Makefile.am"
 
-AUTOMAKE_OPTIONS = 1.9 gnu
+AUTOMAKE_OPTIONS = 1.9 gnu subdir-objects
 
-bin_PROGRAMS = boc2 bjswoc bjgrader
-noinst_PROGRAMS = bj-splitgen
-pkglib_LTLIBRARIES = util/libutil.la libbj.la
+bin_PROGRAMS = apps/boc2 apps/bjswoc apps/bjgrader
+noinst_PROGRAMS = apps/bj-splitgen
+pkglib_LTLIBRARIES = util/libutil.la \
+	bj/core/libbjcore.la \
+	bj/ui/stdio/libbjstdio.la
 
 AM_CPPFLAGS = $(RL_INCLUDE)
 
-libbj_la_SOURCES = \
-	analysis.cc analysis.hh \
-	blackjack.cc blackjack.hh \
-	bookmark.cc bookmark.hh \
-	card_state.cc card_state.hh \
+bj_core_libbjcore_la_SOURCES = \
 	config.h \
-	counter.cc counter.hh \
-	devel_switches.hh \
-	deck.cc deck.hh \
-	deck_state.cc deck_state.hh \
-	enums.hh \
-	expectations.cc expectations.hh \
-	grader.cc grader.hh \
-	hand.cc hand.hh \
-	lobby.cc lobby.hh \
-	num.hh \
-	outcome.cc outcome.hh \
-	player_action.cc player_action.hh \
-	play_options.cc play_options.hh \
-	statistics.cc statistics.hh \
-	strategy.cc strategy.hh \
-	variation.cc variation.hh
+	bj/devel_switches.hh \
+	bj/core/analysis.cc bj/core/analysis.hh \
+	bj/core/blackjack.cc bj/core/blackjack.hh \
+	bj/core/card_state.cc bj/core/card_state.hh \
+	bj/core/counter.cc bj/core/counter.hh \
+	bj/core/deck.cc bj/core/deck.hh \
+	bj/core/deck_state.cc bj/core/deck_state.hh \
+	bj/core/enums.hh \
+	bj/core/expectations.cc bj/core/expectations.hh \
+	bj/core/hand.cc bj/core/hand.hh \
+	bj/core/num.hh \
+	bj/core/outcome.cc bj/core/outcome.hh \
+	bj/core/player_action.cc bj/core/player_action.hh \
+	bj/core/statistics.cc bj/core/statistics.hh \
+	bj/core/strategy.cc bj/core/strategy.hh \
+	bj/core/variation.cc bj/core/variation.hh
 
 # TODO: readline function only needed with CLI library
+bj_core_libbjcore_la_LIBADD = util/libutil.la
 
-libbj_la_LIBADD = util/libutil.la
+bj_ui_stdio_libbjstdio_la_SOURCES = \
+	bj/ui/stdio/bookmark.cc bj/ui/stdio/bookmark.hh \
+	bj/ui/stdio/grader.cc bj/ui/stdio/grader.hh \
+	bj/ui/stdio/play_options.cc bj/ui/stdio/play_options.hh \
+	bj/ui/stdio/lobby.cc bj/ui/stdio/lobby.hh
+bj_ui_stdio_libbjstdio_la_LIBADD = bj/core/libbjcore.la
 
 util_libutil_la_SOURCES = \
 	util/attributes.h \
@@ -63,16 +67,16 @@ util_libutil_la_SOURCES = \
 util_libutil_la_LDFLAGS = $(RL_LDPATH)
 util_libutil_la_LIBADD = $(RL_LIB)
 
-boc2_SOURCES = boc2.cc
-boc2_LDADD = libbj.la
+apps_boc2_SOURCES = apps/boc2.cc
+apps_boc2_LDADD = bj/core/libbjcore.la
 
-bjswoc_SOURCES = bjswoc.cc
-bjswoc_LDADD = libbj.la
+apps_bjswoc_SOURCES = apps/bjswoc.cc
+apps_bjswoc_LDADD = bj/core/libbjcore.la
 
-bjgrader_SOURCES = bjgrader.cc
-bjgrader_LDADD = libbj.la
+apps_bjgrader_SOURCES = apps/bjgrader.cc
+apps_bjgrader_LDADD = bj/ui/stdio/libbjstdio.la
 
-bj_splitgen_SOURCES = bj-splitgen.cc
-bj_splitgen_LDADD = libbj.la
+apps_bj_splitgen_SOURCES = apps/bj-splitgen.cc
+apps_bj_splitgen_LDADD = bj/core/libbjcore.la
 
 include $(top_srcdir)/globals.mk

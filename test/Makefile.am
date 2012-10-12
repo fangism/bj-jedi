@@ -4,7 +4,7 @@ AUTOMAKE_OPTIONS = 1.9 gnu
 
 SUFFIXES = .bj-in .bj-out .bj-diff .bj-exp .bj-test
 
-BJ_EXE = ../src/bjgrader
+BJ_EXE = ../src/apps/bjgrader
 
 SHELL_INTERPRETER = "\#!$(SHELL)"
 
