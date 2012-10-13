@@ -6,7 +6,7 @@
 #include <iostream>
 #include <numeric>
 
-#define	ENABLE_STACKTRACE				1
+#define	ENABLE_STACKTRACE				0
 
 #include "bj/core/analysis.hh"
 #include "bj/core/blackjack.hh"

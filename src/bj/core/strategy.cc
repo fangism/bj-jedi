@@ -345,9 +345,8 @@ strategy::dump_dealer_final_table(ostream& o) const {
 	const_iterator i(b);
 	for ( ; i!=e; ++i) {
 		o << play.dealer_hit[play_map::d_initial_card_map[i-b]].name << '\t';
-		copy(i->dealer_final_given_revealed_pre_peek.begin(),
-			i->dealer_final_given_revealed_pre_peek.end(), osi);
-		o << endl;
+		dump_dealer_final_vector(o,
+			i->dealer_final_given_revealed_pre_peek, false);
 	}
 }
 	o << endl;
@@ -366,9 +365,8 @@ strategy::dump_dealer_final_table(ostream& o) const {
 	const_iterator i(b);
 	for ( ; i!=e; ++i) {
 		o << play.dealer_hit[play_map::d_initial_card_map[i-b]].name << '\t';
-		copy(i->dealer_final_given_revealed_post_peek.begin(),
-			i->dealer_final_given_revealed_post_peek.end(), osi);
-		o << endl;
+		dump_dealer_final_vector(o,
+			i->dealer_final_given_revealed_post_peek, false);
 	}
 }
 	return o;

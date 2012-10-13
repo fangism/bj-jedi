@@ -108,7 +108,8 @@ typedef array<probability_type, d_final_states>	dealer_final_vector;
 
 extern
 ostream&
-dump_dealer_final_vector(ostream&, const dealer_final_vector&);
+dump_dealer_final_vector(ostream&, const dealer_final_vector&,
+	const bool h = true);
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 }	// end namespace blackjack

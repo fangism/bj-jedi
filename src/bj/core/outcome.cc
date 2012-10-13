@@ -63,9 +63,15 @@ dump_player_final_outcome_vector(const player_final_outcome_vector& v, ostream& 
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
+	\param header true if table header is wanted
+ */
 ostream&
-dump_dealer_final_vector(ostream& o, const dealer_final_vector& d) {
-	play_map::dealer_final_table_header(o) << endl;
+dump_dealer_final_vector(ostream& o, const dealer_final_vector& d,
+		const bool header) {
+	if (header) {
+		play_map::dealer_final_table_header(o) << endl;
+	}
 	std::ostream_iterator<probability_type> osi(o, "\t");
 	std::copy(d.begin(), d.end(), osi);
 	return o << endl;
