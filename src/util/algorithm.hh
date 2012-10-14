@@ -24,7 +24,7 @@ inline
 int
 dictionary_compare(Iter1 __first1, const Iter1 __last1,
 	Iter2 __first2, const Iter2 __last2) {
-	int pos = 0;
+	int pos = 1;
 	for (; __first1 != __last1 && __first2 != __last2;
 			++__first1, ++__first2, ++pos) {
 		if (*__first1 < *__first2)

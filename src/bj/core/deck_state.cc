@@ -252,10 +252,7 @@ perceived_deck_state::compare(const perceived_deck_state& r) const {
 	if (r.remaining_total < remaining_total)
 		return 1;
 	const int c = remaining.compare(r.remaining);
-	if (c < 0)
-		return -1;
-	if (c > 0)
-		return 1;
+	if (c) return c;
 	if (peeked_not_10s < r.peeked_not_10s)
 		return -1;
 	if (r.peeked_not_10s < peeked_not_10s)

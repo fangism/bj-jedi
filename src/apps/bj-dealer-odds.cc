@@ -17,6 +17,7 @@ using cards::card_name;
 using cards::reveal_print_ordering;
 using util::precision_saver;
 using util::strings::string_to_num;
+using util::value_saver;
 using namespace blackjack;
 
 static
@@ -75,13 +76,109 @@ compute_dealer_odds_dynamic_reveal_1(const variation& var,
 	}
 }
 
-#if 0
-// based on dealer's reveal card and player's cards
+/**
+	Tuple for comparison and sorting report.
+ */
+struct composition_dependent_key_type {
+	const play_map&				play;	// for state machine
+//	card_type				dealer_reveal;
+	player_hand_base			player_hand;
+	card_type				player_cards[2];
+
+	composition_dependent_key_type(
+		const play_map& pm,
+//		const card_type d, 
+		const player_hand_base& h, 
+		const card_type p1, const card_type p2) :
+		play(pm),
+//		dealer_reveal(d), 
+		player_hand(h) {
+		player_cards[0] = p1;
+		player_cards[1] = p2;
+	}
+
+	int
+	compare(const composition_dependent_key_type& r) const {
+//		int dd = int(dealer_reveal -r.dealer_reveal);
+//		if (dd) return dd;
+		const int pd = player_hand.compare(r.player_hand);
+		if (pd) return pd;
+		const int cd1 = int(player_cards[0] -r.player_cards[0]);
+		if (cd1) return cd1;
+		const int cd2 = int(player_cards[1] -r.player_cards[1]);
+		return cd2;
+	}
+
+	bool
+	operator < (const composition_dependent_key_type& r) const {
+		return compare(r) < 0;
+	}
+};	// end struct composition_dependent_key_type
+
+ostream&
+operator << (ostream& o, const composition_dependent_key_type& c) {
+	o << c.play.player_hit[c.player_hand.state].name << ':';
+	if (c.player_cards[0] != c.player_cards[1] && 
+		c.player_cards[1] != cards::ACE) {
+		o << card_name[c.player_cards[0]] <<
+			card_name[c.player_cards[1]];
+	}
+	return o;
+}
+
+typedef	std::map<composition_dependent_key_type, dealer_final_vector>
+				composition_dependent_map_type;
+
 static
 void
-compute_dealer_odds_dynamic_reveal_3(const variation& var) {
+compute_dealer_odds_dynamic_reveal_3(const variation& var, 
+		const perceived_deck_state& pd, 
+		const analysis_parameters& ap) {
+	const play_map play(var);
+	play_map::dealer_final_table_header(cout << "dlr/plr") << endl;
+	card_type c = 0;		// TWO, ... TEN, Ace
+for ( ; c < card_values; ++c) {
+	const card_type d = reveal_print_ordering[c];
+	dealer_situation_key_type
+		dk(play_map::d_initial_card_map[d], pd);
+	dk.card_dist.remove(d);
+//		dk.card_dist.show_count(cout) << endl;
+	// post-peek conditions only
+	switch (d) {
+	case cards::TEN: if (var.peek_on_10) dk.peek_no_Ace(); break;
+	case cards::ACE: if (var.peek_on_Ace) dk.peek_no_10(); break;
+	default: break;
+	}
+	composition_dependent_map_type m;	// for sorting
+	card_type p1 = 0;
+	for ( ; p1 < card_values; ++p1) {
+	card_type p2 = p1;
+	const card_type pp1 = reveal_print_ordering[p1];
+	for ( ; p2 < card_values; ++p2) {
+		const card_type pp2 = reveal_print_ordering[p2];
+		const value_saver<perceived_deck_state> dss(dk.card_dist);
+		dk.card_dist.remove(pp1);
+		dk.card_dist.remove(pp2);
+//		dk.card_dist.show_count_brief(cout);
+		player_hand ph(play);
+		ph.deal_player(pp1, pp2, true, d);
+		const dealer_final_vector&
+			dfv(dealer_cache.evaluate_dealer_dynamic(play, dk, ap));
+		const composition_dependent_key_type k(play, ph, pp1, pp2);
+		const std::pair<composition_dependent_map_type::iterator, bool>
+			f(m.insert(composition_dependent_map_type::value_type(
+				k, dfv)));
+		assert(f.second);	// was uniquely inserted
+	}
+	}
+	composition_dependent_map_type::const_iterator mi(m.begin()), me(m.end());
+	for ( ; mi!=me; ++mi) {
+		cout << card_name[d] << '/' << mi->first << '\t';
+		dump_dealer_final_vector(cout, mi->second, false);
+	}
 }
-#endif
+}
+
 
 // number of decks matter here
 static
@@ -111,21 +208,67 @@ compute_dealer_odds_exact_reveal_1(const variation& var,
 	}
 }
 
-#if 0
 static
 void
-compute_dealer_odds_exact_reveal_3(const variation& var) {
+compute_dealer_odds_exact_reveal_3(const variation& var, 
+		const perceived_deck_state& pd, 
+		const analysis_parameters& ap) {
+	const play_map play(var);
+	play_map::dealer_final_table_header(cout << "dlr/plr") << endl;
+	card_type c = 0;		// TWO, ... TEN, Ace
+for ( ; c < card_values; ++c) {
+	const card_type d = reveal_print_ordering[c];
+	dealer_situation_key_type
+		dk(play_map::d_initial_card_map[d], pd);
+	dk.card_dist.remove(d);
+//		dk.card_dist.show_count(cout) << endl;
+	// post-peek conditions only
+	switch (d) {
+	case cards::TEN: if (var.peek_on_10) dk.peek_no_Ace(); break;
+	case cards::ACE: if (var.peek_on_Ace) dk.peek_no_10(); break;
+	default: break;
+	}
+	composition_dependent_map_type m;	// for sorting
+	card_type p1 = 0;
+	for ( ; p1 < card_values; ++p1) {
+	card_type p2 = p1;
+	const card_type pp1 = reveal_print_ordering[p1];
+	for ( ; p2 < card_values; ++p2) {
+		const card_type pp2 = reveal_print_ordering[p2];
+		const value_saver<perceived_deck_state> dss(dk.card_dist);
+		dk.card_dist.remove(pp1);
+		dk.card_dist.remove(pp2);
+//		dk.card_dist.show_count_brief(cout);
+		player_hand ph(play);
+		ph.deal_player(pp1, pp2, true, d);
+		const dealer_final_vector&
+			dfv(dealer_cache.evaluate_dealer_exact(play, dk, ap));
+		const composition_dependent_key_type k(play, ph, pp1, pp2);
+		const std::pair<composition_dependent_map_type::iterator, bool>
+			f(m.insert(composition_dependent_map_type::value_type(
+				k, dfv)));
+		assert(f.second);	// was uniquely inserted
+	}
+	}
+	composition_dependent_map_type::const_iterator mi(m.begin()), me(m.end());
+	for ( ; mi!=me; ++mi) {
+		cout << card_name[d] << '/' << mi->first << '\t';
+		dump_dealer_final_vector(cout, mi->second, false);
+	}
 }
-#endif
+}
+
+
 
 struct options {
 	variation				var;
 	analysis_parameters			analysis_params;
 	bool					player_composition;
+	size_t					precision;
 	bool					help_option;
 
 	options() : var(), analysis_params(),
-		player_composition(false), help_option(false) { }
+		player_composition(false), precision(4), help_option(false) { }
 };	// end struct options
 
 static
@@ -170,6 +313,15 @@ __set_player_composition(options& o) { o.player_composition = true; }
 
 static
 void
+__set_precision(options& o, const char* args) {
+	if (string_to_num(args, o.precision)) {
+		cerr << "Invalid precision: " << args << endl;
+		throw util::getopt_exception(2);
+	}
+}
+
+static
+void
 __set_variation_command(options& o, const char* arg) {
 	util::string_list toks;
 	util::tokenize_char(arg, toks, '=');
@@ -203,11 +355,12 @@ o << prog << " [options]\n"
 "  -b : use static standard (infinite) deck approximation\n"
 "  -d : use static distribution after card removal\n"
 "  -e : use exact distribution after each removed card\n"
-"  -p : include effect of player hand composition\n"
+"  -c : include effect of player hand composition\n"
+"  -p <int> : display precision\n"
 // "  -r, --remove : remove the string of cards from deck initially\n"
 // "  -a, --add : add the string of cards to deck initially\n"
 // "  -v : version\n"
-// TODO: control accuracy and precision
+// TODO: control accuracy (via tolerance)
 	<< endl;
 }
 
@@ -222,7 +375,8 @@ main(int argc, char* argv[]) {
 	optmap.add_option('b', &__set_basic_calc);
 	optmap.add_option('d', &__set_dynamic_calc);
 	optmap.add_option('e', &__set_exact_calc);
-	optmap.add_option('p', &__set_player_composition);
+	optmap.add_option('c', &__set_player_composition);
+	optmap.add_option('p', &__set_precision);
 	optmap.add_option('o', &__set_variation_command);
 	optmap.add_option('h', &__help);
 	options opt;
@@ -232,8 +386,8 @@ if (opt.help_option) {
 	return 0;
 }
 if (!err) {
-	const precision_saver ps1(cout, 4);
-	const precision_saver ps2(cerr, 4);
+	const precision_saver ps1(cout, opt.precision);
+	const precision_saver ps2(cerr, opt.precision);
 	opt.var.dump(cout) << endl;
 	cout << "evaluation method: " << opt.analysis_params.mode << endl;
 	perceived_deck_state D(opt.var.num_decks);
@@ -243,14 +397,22 @@ if (!err) {
 		compute_dealer_odds_basic_standard(opt.var);
 		break;
 	case ANALYSIS_DYNAMIC:
-		compute_dealer_odds_dynamic_reveal_1(opt.var, D, 
-			opt.analysis_params);
-// TODO: player_composition
+		if (opt.player_composition) {
+			compute_dealer_odds_dynamic_reveal_3(opt.var, D, 
+				opt.analysis_params);
+		} else {
+			compute_dealer_odds_dynamic_reveal_1(opt.var, D, 
+				opt.analysis_params);
+		}
 		break;
 	case ANALYSIS_EXACT:
-		compute_dealer_odds_exact_reveal_1(opt.var, D, 
-			opt.analysis_params);
-// TODO: player_composition
+		if (opt.player_composition) {
+			compute_dealer_odds_exact_reveal_3(opt.var, D, 
+				opt.analysis_params);
+		} else {
+			compute_dealer_odds_exact_reveal_1(opt.var, D, 
+				opt.analysis_params);
+		}
 		break;
 	default:
 		cout << "Unsupported calculation mode." << endl;

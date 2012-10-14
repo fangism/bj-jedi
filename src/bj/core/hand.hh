@@ -150,12 +150,10 @@ struct player_hand_base {
 	split(const play_map&, const card_type);
 
 	// lexicographical key compare
-	bool
+	int
 	compare(const player_hand_base& r) const {
-		if (state < r.state)
-			return -1;
-		else if (r.state < state)
-			return 1;
+		const int sc = state -r.state;
+		if (sc) return sc;
 		else if (player_options < r.player_options)
 			return -1;
 		else if (r.player_options < player_options)
