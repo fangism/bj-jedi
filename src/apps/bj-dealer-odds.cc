@@ -122,8 +122,10 @@ struct options {
 	variation				var;
 	analysis_parameters			analysis_params;
 	bool					player_composition;
+	bool					help_option;
 
-	options() : var(), analysis_params(), player_composition(false) { }
+	options() : var(), analysis_params(),
+		player_composition(false), help_option(false) { }
 };	// end struct options
 
 static
@@ -177,25 +179,40 @@ __set_variation_command(options& o, const char* arg) {
 	}
 }
 
+static
+void
+__help(options& o) {
+	o.help_option = true;
+}
+
+static
+void
+usage(ostream& o, const char* prog) {
+o << prog << " [options]\n"
+"probability calculator for dealer's final states, given up-card in blackjack\n"
+"options: \n"
+//	Options (long options not available yet):
+"  -h : this help\n"
+"game variation:\n"
+"  -n <int> : number of decks.\n"	// " h for half-deck\n"
+"  -H : dealer hits on soft-17\n"
+"  -S : dealer stands on soft-17\n"
+"  -o <option=value>: other variation option commands\n"
+"	e.g. peek-10=0, peek-ace=0\n"
+"calculation:\n"
+"  -b : use static standard (infinite) deck approximation\n"
+"  -d : use static distribution after card removal\n"
+"  -e : use exact distribution after each removed card\n"
+"  -p : include effect of player hand composition\n"
+// "  -r, --remove : remove the string of cards from deck initially\n"
+// "  -a, --add : add the string of cards to deck initially\n"
+// "  -v : version\n"
+// TODO: control accuracy and precision
+	<< endl;
+}
+
 typedef	util::getopt_map<options>	getopt_map_type;
 
-/**
-	Options (long options not available yet):
-	-n, --num-decks <int> : number of decks.  h for half-deck
-	-H, --H17 : dealer hits on soft-17
-	-S, --S17 : dealer stands on soft-17
-	-p, --player-composition : include effect of player hand composition
-	-o <option=value>: other variation option command
-		can access options like peek-10, peek-ace
-	-b, --basic : use static standard (infinite) deck approximation
-	-d, --dynamic : use static distribution after card removal
-	-e, --exact : use exact distribution after each removed card
-	-r, --remove : remove the string of cards from deck initially
-	-a, --add : add the string of cards to deck initially
-	-h : help
-	-v : version
-TODO: control accuracy and precision
- */
 int
 main(int argc, char* argv[]) {
 	getopt_map_type optmap;
@@ -207,8 +224,13 @@ main(int argc, char* argv[]) {
 	optmap.add_option('e', &__set_exact_calc);
 	optmap.add_option('p', &__set_player_composition);
 	optmap.add_option('o', &__set_variation_command);
+	optmap.add_option('h', &__help);
 	options opt;
 	const int err = optmap(argc, argv, opt);
+if (opt.help_option) {
+	usage(cout, argv[0]);
+	return 0;
+}
 if (!err) {
 	const precision_saver ps1(cout, 4);
 	const precision_saver ps2(cerr, 4);
