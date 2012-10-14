@@ -64,6 +64,9 @@ protected:
 public:
 	perceived_deck_state();
 
+	explicit
+	perceived_deck_state(const size_t n);
+
 	// remove card from dist, and copy
 	perceived_deck_state(const perceived_deck_state&, const card_type);
 
@@ -84,17 +87,38 @@ public:
 	void
 	remove_all(const card_type);	// translate with card_value_map
 
+	/**
+		Increment number of peeked non-10 cards.
+		if peeked card is discarded, it may not be revealed!
+	 */
 	void
-	peek_not_10(void);
+	peek_not_10(void) {
+		++peeked_not_10s;
+	}
 
 	void
-	peek_not_Ace(void);
+	peek_not_Ace(void) {
+		++peeked_not_Aces;
+	}
+
+	void
+	unpeek_not_10(void) {
+		--peeked_not_10s;
+	}
+
+	void
+	unpeek_not_Ace(void) {
+		--peeked_not_Aces;
+	}
 
 	void
 	reveal_peek_10(const card_type);
 
 	void
 	reveal_peek_Ace(const card_type);
+
+	void
+	reveal(const peek_state_enum, const card_type);
 
 	/**
 		Peeked unknown discards are not counted as removed

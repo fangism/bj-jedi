@@ -49,6 +49,10 @@ util_libutil_la_SOURCES = \
 	util/command.tcc \
 	util/configure_option.hh \
 	util/cppcat.h \
+	util/getopt_mapped.hh \
+	util/getopt_mapped.tcc \
+	util/getopt_mapped.cc \
+	util/getopt_portable.h \
 	util/iosfmt_saver.hh \
 	util/member_select_iterator.hh \
 	util/probability.hh \

@@ -124,6 +124,7 @@ if (bi.second) {
 			dref(get_basic_reduced_count(k.peek_state));
 		const count_type total_weight =
 			accumulate(dref.begin(), dref.end(), 0);
+		// don't bother with distribution_weight_adjustment, infinite deck
 		card_type i = 0;
 		for ( ; i<card_values; ++i) {
 			const count_type& w(dref[i]);
@@ -148,7 +149,7 @@ if (bi.second) {
 	STACKTRACE_INDENT_PRINT("cache hit\n");
 }
 #if ENABLE_STACKTRACE
-	dump_dealer_final_vector(STACKTRACE_STREAM, ret) << endl;
+	dump_dealer_final_vector(STACKTRACE_STREAM << '\t', ret, false) << endl;
 #endif
 	// else return cached entry
 	return ret;
@@ -184,14 +185,21 @@ if (bi.second) {
 		// dealer must hit
 		// what distribution to use? (any peek?)
 		perceived_deck_state d(k.card_dist);
+		perceived_deck_state subd(d);
 		switch (k.dealer.peek_state) {
-		case PEEKED_NO_10: d.remove_all(TEN); break;
-		case PEEKED_NO_ACE: d.remove_all(ACE); break;
+		case PEEKED_NO_10: d.remove_all(TEN); d.unpeek_not_10();
+			subd.unpeek_not_10(); break;
+		case PEEKED_NO_ACE: d.remove_all(ACE); d.unpeek_not_Ace();
+			subd.unpeek_not_Ace(); break;
 		default: break;
 		}
 		// effective weights, given peeked not-10, not-Ace
 		deck_count_type wd;
 		d.distribution_weight_adjustment(wd);
+#if ENABLE_STACKTRACE && 0
+		d.show_count_brief(STACKTRACE_STREAM);
+		STACKTRACE_STREAM << wd << endl;
+#endif
 		const count_type total_weight =
 			accumulate(wd.begin(), wd.end(), 0);
 		card_type i = 0;
@@ -203,12 +211,13 @@ if (bi.second) {
 			psub.parent_prob *= probability_type(w)
 				/ probability_type(total_weight);
 			// do not remove card, keep same dist
-			const dealer_situation_key_type
-				nk(ds[i], k.card_dist);
+			const dealer_situation_key_type nk(ds[i], subd);
 			// NO_PEEK
 			const dealer_final_vector
-				child(compute_dealer_final_distribution(play, nk, psub));
-//				child(evaluate_dealer_dynamic(play, nk, psub));
+//				child(compute_dealer_final_distribution(play, nk, psub));
+				child(evaluate_dealer_dynamic(play, nk, psub));
+			STACKTRACE_INDENT_PRINT("weighted " << w << '/'
+				<< total_weight << endl);
 			// weight by card probability
 			dealer_state_type j = 0;
 			for ( ; j<d_final_states; ++j) {
@@ -226,7 +235,7 @@ if (bi.second) {
 	STACKTRACE_INDENT_PRINT("cache hit\n");
 }
 #if ENABLE_STACKTRACE
-	dump_dealer_final_vector(STACKTRACE_STREAM, ret) << endl;
+	dump_dealer_final_vector(STACKTRACE_STREAM << '\t', ret, false) << endl;
 #endif
 	// else return cached entry
 	return ret;
@@ -262,9 +271,12 @@ if (bi.second) {
 		// dealer must hit
 		// what distribution to use? (any peek?)
 		perceived_deck_state d(k.card_dist);
+		perceived_deck_state subd(d);
 		switch (k.dealer.peek_state) {
-		case PEEKED_NO_10: d.remove_all(TEN); break;
-		case PEEKED_NO_ACE: d.remove_all(ACE); break;
+		case PEEKED_NO_10: d.remove_all(TEN); d.unpeek_not_10();
+			subd.unpeek_not_10(); break;
+		case PEEKED_NO_ACE: d.remove_all(ACE); d.unpeek_not_Ace();
+			subd.unpeek_not_Ace(); break;
 		default: break;
 		}
 		// effective weights, given peeked not-10, not-Ace
@@ -282,7 +294,7 @@ if (bi.second) {
 				/ probability_type(total_weight);
 			// remove single card, change dist
 			const dealer_situation_key_type
-				nk(ds[i], perceived_deck_state(k.card_dist, i));
+				nk(ds[i], perceived_deck_state(subd, i));
 			// NO_PEEK
 			const dealer_final_vector
 				child(compute_dealer_final_distribution(play, nk, psub));
@@ -304,7 +316,7 @@ if (bi.second) {
 	STACKTRACE_INDENT_PRINT("cache hit\n");
 }
 #if ENABLE_STACKTRACE
-	dump_dealer_final_vector(STACKTRACE_STREAM, ret) << endl;
+	dump_dealer_final_vector(STACKTRACE_STREAM << '\t', ret, false) << endl;
 #endif
 	// else return cached entry
 	return ret;

@@ -70,6 +70,10 @@ struct analysis_parameters {
 	probability_type			dynamic_threshold;
 //	probability_type			basic_threshold;
 
+	analysis_parameters() : mode(ANALYSIS_BASIC),
+		parent_prob(1.0),
+		dynamic_threshold(1e-4) { }
+
 	/**
 		Downgrade one level of analysis accuracy when
 		probability falls below threshold.
@@ -105,6 +109,18 @@ struct dealer_situation_key_type {
 	dealer_situation_key_type(const dealer_hand_base& dh,
 			const perceived_deck_state& d) :
 		dealer(dh), card_dist(d) { }
+
+	void
+	peek_no_Ace(void) {
+		dealer.peek_no_Ace();
+		card_dist.peek_not_Ace();
+	}
+
+	void
+	peek_no_10(void) {
+		dealer.peek_no_10();
+		card_dist.peek_not_10();
+	}
 
 	int
 	compare(const dealer_situation_key_type& r) const {

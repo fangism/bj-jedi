@@ -4,9 +4,11 @@
 #include <iostream>
 #include <iomanip>
 #include <algorithm>			// for copy, fill
+#include <functional>			// for std::multiplies
 #include <numeric>			// for accumulate
 
 #include "bj/core/deck_state.hh"
+#include "bj/core/deck.hh"		// for standard_deck_count
 #include "bj/core/variation.hh"
 
 #include "util/array.tcc"
@@ -16,6 +18,9 @@
 #include "util/tokenize.hh"
 #include "util/iosfmt_saver.hh"
 
+#define	ENABLE_STACKTRACE			0
+#include "util/stacktrace.hh"
+
 namespace blackjack {
 using std::string;
 using std::cerr;
@@ -23,6 +28,8 @@ using std::endl;
 using std::setw;
 using std::fill;
 using std::copy;
+using std::multiplies;
+using std::transform;
 using util::string_list;
 using util::tokenize;
 using util::strings::string_to_num;
@@ -38,6 +45,7 @@ using cards::deck_count_type;
 using cards::card_values;
 using cards::card_name;
 using cards::card_value_map;
+using cards::standard_deck_count;
 using cards::standard_deck_distribution;
 using cards::reveal_print_ordering;
 using cards::card_index;
@@ -79,7 +87,14 @@ zpow(const size_t b, size_t p) {
 // class perceived_deck_state method definitions
 
 perceived_deck_state::perceived_deck_state() : remaining(count_type(0)),
-	peeked_not_10s(0), peeked_not_Aces(0), remaining_total(0) {
+		peeked_not_10s(0), peeked_not_Aces(0), remaining_total(0) {
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+perceived_deck_state::perceived_deck_state(const size_t n) : remaining(), 
+		peeked_not_10s(0), peeked_not_Aces(0), remaining_total(n *52) {
+	transform(standard_deck_count.begin(), standard_deck_count.end(), 
+		remaining.begin(), std::bind2nd(multiplies<count_type>(), n));
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -145,21 +160,6 @@ perceived_deck_state::remove_all(const card_type c) {
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/**
-	Increment number of peeked non-10 cards.
-	if peeked card is discarded, it may not be revealed!
- */
-void
-perceived_deck_state::peek_not_10(void) {
-	++peeked_not_10s;
-}
-
-void
-perceived_deck_state::peek_not_Ace(void) {
-	++peeked_not_Aces;
-}
-
-//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void
 perceived_deck_state::reveal_peek_10(const card_type c) {
 	--peeked_not_10s;
@@ -177,13 +177,33 @@ perceived_deck_state::reveal_peek_Ace(const card_type c) {
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
+	\param p the previous peek state (which should be updated after reveal)
+ */
+void
+perceived_deck_state::reveal(const peek_state_enum p, const card_type c) {
+switch (p) {
+case PEEKED_NO_ACE:
+	--peeked_not_Aces;
+	break;
+case PEEKED_NO_10:
+	--peeked_not_10s;
+	break;
+default: break;
+}
+	remove(c);
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
 	Takes an extended deck count and re-weights the count
 	according to the perceived distribution.  
+	See math paper in text/.
 	TODO: compute four power terms more efficiently w/ valarray,
 	vector operations, or the like.
  */
 void
 perceived_deck_state::distribution_weight_adjustment(deck_count_type& d) const {
+	STACKTRACE_BRIEF;
 	// computing integer power, just multiply
 	// unlikely to have high powers
 	const count_type p_nA = remaining_total -remaining[ACE];
@@ -197,10 +217,14 @@ perceived_deck_state::distribution_weight_adjustment(deck_count_type& d) const {
 	const count_type f_x = w_A_1 *w_10_1;
 	const count_type f_10 = w_A_1 *w_10;
 	const count_type f_A = w_A *w_10_1;
+	// populate with weights
 	// loop bounds depend on card enum in deck.hh
 	d[ACE] = f_A;
 	fill(&d[ACE+1], &d[TEN], f_x);
 	d[TEN] = f_10;
+	// element multiply
+	transform(d.begin(), d.end(), remaining.begin(), d.begin(), 
+		multiplies<count_type>());
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
