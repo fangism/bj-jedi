@@ -8,6 +8,7 @@
 #include "util/value_saver.hh"
 #include "util/getopt_mapped.tcc"
 #include "util/string.tcc"
+#include "util/tokenize.hh"
 
 using std::cout;
 using std::cerr;
@@ -80,13 +81,37 @@ static
 void
 compute_dealer_odds_dynamic_reveal_3(const variation& var) {
 }
+#endif
 
 // number of decks matter here
 static
 void
-compute_dealer_odds_exact_reveal_1(const variation& var) {
+compute_dealer_odds_exact_reveal_1(const variation& var,
+		const perceived_deck_state& pd, 
+		const analysis_parameters& ap) {
+	const play_map play(var);
+	play_map::dealer_final_table_header(cout << "dealer") << endl;
+	card_type c = 0;		// TWO, ... TEN, Ace
+	for ( ; c < card_values; ++c) {
+		const card_type d = reveal_print_ordering[c];
+		dealer_situation_key_type
+			dk(play_map::d_initial_card_map[d], pd);
+		dk.card_dist.remove(d);
+//		dk.card_dist.show_count(cout) << endl;
+		// post-peek conditions only
+		switch (d) {
+		case cards::TEN: if (var.peek_on_10) dk.peek_no_Ace(); break;
+		case cards::ACE: if (var.peek_on_Ace) dk.peek_no_10(); break;
+		default: break;
+		}
+		const dealer_final_vector&
+			dfv(dealer_cache.evaluate_dealer_exact(play, dk, ap));
+		cout << card_name[d] << '\t';
+		dump_dealer_final_vector(cout, dfv, false);
+	}
 }
 
+#if 0
 static
 void
 compute_dealer_odds_exact_reveal_3(const variation& var) {
@@ -141,6 +166,17 @@ static
 void
 __set_player_composition(options& o) { o.player_composition = true; }
 
+static
+void
+__set_variation_command(options& o, const char* arg) {
+	util::string_list toks;
+	util::tokenize_char(arg, toks, '=');
+	if (o.var.command(toks)) {
+		cerr << "Malformed variation command: " << arg << endl;
+		throw util::getopt_exception(2);
+	}
+}
+
 typedef	util::getopt_map<options>	getopt_map_type;
 
 /**
@@ -149,6 +185,8 @@ typedef	util::getopt_map<options>	getopt_map_type;
 	-H, --H17 : dealer hits on soft-17
 	-S, --S17 : dealer stands on soft-17
 	-p, --player-composition : include effect of player hand composition
+	-o <option=value>: other variation option command
+		can access options like peek-10, peek-ace
 	-b, --basic : use static standard (infinite) deck approximation
 	-d, --dynamic : use static distribution after card removal
 	-e, --exact : use exact distribution after each removed card
@@ -156,7 +194,6 @@ typedef	util::getopt_map<options>	getopt_map_type;
 	-a, --add : add the string of cards to deck initially
 	-h : help
 	-v : version
-TODO: arbitrary variation commands
 TODO: control accuracy and precision
  */
 int
@@ -169,6 +206,7 @@ main(int argc, char* argv[]) {
 	optmap.add_option('d', &__set_dynamic_calc);
 	optmap.add_option('e', &__set_exact_calc);
 	optmap.add_option('p', &__set_player_composition);
+	optmap.add_option('o', &__set_variation_command);
 	options opt;
 	const int err = optmap(argc, argv, opt);
 if (!err) {
@@ -184,6 +222,11 @@ if (!err) {
 		break;
 	case ANALYSIS_DYNAMIC:
 		compute_dealer_odds_dynamic_reveal_1(opt.var, D, 
+			opt.analysis_params);
+// TODO: player_composition
+		break;
+	case ANALYSIS_EXACT:
+		compute_dealer_odds_exact_reveal_1(opt.var, D, 
 			opt.analysis_params);
 // TODO: player_composition
 		break;
