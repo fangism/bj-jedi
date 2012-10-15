@@ -31,13 +31,13 @@ if (NR >= startrow) {
 	if (1 >= startcol) {
 		printf(OFMT, scale($1));
 	} else {
-		printf(OFMT, $1);
+		printf("%s", $1);
 	}
 	for (i=2; i<=NF; ++i) {
 	if (i >= startcol) {
 		printf(OFS OFMT, scale($i));
 	} else {
-		printf(OFS OFMT, $i);
+		printf(OFS "%s", $i);
 	}
 	}
 	print "";

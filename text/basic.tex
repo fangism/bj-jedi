@@ -91,17 +91,21 @@ $+1$ for a win, $-1$ for lose, and $0$ for push,
 and $+1.5$ (or whatever the blackjack payoff is) for win*.
 
 If we combine Table~\ref{tab:win-lose} and
-Table~\ref{tab:dealer-final-H17-pre-peek} (pre-peek, H17) 
+Table~\ref{tab:dealer-final-H17} (H17, pre-peek) 
 the result is the expected winnings per unit bet, 
 is Table~\ref{tab:player-stand-H17-pre-peek}.
 
 For post-peek conditions, Table~\ref{tab:win-lose} is combined with
-Table~\ref{tab:dealer-final-H17-post-peek} (post-peek, H17) to produce
+Table~\ref{tab:dealer-final-H17} (H17, post-peek) to produce
 Table~\ref{tab:player-stand-H17-post-peek}.
 The only columns which differ between these tables are when
 the dealer's reveal card is an Ace or 10, since those are the only cards
 that provide information about the hole card
 when the dealer peeks for blackjack.
+Under most variations of Blackjack where the player is prompted for
+action after the dealer peeks for a natural,
+the strategy for optimizing decisions should be based
+on post-peek conditions.  
 
 Intuitively, as the player's hand value increases up to 21, 
 her expected outcome also monotonically increases.

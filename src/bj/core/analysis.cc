@@ -130,6 +130,7 @@ if (bi.second) {
 			const count_type& w(dref[i]);
 		if (w) {
 			dealer_hand_base nk(ds[i]);	// NO_PEEK
+			nk.check_blackjack(k.first_card);
 			const dealer_final_vector
 				child(evaluate_dealer_basic(play, nk));
 			// weight by card probability
@@ -211,7 +212,8 @@ if (bi.second) {
 			psub.parent_prob *= probability_type(w)
 				/ probability_type(total_weight);
 			// do not remove card, keep same dist
-			const dealer_situation_key_type nk(ds[i], subd);
+			dealer_situation_key_type nk(ds[i], subd);
+			nk.dealer.check_blackjack(k.dealer.first_card);
 			// NO_PEEK
 			const dealer_final_vector
 //				child(compute_dealer_final_distribution(play, nk, psub));
@@ -293,8 +295,9 @@ if (bi.second) {
 			psub.parent_prob *= probability_type(w)
 				/ probability_type(total_weight);
 			// remove single card, change dist
-			const dealer_situation_key_type
+			dealer_situation_key_type
 				nk(ds[i], perceived_deck_state(subd, i));
+			nk.dealer.check_blackjack(k.dealer.first_card);
 			// NO_PEEK
 			const dealer_final_vector
 				child(compute_dealer_final_distribution(play, nk, psub));

@@ -60,7 +60,7 @@ A typical hand of Blackjack is played as follows:
 \item The player places a bet on the table for the next hand, 
 before any cards are dealt.
 \item Cards are dealt: 2 to the player (face-up), 
-2 to the dealer (one revealed, one hidden, called the hole card)
+2 to the dealer (one revealed \emph{up-card}, one hidden \emph{hole card})
 \item Checking for ``\emph{natural}'' blackjack by player or 
 dealer\index{natural}:
 \begin{enumerate}
@@ -179,7 +179,7 @@ in every state, we can compute the optimal decision in every situation.
 \label{tab:dealer-hit-S17}
 \end{table}
 
-The dealer's reveal card is essential in determining strategy.
+The dealer's up-card card is essential in determining strategy.
 It present information about the likely progression of the dealer's
 play in the game, which in turn affects the player's optimal choices.
 
@@ -192,7 +192,7 @@ The only difference between these tables is that the former
 applies to the variation where the dealer must hit on a soft-17 (H17),
 and the latter applies when the dealer must stand on a soft-17 (S17).
 Proper analysis begins by evaluating the probability distribution
-of the dealer's terminal states given the dealer's revealed card. 
+of the dealer's terminal states given the dealer's up-card. 
 
 The blank rows represent the dealer's terminal states --
 these rows can be filled with state $i$, representing no state change.
@@ -284,7 +284,7 @@ is in the probability expression.
 \subsection{Probability of Dealer's Terminal States}
 \label{sec:rules:dealer-play:final-pdf}
 
-Given the dealer's revealed card and state-transition matrix $\Mat{D}$, 
+Given the dealer's up-card and state-transition matrix $\Mat{D}$, 
 one can calculate the probability of the dealer ending up in each state.
 At any given state, the probability distribution of the
 next state is simply based on the card probabilities.  
@@ -351,6 +351,7 @@ draws cards without replacement, before player cards are dealt.)
 
 % Pre-peek vs. Post-peek.
 
+\begin{comment}
 \begin{table}[ht!]
 \caption{Dealer's final state distribution, H17, pre-peek}
 \begin{center}
@@ -366,21 +367,41 @@ draws cards without replacement, before player cards are dealt.)
 \end{center}
 \label{tab:dealer-final-H17-post-peek}
 \end{table}
+\end{comment}
+
+\begin{table}[ht!]
+\caption{Dealer's final state distribution, H17}
+\begin{center}
+\input tables/dealer-final-H17-basic
+\end{center}
+\label{tab:dealer-final-H17}
+\end{table}
+
+\begin{table}[ht!]
+\caption{Dealer's final state distribution, S17}
+\begin{center}
+\input tables/dealer-final-S17-basic
+\end{center}
+\label{tab:dealer-final-S17}
+\end{table}
 
 Suppose that the dealer was given just one up-card with no hole card, 
 and the dealer hit until reaching a terminal state ($>=$17 or bust).
 Suppose further that if the first two cards are Ace and 10,
 then the dealer's hand is treated as a natural blackjack (BJ).
-Then the spread of final states would compute as 
-Table~\ref{tab:dealer-final-H17-pre-peek}.
-The entries are reported in percentages, so the columns add up to 100\%.
-
-However, in most blackjack variations, if the revealed card is an Ace or 10, 
+The corresponding spread of the dealer's final states would compute as 
+Table~\ref{tab:dealer-final-H17}.
+Each row represents the dealer's revealed \emph{up-card}.
+The entries are reported in percentages, so each row adds up to 100\%.
+The cases where the dealer shows a 10 or Ace are divided into 
+\emph{pre-} and \emph{post-peek} entries, as denoted by subscripts.  
+In most Blackjack variations, if the up-card is an Ace or 10, 
 the dealer will check for blackjack by peeking\index{peek} at the hole card.
-In the event of a dealer natural (or player natural), 
-the dealer reveals the hole card (usually to the player's disappointment)
+In the event of a dealer natural, 
+the dealer reveals the hole card (to the player's disappointment)
 and the hand ends before the player is given the opportunity to act.
-As soon as the player is prompted for action, she knows that the 
+
+As soon as the player is prompted for action, she may conclude that the 
 dealer cannot have a natural.
 This means for a revealed Ace, the hole card cannot be 10, 
 and for a revealed 10, the hole card cannot be Ace.
@@ -389,12 +410,10 @@ calculation represents the hole card, the first iteration
 should be computed by zero-ing out the probability of the
 card that is eliminated from the possibilities, and re-normalizing
 the probability of the other cards (to keep a sum of 1.0).  
-The result is a ``post-peek'' spread of final states, computed as 
-Table~\ref{tab:dealer-final-H17-post-peek}.
-Note that only the Ace and 10 columns are differ from 
-Table~\ref{tab:dealer-final-H17-pre-peek}, 
-because the dealer need not peek for blackjack on all other up-cards.
+For all other up-cards, the dealer cannot possibly have a natural,
+and thus peeking is irrelevant.
 
+\begin{comment}
 \begin{table}[ht!]
 \caption{Dealer's final state distribution, S17, pre-peek}
 \begin{center}
@@ -410,12 +429,13 @@ because the dealer need not peek for blackjack on all other up-cards.
 \end{center}
 \label{tab:dealer-final-S17-post-peek}
 \end{table}
+\end{comment}
 
-For the S17 variation, the corresponding tables are similarly computed.
-The pre-peek distribution is computed as 
-Table~\ref{tab:dealer-final-S17-pre-peek}, 
-and the post-peek distribution is computed as 
-Table~\ref{tab:dealer-final-S17-post-peek}.
+For the S17 (stand-on-soft-17) variation, the corresponding results are
+computed in Table~\ref{tab:dealer-final-S17}.
+Observe that compared with Table~\ref{tab:dealer-final-H17},
+the entries for rows $\Brace{7,8,9,10}$ are identical because the
+soft-17 state (A,6) cannot be reached from $\Brace{7,8,9,10}$.
 
 % observations
 From these tables, we can already get some intuition on

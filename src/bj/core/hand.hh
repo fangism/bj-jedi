@@ -182,18 +182,25 @@ struct player_hand_base {
 struct dealer_hand_base {
 	dealer_state_type			state;
 	peek_state_enum				peek_state;
+	/**
+		This is true if the dealer has only revealed first card so far.
+		In a no-peek situation, if the second (hole) card makes 21, 
+		it is considered a natural blackjack.
+	 */
+	bool					first_card;
 
 	dealer_hand_base() : state(0),
-		peek_state(NO_PEEK) { }
+		peek_state(NO_PEEK), first_card(true) { }
 
 	explicit
 	dealer_hand_base(const dealer_state_type d) :
-		state(d), peek_state(NO_PEEK) { }
+		state(d), peek_state(NO_PEEK), first_card(true) { }
 
 	void
 	reveal_hole_card(void) {
 		// reset peek status after hole card is revealed
 		peek_state = NO_PEEK;
+		first_card = false;
 	}
 
 	void
@@ -216,17 +223,24 @@ struct dealer_hand_base {
 		return state == dealer_bust;
 	}
 
+	void
+	check_blackjack(const bool f) {
+		first_card = false;
+		if (f && (state == goal)) {
+			state = dealer_blackjack;
+		}
+	}
+
 	int
 	compare(const dealer_hand_base& r) const {
 		if (peek_state < r.peek_state)
 			return -1;
 		else if (r.peek_state < peek_state)
 			return 1;
-		else if (state < r.state)
-			return -1;
-		else if (r.state < state)
-			return 1;
-		else	return 0;
+		const int sd = int(state -r.state);
+		if (sd) return sd;
+		const int fd = int(first_card) -int(r.first_card);
+		return fd;
 	}
 
 	bool

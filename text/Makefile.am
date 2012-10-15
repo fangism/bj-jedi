@@ -46,6 +46,16 @@ GENERATED_TABLES = \
 	tables/dealer-final-H17-post-peek.tex \
 	tables/dealer-final-S17-pre-peek.tex \
 	tables/dealer-final-S17-post-peek.tex \
+	tables/dealer-final-H17-post-peek-basic.txt \
+	tables/dealer-final-H17-post-peek-basic.tex \
+	tables/dealer-final-H17-pre-peek-basic.txt \
+	tables/dealer-final-H17-pre-peek-basic.tex \
+	tables/dealer-final-H17-basic.tex \
+	tables/dealer-final-S17-post-peek-basic.txt \
+	tables/dealer-final-S17-post-peek-basic.tex \
+	tables/dealer-final-S17-pre-peek-basic.txt \
+	tables/dealer-final-S17-pre-peek-basic.tex \
+	tables/dealer-final-S17-basic.tex \
 	tables/player-hit.tex \
 	tables/player-final-split.tex \
 	tables/player-resplit.tex \
@@ -123,6 +133,7 @@ TABULAR_HEADER_HLINE = $(SED) -e '1s|$$| \\hline|'
 SM_TO_TABULAR = $(AWK) -f $(srcdir)/state-machine-tabular.awk
 TRANSPOSE = $(AWK) -f $(srcdir)/transpose-matrix.awk
 SCALE_PERCENT = $(AWK) -f $(srcdir)/scale.awk -v scalefactor=100
+SCALE_PERCENT_2ND = $(SCALE_PERCENT) -v startcol=2
 REORDER_ACE_LAST_ROW = $(SED) -e '/^A/h' -e '/^A/d' -e '/^10/G'
 SED_E_LE = -e 's|<=|$$\\le{}$$|g'
 
@@ -135,6 +146,8 @@ NEXT_CARD_HEADER = \
 # header for top-row: 2,3,4,5,6,7,8,9,10,A
 DEALER_REVEAL_TABULAR = \
 	$(PRINTF) "\\\\begin{tabular}{|c||c|c|c|c|c||c|c|c|c|c|}\n\\hline\n"
+DEALER_REVEAL_TABULAR_XP = \
+	$(PRINTF) "\\\\begin{tabular}{|c||c|c|c|c|c|c|c|c|}\n\\hline\n"
 DEALER_REVEAL_LONGTABLE = \
 	$(PRINTF) "\\\\begin{longtable}{|c||c|c|c|c|c||c|c|c|c|c|}\n"
 DEALER_REVEAL_HEADER = \
@@ -210,6 +223,7 @@ tables/player-resplit.tex: $(BASIC_STRATEGY)
 	$(END_TABULAR) ;} > $@
 
 SCALE_DEALER_FINAL = $(SCALE_PERCENT)
+SCALE_DEALER_FINAL_2ND = $(SCALE_PERCENT_2ND)
 HOME_DEALER_FINAL = $(PRINTF) '\\tblULhdr{reveal}{end state}'
 
 # needs shell variable pp defined to pre|post
@@ -235,6 +249,63 @@ tables/dealer-final-S17-pre-peek.tex: $(S17_STRATEGY)
 
 tables/dealer-final-S17-post-peek.tex: $(S17_STRATEGY)
 	pp=post ; $(DEALER_FINAL_TABLE_SCRIPT)
+
+# these dealer-final tables are transposed
+DEALER_ODDS = ../src/apps/bj-dealer-odds
+
+DEALER_FINAL_TABLE_XP_SCRIPT = \
+	{ $(TITLE_COMMENT) ; \
+	$(DEALER_REVEAL_TABULAR_XP) ; \
+	$(SED) -n -e '/^dealer.*bust.*push/,$$p' $< | \
+	$(SED) -e 's/dealer/\\tblULhdr{final}{reveal}/' \
+		-e 's|	$$||' | \
+	$(SCALE_DEALER_FINAL_2ND) | \
+	$(TABS_TO_TABULAR) | \
+	$(SED) -e '/^T/s|T|10$$_{'$$pp'}$$|' -e '/^A/s|A|A$$_{'$$pp'}$$|' | \
+	$(SED) -e '/push/s|$$| \\hline|' -e '/^6/s|$$| \\hline|' ; \
+	$(END_TABULAR) ;} > $@
+
+tables/dealer-final-H17-post-peek-basic.txt: $(DEALER_ODDS)
+	$< -n 1 -H -b > $@
+
+tables/dealer-final-H17-pre-peek-basic.txt: $(DEALER_ODDS)
+	$< -n 1 -H -o peek-10=0 -o peek-ace=0 -b > $@
+
+tables/dealer-final-S17-post-peek-basic.txt: $(DEALER_ODDS)
+	$< -n 1 -S -b > $@
+
+tables/dealer-final-S17-pre-peek-basic.txt: $(DEALER_ODDS)
+	$< -n 1 -S -o peek-10=0 -o peek-ace=0 -b > $@
+
+tables/dealer-final-H17-post-peek-basic.tex: \
+		tables/dealer-final-H17-post-peek-basic.txt
+	pp=post ; $(DEALER_FINAL_TABLE_XP_SCRIPT)
+
+tables/dealer-final-H17-pre-peek-basic.tex: \
+		tables/dealer-final-H17-pre-peek-basic.txt
+	pp=pre ; $(DEALER_FINAL_TABLE_XP_SCRIPT)
+
+tables/dealer-final-H17-basic.tex: \
+		tables/dealer-final-H17-post-peek-basic.tex \
+		tables/dealer-final-H17-pre-peek-basic.tex
+	{ $(SED) -e '$$d' $< ; \
+	$(PRINTF) "\\hline\n" ; \
+	$(TAIL) -n3 tables/dealer-final-H17-pre-peek-basic.tex ;} > $@
+
+tables/dealer-final-S17-post-peek-basic.tex: \
+		tables/dealer-final-S17-post-peek-basic.txt
+	pp=post ; $(DEALER_FINAL_TABLE_XP_SCRIPT)
+
+tables/dealer-final-S17-pre-peek-basic.tex: \
+		tables/dealer-final-S17-pre-peek-basic.txt
+	pp=pre ; $(DEALER_FINAL_TABLE_XP_SCRIPT)
+
+tables/dealer-final-S17-basic.tex: \
+		tables/dealer-final-S17-post-peek-basic.tex \
+		tables/dealer-final-S17-pre-peek-basic.tex
+	{ $(SED) -e '$$d' $< ; \
+	$(PRINTF) "\\hline\n" ; \
+	$(TAIL) -n3 tables/dealer-final-S17-pre-peek-basic.tex ;} > $@
 
 HOME_PLAYER_STAND = $(PRINTF) '\\tblULhdr{reveal}{$$\\Exp{S}$$}'
 
