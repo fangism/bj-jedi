@@ -370,7 +370,7 @@ dnl AC_CONFIG_FILES([pre-inst-env], [chmod +x pre-inst-env])
 dnl AC_CONFIG_FILES([install_transform.sh], [chmod +x install_transform.sh])
 
 dnl extra dirs
-$MKDIR_P text/tables
+$MKDIR_P text/tables/dealer
 $MKDIR_P text/figs
 
 AC_OUTPUT
