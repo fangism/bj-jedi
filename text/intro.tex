@@ -164,6 +164,17 @@ in every state, we can compute the optimal decision in every situation.
 \label{sec:rules:dealer-play}
 
 \begin{table}[ht!]
+\caption{Dealer's hitting state transition table}
+\begin{center}
+% \begin{savenotes}
+\input tables/dealer-hit-HS17
+% \end{savenotes}
+\end{center}
+\label{tab:dealer-hit-HS17}
+\end{table}
+
+\begin{comment}
+\begin{table}[ht!]
 \caption{Dealer's hitting state transition table (hits on soft-17)}
 \begin{center}
 \input tables/dealer-hit-H17
@@ -178,49 +189,22 @@ in every state, we can compute the optimal decision in every situation.
 \end{center}
 \label{tab:dealer-hit-S17}
 \end{table}
+\end{comment}
 
-The dealer's up-card card is essential in determining strategy.
-It present information about the likely progression of the dealer's
-play in the game, which in turn affects the player's optimal choices.
-
-The dealer's process (to hit until terminal state is reached)
-is entirely pre-determined and summarized by Tables~\ref{tab:dealer-hit-H17}
-and~\ref{tab:dealer-hit-S17}.
-Table entry row-$i$ (state), column-$j$ (hit card) is the enumeral value
-of state \Trans{i}{j}.
-The only difference between these tables is that the former
-applies to the variation where the dealer must hit on a soft-17 (H17),
-and the latter applies when the dealer must stand on a soft-17 (S17).
-Proper analysis begins by evaluating the probability distribution
-of the dealer's terminal states given the dealer's up-card. 
-
+The dealer's process (to hit until a terminal state is reached)
+is entirely pre-determined and summarized by Table~\ref{tab:dealer-hit-HS17}.
+Table entry row-$i$ (hand state), column-$j$ (hit card) is the enumeral value
+of state \Trans{i}{j}.  For many cases, the new state is just $row+column$.
 The blank rows represent the dealer's terminal states --
 these rows can be filled with state $i$, representing no state change.
-Since the dealer's actions are entirely independent of 
-the players' actions, we can define the state-machine
-for the dealer's cards, following the rule that the dealer
-must hit until his total exceeds 16.
-Table~\ref{tab:dealer-hit-H17} summarizes the various
-value transitions that the dealer's hand may take
-before reaching a terminal state.
-The row headers contain the dealer's current hand value, 
-and the column headers are the next card (if applicable).
-The table entries point to the next state.
-
 States labeled `A,$x$' represent soft-totals, where the Ace (A)
 can be evaluated as 1 or 11.  
 The terminal `A,$x$' states are treated as the higher of the 
 two possible values, ranging from 17 to 21.  
-In the first variation, Table~\ref{tab:dealer-hit-H17}, 
-the dealer must hit on a soft-17 (A,6)\index{hit on soft-17}.
-Later, we will compare the edge impact of this variation
-vs. the dealer standing on soft-17\index{stand on soft-17}.
-The corresponding state table for the stand-on-soft-17 variation
-is shown in Table~\ref{tab:dealer-hit-S17}, 
-the only difference being that the dealer stands on (A,6) 
-as a terminal state.
-As a shorthand, we refer to the hit-on-soft-17 variation as H17, 
-and stand-on-soft-17 variation as S17.
+The table varies in row A,6 between the hit-on-soft-17 (H17)
+and stand-on-soft-17 (S17) variations: for S17, A,6 is always treated
+as a terminal hard-17.
+Later, we will compare the edge impact of H17 vs. the S17 variation.
 
 In reading these tables, 
 the first dealer `hit' simply reveals the hole card, 
@@ -230,233 +214,18 @@ Thus, the transition edges for \Trans{A}{10}
 and \Trans{10}{A} result in 21, and not a natural blackjack.
 Without peeking, these entries would be set to `BJ'.
 
-By the state-transition process defined in these tables,
-all non-terminal states will eventually reach
-one of the terminal states (a.k.a. absorbing state), 
-except for dealer blackjack (denoted BJ), 
-which is be evaluated separately.
-This state-transition process is also known as an
-\emph{absorbing Markov chain}\index{Markov chain!absorbing},
-since every state can reach an absorbing state.
-
-Tables~\ref{tab:dealer-hit-H17} and~\ref{tab:dealer-hit-S17}
-are compact representations of sparse state-transition matrices.
-With the set of dealers states $\Set{d}$ of size $N_d=\abs{\Set{d}}$,
-an expanded $N_d \times N_d$ state-transition matrix $\Mat{D}$ 
-would contain entries:
-
-\begin{eqnarray}
-\Mat{D}_{i,j} &=&
-\begin{cases}
-1 & i~\text{is terminal and } i=j \\
-0 & i~\text{is terminal and } i\neq{}j \\
-\Prob{c} & i~\text{is non-terminal and } \exists k : \Trans{i}{c} = j \\
-0 & i~\text{otherwise}
-\end{cases}
-\end{eqnarray}
-
-\noindent
-where $\Prob{c}$ is the probability of drawing card $c$,
-based solely on the card distribution.
-
-$D^\prime$ represents the dealer's state transitions
-when revealing the hole card,
-given that the hole card does not give the dealer a natural or 21.
-
-\begin{eqnarray}
-\Mat{D^\prime}_{i,j} &=&
-\begin{cases}
-1 & i~\text{is terminal and } i=j \\
-0 & i~\text{is terminal and } i\neq{}j \\
-\Prob{c|\Trans{i}{c}\neq{}\text{BJ}} &
-  i~\text{is non-terminal and } \exists k : \Trans{i}{c} = j \\
-0 & i~\text{otherwise}
-\end{cases}
-\end{eqnarray}
-
-\noindent
-The only difference between $\Mat{D}$ and $\Mat{D^\prime}$
-is in the probability expression.  
-
-% TODO: figure
-% TODO: redistribution equation
-
-\subsection{Probability of Dealer's Terminal States}
-\label{sec:rules:dealer-play:final-pdf}
-
-Given the dealer's up-card and state-transition matrix $\Mat{D}$, 
-one can calculate the probability of the dealer ending up in each state.
-At any given state, the probability distribution of the
-next state is simply based on the card probabilities.  
-Given an initial state probability unit vector $\Vec{v_i}$ with elements:
-
-\begin{eqnarray}
-v_{i,j} &=& 
-\begin{cases}
-1 & i=j \\
-0 & \text{otherwise}
-\end{cases}
-\end{eqnarray}
-
-\noindent
-The probability column vector $\Vec{f_i}$ of the dealer's final states 
-can be evaluated as a limit:
-
-\begin{eqnarray}
-\Xpose{\Vec{f_i}} &=& \LimInf{n}{\Xpose{\Vec{v_i}}\Mat{D^\prime}\Mat{D}^n} \nonumber \\
-&=& \Xpose{\Vec{v_i}} \LimInf{n}{\Mat{D^\prime}\Mat{D}^n} \\
-\Mat{D^*} &=& \LimInf{n}{\Mat{D^\prime}\Mat{D}^n} \\
-\Vec{f_i} &=& \Paren{\LimInf{n}{\Mat{D^\prime}\Mat{D}^n}} \Vec{v_i} \nonumber \\
-&=& \Mat{D^*} \Vec{v_i}
-\end{eqnarray}
-
-% TODO: initial identity vector
-
-$\Mat{D^*}$ is the overall dealer final state matrix.  
-Since $\Mat{D^*}$ is constant, it can be computed once
-for all initial state vectors.
-Fortunately, evaluating $\Mat{D^*}$ does not require infinite 
-matrix multiplication.
-Not only is the dealer's Markov chain absorbing, 
-the dealer's hit transition graph
-(Tables~\ref{tab:dealer-hit-H17} and~\ref{tab:dealer-hit-S17})
-is \emph{acyclic}, i.e., no state can ever reach itself again.  
-Thus, there exists a topological sort\index{topological sort}
-ordering of states that can be used to efficiently and iteratively 
-compute the final state probabilities.
-The height of the topologically sorted graph is the maximum 
-number of iterations needed to converge to terminal states.
-For each initial card, the initial probability vector
-is a unit vector with all entries set to $0.0$, except for the state
-that the initial card represents, which is set to $1.0$.
-At each iteration, the probabilities of each state are 
-`redistributed'\index{redistribution} to the next states using the 
-card probabilities as edge weights, whose sum is $1.0$.  
-At any given iteration, the sum of probabilities is always $1.0$.
-Probabilities of the terminal states never get redistributed, 
-they just accumulate.  
-The system converges once all non-terminal state probabilities 
-in the probability vector are 0.0.
-
-The process described above assumes an invariant
-card distribution, when in fact, as each card is revealed and removed, 
-the probability distribution of remaining cards changes.
-\index{infinite deck}
-Assuming a constant distribution is akin to modeling
-the deck as infinite.
-For now we proceed using the infinite deck approximation.  
-(\textbf{TODO}: Perhaps in a later section, we compute the inaccuracy of
-assuming an infinite deck vs. a finite deck, where one 
-draws cards without replacement, before player cards are dealt.)
-
-% Pre-peek vs. Post-peek.
-
 \begin{comment}
-\begin{table}[ht!]
-\caption{Dealer's final state distribution, H17, pre-peek}
-\begin{center}
-\input tables/dealer-final-H17-pre-peek
-\end{center}
-\label{tab:dealer-final-H17-pre-peek}
-\end{table}
-
-\begin{table}[ht!]
-\caption{Dealer's final state distribution, H17, post-peek}
-\begin{center}
-\input tables/dealer-final-H17-post-peek
-\end{center}
-\label{tab:dealer-final-H17-post-peek}
-\end{table}
+Proper analysis begins by evaluating the probability distribution
+of the dealer's terminal states given the dealer's up-card. 
+Since the dealer's actions are entirely independent of 
+the players' actions, we can define the state-machine
+for the dealer's cards, following the rule that the dealer
+must hit until his total exceeds 16.
 \end{comment}
 
-\begin{table}[ht!]
-\caption{Dealer's final state distribution, H17}
-\begin{center}
-\input tables/dealer-final-H17-basic
-\end{center}
-\label{tab:dealer-final-H17}
-\end{table}
-
-\begin{table}[ht!]
-\caption{Dealer's final state distribution, S17}
-\begin{center}
-\input tables/dealer-final-S17-basic
-\end{center}
-\label{tab:dealer-final-S17}
-\end{table}
-
-Suppose that the dealer was given just one up-card with no hole card, 
-and the dealer hit until reaching a terminal state ($>=$17 or bust).
-Suppose further that if the first two cards are Ace and 10,
-then the dealer's hand is treated as a natural blackjack (BJ).
-The corresponding spread of the dealer's final states would compute as 
-Table~\ref{tab:dealer-final-H17}.
-Each row represents the dealer's revealed \emph{up-card}.
-The entries are reported in percentages, so each row adds up to 100\%.
-The cases where the dealer shows a 10 or Ace are divided into 
-\emph{pre-} and \emph{post-peek} entries, as denoted by subscripts.  
-In most Blackjack variations, if the up-card is an Ace or 10, 
-the dealer will check for blackjack by peeking\index{peek} at the hole card.
-In the event of a dealer natural, 
-the dealer reveals the hole card (to the player's disappointment)
-and the hand ends before the player is given the opportunity to act.
-
-As soon as the player is prompted for action, she may conclude that the 
-dealer cannot have a natural.
-This means for a revealed Ace, the hole card cannot be 10, 
-and for a revealed 10, the hole card cannot be Ace.
-Since the first iteration of the redistribution\index{redistribution} 
-calculation represents the hole card, the first iteration
-should be computed by zero-ing out the probability of the
-card that is eliminated from the possibilities, and re-normalizing
-the probability of the other cards (to keep a sum of 1.0).  
-For all other up-cards, the dealer cannot possibly have a natural,
-and thus peeking is irrelevant.
-
-\begin{comment}
-\begin{table}[ht!]
-\caption{Dealer's final state distribution, S17, pre-peek}
-\begin{center}
-\input tables/dealer-final-S17-pre-peek
-\end{center}
-\label{tab:dealer-final-S17-pre-peek}
-\end{table}
-
-\begin{table}[ht!]
-\caption{Dealer's final state distribution, S17, post-peek}
-\begin{center}
-\input tables/dealer-final-S17-post-peek
-\end{center}
-\label{tab:dealer-final-S17-post-peek}
-\end{table}
-\end{comment}
-
-For the S17 (stand-on-soft-17) variation, the corresponding results are
-computed in Table~\ref{tab:dealer-final-S17}.
-Observe that compared with Table~\ref{tab:dealer-final-H17},
-the entries for rows $\Brace{7,8,9,10}$ are identical because the
-soft-17 state (A,6) cannot be reached from $\Brace{7,8,9,10}$.
-
-% observations
-From these tables, we can already get some intuition on
-which of the dealer's reveal cards are more favorable for the player.
-If we look at only the probability of busting and rank them, 
-we get from highest to lowest: 6,5,4,3,2,7,8,9,10,A.
-There is a significant jump in dealer bust probability from 2 to 7.  
-A revealed 6 or 5 is very favorable to the player (over 40\% chance of 
-the dealer busting), 
-while a revealed A or 10 is very unfavorable 
-(only near 20\% chance of dealer busting).
-Most strategy guides organize tables with 2-6 on the left, 
-and 7-A on the right.
-
-% is peeking good or bad for the player?
-
-When we compute the optimal basic strategy in Chapter~\ref{sec:basic}, 
-we will use the post-peek tables, since only they are relevant
-when the player has choice in action.  
-Pre-peek tables are still useful for evaluating overall player or house
-edges \emph{before} each hand is dealt.
+In Chapter~\ref{sec:dealer}, 
+we compute the impact of the dealer's up-card 
+on the probability spread of the dealer's final states.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Player's State Transitions}

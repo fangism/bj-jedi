@@ -17,6 +17,7 @@ SUFFIXES += .dot .fig
 BOOK_INPUTS = bj-math.tex \
 	preface.tex \
 	intro.tex \
+	dealer.tex \
 	basic.tex \
 	composition.tex \
 	counting.tex \
@@ -42,6 +43,7 @@ GENERATED_TABLES = \
 	tables/win-lose-push.tex \
 	tables/dealer-hit-H17.tex \
 	tables/dealer-hit-S17.tex \
+	tables/dealer-hit-HS17.tex \
 	tables/dealer-final-H17-pre-peek.tex \
 	tables/dealer-final-H17-post-peek.tex \
 	tables/dealer-final-S17-pre-peek.tex \
@@ -185,6 +187,12 @@ tables/dealer-hit-H17.tex: $(BASIC_STRATEGY)
 
 tables/dealer-hit-S17.tex: $(S17_STRATEGY)
 	$(DEALER_HIT_TABLE_SCRIPT)
+
+tables/dealer-hit-HS17.tex: tables/dealer-hit-H17.tex
+	$(SED) -e '/^A,6/s|A,6|&\\footnote{Only for H17, hit-on-soft-17.  Otherwise, for S17, row A,6 is treated as a terminal hard-17.}|' \
+		-e '/A,7/,/A,10/d' \
+		-e '/^18/s|18|& or A,7|' -e '/^19/s|19|& or A,8|' \
+		-e '/^20/s|20|& or A,9|' -e '/^21/s|21|& or A,10|' $< > $@
 
 tables/player-hit.tex: $(BASIC_STRATEGY)
 	{ $(TITLE_COMMENT) ; \
