@@ -17,6 +17,7 @@ BEGIN {
 	if (!length(OFMT)) {
 		OFMT = "%.2f";
 	}
+	FS = "\t";
 	OFS = "\t";
 }
 

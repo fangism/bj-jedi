@@ -61,6 +61,7 @@ is in the probability expression.
 % TODO: figure
 % TODO: redistribution equation
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Probability of Dealer's Terminal States}
 \label{sec:dealer-play:final-pdf}
 
@@ -216,6 +217,17 @@ computed in Table~\ref{tab:dealer-final-S17}.
 Observe that compared with Table~\ref{tab:dealer-final-H17},
 the entries for rows $\Brace{7,8,9,10}$ are identical because the
 soft-17 state (A,6) cannot be reached from $\Brace{7,8,9,10}$.
+We combine Tables~\ref{tab:dealer-final-H17} and~\ref{tab:dealer-final-S17}
+to create Table~\ref{tab:dealer-final-unified-basic}.
+The rest of this chapter uses similarly structured tables.  
+
+\begin{table}[ht!]
+\caption{Dealer's final state distribution (unified)}
+\begin{center}
+\input tables/dealer/dealer-final-basic
+\end{center}
+\label{tab:dealer-final-unified-basic}
+\end{table}
 
 % observations
 From these tables, we can already get some intuition on
@@ -237,4 +249,149 @@ we will use the post-peek tables, since only they are relevant
 when the player has choice in action.  
 Pre-peek tables are still useful for evaluating overall player or house
 edges \emph{before} each hand is dealt.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Removing the Revealed Card}
+\label{sec:dealer:reveal}
+
+\begin{table}[ht!]
+\caption{Dealer's final state distribution, removing first card, 1-deck}
+\begin{center}
+\input tables/dealer/dealer-final-dynamic-1
+\end{center}
+\label{tab:dealer-final-unified-dynamic-1}
+\end{table}
+
+\begin{table}[ht!]
+\caption{Dealer's final state distribution, removing first card, 2-deck}
+\begin{center}
+\input tables/dealer/dealer-final-dynamic-2
+\end{center}
+\label{tab:dealer-final-unified-dynamic-2}
+\end{table}
+
+\begin{table}[ht!]
+\caption{Dealer's final state distribution, removing first card, 4-deck}
+\begin{center}
+\input tables/dealer/dealer-final-dynamic-4
+\end{center}
+\label{tab:dealer-final-unified-dynamic-4}
+\end{table}
+
+\begin{table}[ht!]
+\caption{Dealer's final state distribution, removing first card, 8-deck}
+\begin{center}
+\input tables/dealer/dealer-final-dynamic-8
+\end{center}
+\label{tab:dealer-final-unified-dynamic-8}
+\end{table}
+
+The previous calculation of the dealer's final state spread
+is merely an approximation that assumed the same invariant distribution of 
+cards remaining in the deck, and ignored card removal.  
+This would correspond to revealing an up-card 
+and replacing it back into the deck, 
+and drawing cards \emph{with replacement} from a fresh deck until 
+the dealer reaches a terminal state.
+This is not entirely realistic, but the calculation suffices
+as an approximation.
+In this section and the next, we improve the accuracy of 
+the spread calculation, and compare the differences in results.  
+
+Suppose we wish to account for the fact that the revealed card
+is removed from the deck, and adjust the state transition 
+probabilities accordingly.  
+As an approximation, let us also retain the same probability
+distribution of cards, after the up-card is removed.
+This is as if only the drawing cards are replaced.  
+
+Since there are 10 possible up-cards, 
+there are now 10 different card probability distributions
+that arise from removing a single card from the standard deck.
+Furthermore, the number of decks now affects the
+sensitivity of probability change to single card removal.
+
+Tables~\ref{tab:dealer-final-unified-dynamic-1},
+\ref{tab:dealer-final-unified-dynamic-2},
+\ref{tab:dealer-final-unified-dynamic-4},
+and~\ref{tab:dealer-final-unified-dynamic-8}
+show the dealer's final state probabilities using the
+card distribution that results from removing only the up-card
+from 1, 2, 4, and 8 decks, respectively.
+As the number of decks increases, the computed values approach
+those in Table~\ref{tab:dealer-final-unified-basic}, 
+which were computed assuming an infinite-deck, 
+without removing any cards.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Exact Calculation, Removing Subsequent Cards}
+\label{sec:dealer:exact}
+
+\begin{table}[ht!]
+\caption{Dealer's final state distribution, removing each card, 1-deck}
+\begin{center}
+\input tables/dealer/dealer-final-exact-1
+\end{center}
+\label{tab:dealer-final-unified-exact-1}
+\end{table}
+
+\begin{table}[ht!]
+\caption{Dealer's final state distribution, removing each card, 2-deck}
+\begin{center}
+\input tables/dealer/dealer-final-exact-2
+\end{center}
+\label{tab:dealer-final-unified-exact-2}
+\end{table}
+
+\begin{table}[ht!]
+\caption{Dealer's final state distribution, removing each card, 4-deck}
+\begin{center}
+\input tables/dealer/dealer-final-exact-4
+\end{center}
+\label{tab:dealer-final-unified-exact-4}
+\end{table}
+
+\begin{table}[ht!]
+\caption{Dealer's final state distribution, removing each card, 8-deck}
+\begin{center}
+\input tables/dealer/dealer-final-exact-8
+\end{center}
+\label{tab:dealer-final-unified-exact-8}
+\end{table}
+
+Finally, for increased accurace we account for the change in 
+card distribution as each card is exposed and added to the dealer's hand, 
+that is, each card is drawn \emph{without} replacement.
+The computation can no longer use a state transition matrix with
+constant probabilities; 
+the probabilities must be computed recursively.
+The computation graph is a full tree in the worst case, 
+thus computing the exact probability can be far more expensive
+than the previous approximate methods.  
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Player Composition Dependence}
+\label{sec:dealer:composition}
+
+Thus far, the probabilities we have computed are based on
+only the dealer's up-card, as if the dealer were playing \emph{solitaire},
+against no players.  
+The composition of the player's hand has not been taken into account.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Accuracy Comparison}
+\label{sec:dealer:accuracy}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Practical Application}
+\label{sec:dealer:practical}
+
+Even with the most exact calculation of the dealer's final state 
+probabilities, we have only computed such probabilities 
+under the assumption of a fresh deck or shoe.
+These probabilities hold exactly for the first hand played.  
+However, as cards are exposed and removed in subsequent hands, 
+so do the probability distributions change.  
+Exact calculation under cumulative card removal is a task
+suitable for computers.  
 

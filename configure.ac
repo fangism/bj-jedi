@@ -35,6 +35,7 @@ AC_CHECK_PROG([TAIL], tail, tail)
 dnl AC_CHECK_PROG([TEE], tee, tee)
 dnl AC_CHECK_PROG([TR], tr, tr)
 AC_CHECK_PROG([SED], sed, sed)
+AC_CHECK_PROG([TR], tr, tr)
 AC_CHECK_PROG([TOUCH], touch, touch)
 
 # documentation support, macros efined in "config/documentation.m4"
