@@ -7,7 +7,7 @@
 #include "bj/core/counter.hh"
 
 namespace blackjack {
-class variation;
+struct variation;
 using std::istream;
 using std::ostream;
 using std::string;

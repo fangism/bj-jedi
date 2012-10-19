@@ -16,7 +16,7 @@
 #include "bj/ui/stdio/bookmark.hh"
 
 namespace blackjack {
-class variation;
+struct variation;
 struct play_options;
 class action_mask;
 

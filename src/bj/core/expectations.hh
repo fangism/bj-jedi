@@ -14,7 +14,7 @@ using std::pair;
 using std::istream;
 using std::ostream;
 using cards::edge_type;
-struct action_mask;
+class action_mask;
 
 /**
 	Define to 1 to store action expectation edges as an array.

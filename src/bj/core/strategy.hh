@@ -11,7 +11,7 @@
 #include "util/tokenize.hh"
 
 namespace blackjack {
-class variation;
+struct variation;
 class play_map;
 using std::pair;
 using std::istream;

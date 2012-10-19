@@ -51,7 +51,7 @@ const char* action_names[];
 	dealer and the player.
 	Edges are NOT computed here.  
  */
-struct play_map {
+class play_map {
 public:
 	// mapping of initial card to initial state
 	// for both dealer AND player
