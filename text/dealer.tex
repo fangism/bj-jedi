@@ -119,17 +119,6 @@ they just accumulate.
 The system converges once all non-terminal state probabilities 
 in the probability vector are 0.0.
 
-The process described above assumes an invariant
-card distribution, when in fact, as each card is revealed and removed, 
-the probability distribution of remaining cards changes.
-\index{infinite deck}
-Assuming a constant distribution is akin to modeling
-the deck as infinite.
-For now we proceed using the infinite deck approximation.  
-(\textbf{TODO}: Perhaps in a later section, we compute the inaccuracy of
-assuming an infinite deck vs. a finite deck, where one 
-draws cards without replacement, before player cards are dealt.)
-
 % Pre-peek vs. Post-peek.
 
 \begin{comment}
@@ -151,7 +140,7 @@ draws cards without replacement, before player cards are dealt.)
 \end{comment}
 
 \begin{table}[ht!]
-\caption{Dealer's final state distribution, H17}
+\caption{Dealer's final state distribution, infinite-deck, H17}
 \begin{center}
 \input tables/dealer/dealer-final-H17-basic
 \end{center}
@@ -159,18 +148,26 @@ draws cards without replacement, before player cards are dealt.)
 \end{table}
 
 \begin{table}[ht!]
-\caption{Dealer's final state distribution, S17}
+\caption{Dealer's final state distribution, infinite-deck, S17}
 \begin{center}
 \input tables/dealer/dealer-final-S17-basic
 \end{center}
 \label{tab:dealer-final-S17}
 \end{table}
 
+The process described above assumes an invariant
+card distribution, when in fact, as each card is revealed and removed, 
+the probability distribution of remaining cards changes.
+\index{infinite deck}
+Assuming a constant distribution is akin to modeling
+the deck as infinite.
+For now we proceed using the infinite deck approximation.  
+
 Suppose that the dealer was given just one up-card with no hole card, 
 and the dealer hit until reaching a terminal state ($>=$17 or bust).
 Suppose further that if the first two cards are Ace and 10,
 then the dealer's hand is treated as a natural blackjack (BJ).
-The corresponding spread of the dealer's final states would compute as 
+The corresponding spread of the dealer's final states is computed in
 Table~\ref{tab:dealer-final-H17}.
 Each row represents the dealer's revealed \emph{up-card}.
 The entries are reported in percentages, so each row adds up to 100\%.
@@ -219,10 +216,10 @@ the entries for rows $\Brace{7,8,9,10}$ are identical because the
 soft-17 state (A,6) cannot be reached from $\Brace{7,8,9,10}$.
 We combine Tables~\ref{tab:dealer-final-H17} and~\ref{tab:dealer-final-S17}
 to create Table~\ref{tab:dealer-final-unified-basic}.
-The rest of this chapter uses similarly structured tables.  
+The rest of this chapter uses similarly structured unified tables.  
 
 \begin{table}[ht!]
-\caption{Dealer's final state distribution (unified)}
+\caption{Dealer's final state distribution, infinite-deck (unified)}
 \begin{center}
 \input tables/dealer/dealer-final-basic
 \end{center}
@@ -231,14 +228,14 @@ The rest of this chapter uses similarly structured tables.
 
 % observations
 From these tables, we can already get some intuition on
-which of the dealer's reveal cards are more favorable for the player.
+which of the dealer's up-cards are more favorable for the player.
 If we look at only the probability of busting and rank them, 
 we get from highest to lowest: 6,5,4,3,2,7,8,9,10,A.
 There is a significant jump in dealer bust probability from 2 to 7.  
-A revealed 6 or 5 is very favorable to the player (over 40\% chance of 
+A 6 or 5 up-card is very favorable to the player (over 40\% chance of 
 the dealer busting), 
-while a revealed A or 10 is very unfavorable 
-(only near 20\% chance of dealer busting).
+while an A or 10 up-card is very unfavorable to the player
+(only around 20\% chance of dealer busting).
 Most strategy guides organize tables with 2-6 on the left, 
 and 7-A on the right.
 
@@ -251,7 +248,7 @@ Pre-peek tables are still useful for evaluating overall player or house
 edges \emph{before} each hand is dealt.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Removing the Revealed Card}
+\section{Removing the Up-Card}
 \label{sec:dealer:reveal}
 
 \begin{table}[ht!]
@@ -324,7 +321,7 @@ which were computed assuming an infinite-deck,
 without removing any cards.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Exact Calculation, Removing Subsequent Cards}
+\section{Exact Calculation: Removing Every Card}
 \label{sec:dealer:exact}
 
 \begin{table}[ht!]
@@ -377,6 +374,8 @@ Thus far, the probabilities we have computed are based on
 only the dealer's up-card, as if the dealer were playing \emph{solitaire},
 against no players.  
 The composition of the player's hand has not been taken into account.
+Just how much can removing two additional cards affect the 
+dealer's final state probabilities?
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Accuracy Comparison}

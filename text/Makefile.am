@@ -924,6 +924,36 @@ GENERATED_TABLES += \
 	tables/dealer/dealer-final-exact-8.dealer-final-unified \
 	tables/dealer/dealer-final-exact-8.tex
 
+SUFFIXES += .dealer-odds-comp .dealer-final-comp
+.dealer-odds-comp.dealer-final-comp:
+	$(SED) -n -e '/^dlr.*bust.*push/,$$p' $< | \
+	$(SED) -e '/^dlr/s|dlr/plr|dealer	player	hand|' | \
+	$(TR) '/' '\t' | $(TR) ':' '\t' > $@
+
+tables/dealer/H17-post-peek-composition-1.dealer-odds-comp: $(DEALER_ODDS)
+	$< -n 1 -H -e -c > $@
+
+tables/dealer/H17-pre-peek-composition-1.dealer-odds-comp: $(DEALER_ODDS)
+	$< -n 1 -H $(DEALER_NO_PEEK) -e -c > $@
+
+tables/dealer/S17-post-peek-composition-1.dealer-odds-comp: $(DEALER_ODDS)
+	$< -n 1 -S -e -c > $@
+
+tables/dealer/S17-pre-peek-composition-1.dealer-odds-comp: $(DEALER_ODDS)
+	$< -n 1 -S $(DEALER_NO_PEEK) -e -c > $@
+
+DEALER_FINAL_COMPOSITION_TABLES = \
+	tables/dealer/H17-post-peek-composition-1.dealer-odds-comp \
+	tables/dealer/H17-pre-peek-composition-1.dealer-odds-comp \
+	tables/dealer/S17-post-peek-composition-1.dealer-odds-comp \
+	tables/dealer/S17-pre-peek-composition-1.dealer-odds-comp
+
+GENERATED_TABLES += \
+	$(DEALER_FINAL_COMPOSITION_TABLES) \
+	$(DEALER_FINAL_COMPOSITION_TABLES:.dealer-odds-comp=.dealer-final-comp)
+# TODO: format longtable for composition-dependent odds
+# .dealer-final-comp.tex:
+
 ####### player tables ########
 HOME_PLAYER_STAND = $(PRINTF) '\\tblULhdr{reveal}{$$\\Exp{S}$$}'
 
