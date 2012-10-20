@@ -73,6 +73,12 @@ public:
 	void
 	initialize(const extended_deck_count_type&);
 
+	void
+	initialize_num_decks(const size_t);
+
+	void
+	scale_cards(const size_t, const size_t);
+
 	const deck_count_type&
 	get_counts(void) const {
 		return remaining;
@@ -81,7 +87,7 @@ public:
 	void
 	remove(const card_type);	// translate with card_value_map
 
-	void
+	bool
 	remove_if_any(const card_type);	// translate with card_value_map
 
 	void

@@ -61,7 +61,7 @@ compute_dealer_odds_dynamic_reveal_1(const variation& var,
 		const card_type d = reveal_print_ordering[c];
 		dealer_situation_key_type
 			dk(play_map::d_initial_card_map[d], pd);
-		dk.card_dist.remove(d);
+	if (dk.card_dist.remove_if_any(d)) {
 //		dk.card_dist.show_count(cout) << endl;
 		// post-peek conditions only
 		switch (d) {
@@ -73,6 +73,7 @@ compute_dealer_odds_dynamic_reveal_1(const variation& var,
 			dfv(dealer_cache.evaluate_dealer_dynamic(play, dk, ap));
 		cout << card_name[d] << '\t';
 		dump_dealer_final_vector(cout, dfv, false);
+	}
 	}
 }
 
@@ -141,7 +142,7 @@ for ( ; c < card_values; ++c) {
 	const card_type d = reveal_print_ordering[c];
 	dealer_situation_key_type
 		dk(play_map::d_initial_card_map[d], pd);
-	dk.card_dist.remove(d);
+	if (dk.card_dist.remove_if_any(d)) {
 //		dk.card_dist.show_count(cout) << endl;
 	// post-peek conditions only
 	switch (d) {
@@ -157,8 +158,8 @@ for ( ; c < card_values; ++c) {
 	for ( ; p2 < card_values; ++p2) {
 		const card_type pp2 = reveal_print_ordering[p2];
 		const value_saver<perceived_deck_state> dss(dk.card_dist);
-		dk.card_dist.remove(pp1);
-		dk.card_dist.remove(pp2);
+		if (dk.card_dist.remove_if_any(pp1)) {
+		if (dk.card_dist.remove_if_any(pp2)) {
 //		dk.card_dist.show_count_brief(cout);
 		player_hand ph(play);
 		ph.deal_player(pp1, pp2, true, d);
@@ -169,12 +170,15 @@ for ( ; c < card_values; ++c) {
 			f(m.insert(composition_dependent_map_type::value_type(
 				k, dfv)));
 		assert(f.second);	// was uniquely inserted
+		}
+		}
 	}
 	}
 	composition_dependent_map_type::const_iterator mi(m.begin()), me(m.end());
 	for ( ; mi!=me; ++mi) {
 		cout << card_name[d] << '/' << mi->first << '\t';
 		dump_dealer_final_vector(cout, mi->second, false);
+	}
 	}
 }
 }
@@ -193,7 +197,7 @@ compute_dealer_odds_exact_reveal_1(const variation& var,
 		const card_type d = reveal_print_ordering[c];
 		dealer_situation_key_type
 			dk(play_map::d_initial_card_map[d], pd);
-		dk.card_dist.remove(d);
+	if (dk.card_dist.remove_if_any(d)) {
 //		dk.card_dist.show_count(cout) << endl;
 		// post-peek conditions only
 		switch (d) {
@@ -205,6 +209,7 @@ compute_dealer_odds_exact_reveal_1(const variation& var,
 			dfv(dealer_cache.evaluate_dealer_exact(play, dk, ap));
 		cout << card_name[d] << '\t';
 		dump_dealer_final_vector(cout, dfv, false);
+	}
 	}
 }
 
@@ -220,7 +225,7 @@ for ( ; c < card_values; ++c) {
 	const card_type d = reveal_print_ordering[c];
 	dealer_situation_key_type
 		dk(play_map::d_initial_card_map[d], pd);
-	dk.card_dist.remove(d);
+	if (dk.card_dist.remove_if_any(d)) {
 //		dk.card_dist.show_count(cout) << endl;
 	// post-peek conditions only
 	switch (d) {
@@ -236,8 +241,8 @@ for ( ; c < card_values; ++c) {
 	for ( ; p2 < card_values; ++p2) {
 		const card_type pp2 = reveal_print_ordering[p2];
 		const value_saver<perceived_deck_state> dss(dk.card_dist);
-		dk.card_dist.remove(pp1);
-		dk.card_dist.remove(pp2);
+		if (dk.card_dist.remove_if_any(pp1)) {
+		if (dk.card_dist.remove_if_any(pp2)) {
 //		dk.card_dist.show_count_brief(cout);
 		player_hand ph(play);
 		ph.deal_player(pp1, pp2, true, d);
@@ -248,12 +253,15 @@ for ( ; c < card_values; ++c) {
 			f(m.insert(composition_dependent_map_type::value_type(
 				k, dfv)));
 		assert(f.second);	// was uniquely inserted
+		}
+		}
 	}
 	}
 	composition_dependent_map_type::const_iterator mi(m.begin()), me(m.end());
 	for ( ; mi!=me; ++mi) {
 		cout << card_name[d] << '/' << mi->first << '\t';
 		dump_dealer_final_vector(cout, mi->second, false);
+	}
 	}
 }
 }
@@ -262,12 +270,13 @@ for ( ; c < card_values; ++c) {
 
 struct options {
 	variation				var;
+	perceived_deck_state			initial_deck;
 	analysis_parameters			analysis_params;
 	bool					player_composition;
 	size_t					precision;
 	bool					help_option;
 
-	options() : var(), analysis_params(),
+	options() : var(), initial_deck(var.num_decks), analysis_params(),
 		player_composition(false), precision(4), help_option(false) { }
 };	// end struct options
 
@@ -276,13 +285,17 @@ void
 __set_num_decks(options& o, const char* arg) {
 	const string args(arg);
 	if (args == "h" || args == "half") {
-		cerr << "TODO: support half-deck blackjack." << endl;
-		throw util::getopt_exception(2);
+		o.var.num_decks = 1;
+		o.initial_deck.initialize_num_decks(o.var.num_decks);
+		o.initial_deck.scale_cards(1, 2);
 	} else {
 		// is a number
 		if (string_to_num(args, o.var.num_decks)) {
 			cerr << "Invalid number of decks: " << args << endl;
 			throw util::getopt_exception(2);
+		} else {
+			// success: re-initialize deck count
+			o.initial_deck.initialize_num_decks(o.var.num_decks);
 		}
 	}
 }
@@ -389,9 +402,9 @@ if (!err) {
 	const precision_saver ps1(cout, opt.precision);
 	const precision_saver ps2(cerr, opt.precision);
 	opt.var.dump(cout) << endl;
+	const perceived_deck_state& D(opt.initial_deck);
+	D.show_count(cout) << endl;
 	cout << "evaluation method: " << opt.analysis_params.mode << endl;
-	perceived_deck_state D(opt.var.num_decks);
-//	D.show_count(cout) << endl;
 	switch (opt.analysis_params.mode) {
 	case ANALYSIS_BASIC:
 		compute_dealer_odds_basic_standard(opt.var);

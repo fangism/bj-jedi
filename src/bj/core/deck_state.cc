@@ -28,7 +28,9 @@ using std::endl;
 using std::setw;
 using std::fill;
 using std::copy;
+using std::bind2nd;
 using std::multiplies;
+using std::divides;
 using std::transform;
 using util::string_list;
 using util::tokenize;
@@ -94,7 +96,7 @@ perceived_deck_state::perceived_deck_state() : remaining(count_type(0)),
 perceived_deck_state::perceived_deck_state(const size_t n) : remaining(), 
 		peeked_not_10s(0), peeked_not_Aces(0), remaining_total(n *52) {
 	transform(standard_deck_count.begin(), standard_deck_count.end(), 
-		remaining.begin(), std::bind2nd(multiplies<count_type>(), n));
+		remaining.begin(), bind2nd(multiplies<count_type>(), n));
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -108,11 +110,45 @@ perceived_deck_state::perceived_deck_state(const perceived_deck_state& p,
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
+	\param n number of decks
+ */
+void
+perceived_deck_state::initialize_num_decks(const size_t n) {
+	peeked_not_10s = 0;
+	peeked_not_Aces = 0;
+	remaining_total = n *52;
+	transform(standard_deck_count.begin(), standard_deck_count.end(), 
+		remaining.begin(), bind2nd(multiplies<count_type>(), n));
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void
 perceived_deck_state::initialize(const extended_deck_count_type& d) {
 	cards::simplify_deck_count(d, remaining);
 	peeked_not_10s = 0;
 	peeked_not_Aces = 0;
+	remaining_total =
+		std::accumulate(remaining.begin(), remaining.end(), 0);
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
+	Scales number of cards by p/q, rounded down.
+ */
+void
+perceived_deck_state::scale_cards(const size_t p, const size_t q) {
+	// reset peek values
+	peeked_not_10s = 0;
+	peeked_not_Aces = 0;
+if (p != 1) {
+	transform(remaining.begin(), remaining.end(), 
+		remaining.begin(), bind2nd(multiplies<count_type>(), p));
+}
+if (q != 1) {
+	transform(remaining.begin(), remaining.end(), 
+		remaining.begin(), bind2nd(divides<count_type>(), q));
+}
 	remaining_total =
 		std::accumulate(remaining.begin(), remaining.end(), 0);
 }
@@ -135,15 +171,17 @@ perceived_deck_state::remove(const card_type c) {
 /**
 	Decrements count of card.
 	Only known cards are counted.
+	\return true if card was removed, false if none remained
  */
-void
+bool
 perceived_deck_state::remove_if_any(const card_type c) {
 	card_type& r(remaining[card_value_map[c]]);
 if (r) {
 	--r;
 	assert(remaining_total);
 	--remaining_total;
-}
+	return true;
+}	else return false;
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
