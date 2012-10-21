@@ -155,6 +155,17 @@ if (q != 1) {
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
+	Increments count of card.
+ */
+void
+perceived_deck_state::add(const card_type c, const count_type n) {
+	card_type& r(remaining[card_value_map[c]]);
+	r += n;
+	remaining_total += n;
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
 	Decrements count of card.
 	Only known cards are counted.
  */

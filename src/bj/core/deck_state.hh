@@ -85,6 +85,9 @@ public:
 	}
 
 	void
+	add(const card_type, const count_type n = 1);	// translate with card_value_map
+
+	void
 	remove(const card_type);	// translate with card_value_map
 
 	bool

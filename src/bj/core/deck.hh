@@ -19,6 +19,7 @@ enum {
 	QUEEN = JACK+1,
 	KING = QUEEN+1,
 	card_symbols = KING+1	// number of unique card symbols, (+JQK)
+	// INVALID_CARD ?
 };
 extern	const char		card_name[];	// use util::array?
 extern	card_type		card_index(const char);	// reverse-map of card_name

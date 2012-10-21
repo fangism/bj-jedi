@@ -26,6 +26,7 @@ card_index(const char c) {
 		default: break;
 		}
 	} else if (c >= '2' && c <= '9') {
+		// this is based on the enumeration in "deck.hh"
 		return c -'1';
 	}
 	return card_type(-1);

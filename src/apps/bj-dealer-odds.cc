@@ -344,6 +344,42 @@ __set_variation_command(options& o, const char* arg) {
 	}
 }
 
+/**
+	\param arg is a string of cards to add.
+ */
+static
+void
+__add_cards(options& o, const char* arg) {
+	const string args(arg);
+	string::const_iterator i(args.begin()), e(args.end());
+	for (; i!=e; ++i) {
+		const card_type c(cards::card_index(*i));
+		if (c != card_type(-1)) {	// INVALID_CARD
+			o.initial_deck.add(c, 1);
+		} else {
+			cerr << "Ignoring invalid card: " << *i << endl;
+		}
+	}
+}
+
+/**
+	\param arg is a string of cards to remove.
+ */
+static
+void
+__remove_cards(options& o, const char* arg) {
+	const string args(arg);
+	string::const_iterator i(args.begin()), e(args.end());
+	for (; i!=e; ++i) {
+		const card_type c(cards::card_index(*i));
+		if (c != card_type(-1)) {	// INVALID_CARD
+			o.initial_deck.remove_if_any(c);
+		} else {
+			cerr << "Ignoring invalid card: " << *i << endl;
+		}
+	}
+}
+
 static
 void
 __help(options& o) {
@@ -354,24 +390,25 @@ static
 void
 usage(ostream& o, const char* prog) {
 o << prog << " [options]\n"
-"probability calculator for dealer's final states, given up-card in blackjack\n"
+"probability calculator for dealer's final states, given up-card in Blackjack\n"
 "options: \n"
 //	Options (long options not available yet):
 "  -h : this help\n"
 "game variation:\n"
-"  -n <int> : number of decks.\n"	// " h for half-deck\n"
 "  -H : dealer hits on soft-17\n"
 "  -S : dealer stands on soft-17\n"
 "  -o <option=value>: other variation option commands\n"
 "	e.g. peek-10=0, peek-ace=0\n"
+"deck modification:\n"
+"  -n <int> : number of decks.\n"	// " h for half-deck\n"
+"  -r <cards> : remove the string of cards from deck initially (after -n)\n"
+"  -a <cards> : add the string of cards to deck initially (after -n)\n"
 "calculation:\n"
 "  -b : use static standard (infinite) deck approximation\n"
 "  -d : use static distribution after card removal\n"
 "  -e : use exact distribution after each removed card\n"
 "  -c : include effect of player hand composition\n"
 "  -p <int> : display precision\n"
-// "  -r, --remove : remove the string of cards from deck initially\n"
-// "  -a, --add : add the string of cards to deck initially\n"
 // "  -v : version\n"
 // TODO: control accuracy (via tolerance)
 	<< endl;
@@ -392,6 +429,8 @@ main(int argc, char* argv[]) {
 	optmap.add_option('p', &__set_precision);
 	optmap.add_option('o', &__set_variation_command);
 	optmap.add_option('h', &__help);
+	optmap.add_option('r', &__remove_cards);
+	optmap.add_option('a', &__add_cards);
 	options opt;
 	const int err = optmap(argc, argv, opt);
 if (opt.help_option) {
