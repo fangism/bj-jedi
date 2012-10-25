@@ -24,7 +24,13 @@ static
 dealer_outcome_cache_set
 dealer_cache;
 
-// number of decks doesn't matter
+/**
+	Compute the spread of dealer final states using infinite deck
+	approximation.
+	Number of decks doesn't matter.
+	Player hand composition doesn't matter.
+	Prints out table of results.
+ */
 static
 void
 compute_dealer_odds_basic_standard(const variation& var) {
@@ -47,8 +53,11 @@ compute_dealer_odds_basic_standard(const variation& var) {
 	}
 }
 
-// number of decks matter here, use post-peek conditions
-// only based on dealer's reveal card
+/**
+	Compute spread of dealer final states using infinite deck
+	with modified distribution, based only on the revealed up-card.
+	Cards are drawn with replacement.
+ */
 static
 void
 compute_dealer_odds_dynamic_reveal_1(const variation& var, 
@@ -78,7 +87,7 @@ compute_dealer_odds_dynamic_reveal_1(const variation& var,
 }
 
 /**
-	Tuple for comparison and sorting report.
+	Tuple for comparison and sorting dealer-final-spread report.
  */
 struct composition_dependent_key_type {
 	const play_map&				play;	// for state machine
@@ -130,6 +139,11 @@ operator << (ostream& o, const composition_dependent_key_type& c) {
 typedef	std::map<composition_dependent_key_type, dealer_final_vector>
 				composition_dependent_map_type;
 
+/**
+	Computes dealer's final state spread, taking into account
+	the change in distribution due to composition dependence.
+	Cards are drawn with replacement.
+ */
 static
 void
 compute_dealer_odds_dynamic_reveal_3(const variation& var, 
@@ -184,7 +198,10 @@ for ( ; c < card_values; ++c) {
 }
 
 
-// number of decks matter here
+/**
+	Computes dealer's final state spread exactly.
+	Decks are finite.  Cards are drawn without replacement.
+ */
 static
 void
 compute_dealer_odds_exact_reveal_1(const variation& var,
@@ -213,6 +230,11 @@ compute_dealer_odds_exact_reveal_1(const variation& var,
 	}
 }
 
+/**
+	Computes dealer's final state spread, taking into account
+	the change in distribution due to composition dependence.
+	Decks are finite.  Cards are drawn without replacement.
+ */
 static
 void
 compute_dealer_odds_exact_reveal_3(const variation& var, 
@@ -266,8 +288,9 @@ for ( ; c < card_values; ++c) {
 }
 }
 
-
-
+/**
+	Various options for this program.
+ */
 struct options {
 	variation				var;
 	perceived_deck_state			initial_deck;
@@ -280,6 +303,7 @@ struct options {
 		player_composition(false), precision(4), help_option(false) { }
 };	// end struct options
 
+// option handlers
 static
 void
 __set_num_decks(options& o, const char* arg) {
@@ -345,6 +369,7 @@ __set_variation_command(options& o, const char* arg) {
 }
 
 /**
+	This should only be called after number of decks is established.
 	\param arg is a string of cards to add.
  */
 static
@@ -363,6 +388,7 @@ __add_cards(options& o, const char* arg) {
 }
 
 /**
+	This should only be called after number of decks is established.
 	\param arg is a string of cards to remove.
  */
 static
@@ -447,6 +473,7 @@ if (!err) {
 	switch (opt.analysis_params.mode) {
 	case ANALYSIS_BASIC:
 		compute_dealer_odds_basic_standard(opt.var);
+		// basic strategy is not composition-dependent
 		break;
 	case ANALYSIS_DYNAMIC:
 		if (opt.player_composition) {
