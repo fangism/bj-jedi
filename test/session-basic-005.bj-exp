@@ -17,8 +17,7 @@ player may double-down on 10: yes
 player may double-down on 11: yes
 player may double-down on other: yes
 player double after split: yes
-player may split: yes
-player may re-split: no
+maximum number of split hands: 2
 player may hit on split aces: no
 player may re-split aces: no
 dealer 22 pushes against player: no

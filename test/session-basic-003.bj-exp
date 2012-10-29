@@ -17,8 +17,7 @@ player may double-down on 10: yes
 player may double-down on 11: yes
 player may double-down on other: yes
 player double after split: yes
-player may split: yes
-player may re-split: no
+maximum number of split hands: 2
 player may hit on split aces: no
 player may re-split aces: no
 dealer 22 pushes against player: no
@@ -1044,14 +1043,14 @@ perceived count:
 card:	   2   3   4   5   6   7   8   9   T   A   !10  !A	total
 rem:	  24  23  23  24  22  24  22  22  90  23     1   2	294
 hi-lo: -3, true-count: -0.53
-dealer: T, player: 69 (15)
+dealer: T, player: 15
 options: double:yes, split:no, surrender:yes
 
 perceived count:
 card:	   2   3   4   5   6   7   8   9   T   A   !10  !A	total
 rem:	  12  13  15  17  14  14   9  14  49  16     1  10	162
 hi-lo: -6, true-count: -1.93
-dealer: Q, player: T6 (16)
+dealer: Q, player: 16
 options: double:yes, split:no, surrender:yes
 
 ------ end bookmarks ------
