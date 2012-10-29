@@ -16,6 +16,7 @@ class counter_base;
 
 namespace blackjack {
 using cards::card_type;
+class play_map;
 
 /**
 	Decision situation bookmark.
@@ -24,8 +25,8 @@ using cards::card_type;
 struct bookmark {
 	card_type			dealer_reveal;
 //	hand				d_hand;
-	player_hand			p_hand;
-//	player_hand_base		p_hand;
+//	player_hand			p_hand;
+	player_hand_base		p_hand;
 	// for now, just save everything, only ::cards is needed
 	perceived_deck_state		cards;
 //	deck_state			cards;
@@ -37,10 +38,11 @@ struct bookmark {
 	~bookmark();
 
 	ostream&
-	dump(ostream&) const;
+	dump(ostream&, const play_map&) const;
 
 	ostream&
-	dump(ostream&, const char*, const cards::counter_base&) const;
+	dump(ostream&, const play_map&, 
+		const char*, const cards::counter_base&) const;
 
 };	// end struct bookmark
 

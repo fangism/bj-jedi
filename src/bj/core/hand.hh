@@ -52,6 +52,13 @@ struct split_state {
 	ssize_t			paired_hands;
 	ssize_t			unpaired_hands;
 
+	/// initialize to arbitrary values, should call initialize()
+	split_state() : splits_remaining(1), paired_hands(0), 
+		unpaired_hands(1) { }
+
+	void
+	initialize(const ssize_t, const bool);
+
 	bool
 	is_splittable(void) const {
 		return splits_remaining && paired_hands;
@@ -154,11 +161,8 @@ struct player_hand_base {
 	compare(const player_hand_base& r) const {
 		const int sc = state -r.state;
 		if (sc) return sc;
-		else if (player_options < r.player_options)
-			return -1;
-		else if (r.player_options < player_options)
-			return 1;
-		else	return 0;
+		const int od = player_options.compare(r.player_options);
+		return od;
 	}
 
 	// lexicographical key compare
@@ -166,6 +170,9 @@ struct player_hand_base {
 	operator < (const player_hand_base& r) const {
 		return compare(r) < 0;
 	}
+
+	ostream&
+	dump_state_only(ostream&, const cards::state_machine&) const;
 
 	ostream&
 	dump(ostream&, const cards::state_machine&) const;
@@ -195,6 +202,9 @@ struct dealer_hand_base {
 	explicit
 	dealer_hand_base(const dealer_state_type d) :
 		state(d), peek_state(NO_PEEK), first_card(true) { }
+
+	void
+	set_upcard(const card_type);
 
 	void
 	reveal_hole_card(void) {
@@ -263,8 +273,6 @@ struct hand_common {
 	typedef	string				card_array_type;
 	card_array_type				cards;
 
-	hand_common() : play(NULL), cards() { }
-
 	explicit
 	hand_common(const play_map& p) : play(&p), cards() { }
 
@@ -289,8 +297,6 @@ struct player_hand : public player_hand_base, public hand_common {
 		// BUSTED
 	};
 	play_state				action;
-
-	player_hand() : player_hand_base(), hand_common(), action(LIVE) { }
 
 	explicit
 	player_hand(const play_map& p) : player_hand_base(), hand_common(p),
@@ -366,8 +372,6 @@ struct player_hand : public player_hand_base, public hand_common {
 struct dealer_hand : public dealer_hand_base, public hand_common {
 	// dealer's revealed card
 	size_t				reveal;
-
-	dealer_hand() : dealer_hand_base(), hand_common() { }
 
 	explicit
 	dealer_hand(const play_map& m) : dealer_hand_base(), hand_common(m) { }

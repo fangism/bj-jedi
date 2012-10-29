@@ -22,6 +22,7 @@ using std::ostream;
 	we have bits to spare; but we mask out the NIL action.
  */
 class action_mask {
+private:
 	// unsigned char		_bits;
 	size_t				_bits;
 public:
@@ -64,6 +65,9 @@ public:
 		if (p) *this += SPLIT;
 		if (r) *this += SURRENDER;
 	}
+
+	size_t
+	raw(void) const { return _bits; }
 
 	action_mask
 	operator & (const action_mask& m) const {
@@ -125,9 +129,14 @@ public:
 		return _bits != m._bits;
 	}
 
+	int
+	compare(const action_mask& r) const {
+		return int(_bits -r._bits);
+	}
+
 	bool
 	operator < (const action_mask& m) const {
-		return _bits < m._bits;
+		return compare(m) < 0;
 	}
 
 	bool

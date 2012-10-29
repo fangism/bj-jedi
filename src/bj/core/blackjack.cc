@@ -6,6 +6,9 @@
 
 #include "bj/core/blackjack.hh"
 
+#define	ENABLE_STACKTRACE			0
+#include "util/stacktrace.hh"
+
 /**
 	Debug switch: print tables as they are computed.
  */
@@ -108,6 +111,15 @@ play_map::play_map(const variation& v) : var(v),
 		// some variations allow surrender-after-double-down!
 		post_split_actions(action_mask::stand_hit)
 		{
+	reset();
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
+	Resets tables based on current set of variations, var.
+ */
+void
+play_map::reset(void) {
 	set_dealer_policy();
 	compute_player_hit_state();
 	compute_player_split_state();
@@ -120,7 +132,11 @@ void
 play_map::initialize_action_masks(void) {
 	if (var.double_after_split)
 		post_split_actions += DOUBLE;
+#if IMPROVED_SPLIT_ANALYSIS
+	if (var.max_split_hands > 2)
+#else
 	if (var.resplit)
+#endif
 		post_split_actions += SPLIT;
 	// for now, no surrender after split...
 	// don't handle split-aces variations here
@@ -131,7 +147,11 @@ play_map::initialize_action_masks(void) {
 	if (var.surrender_late)
 		default_init += SURRENDER;
 	action_mask default_init_split(default_init);
+#if IMPROVED_SPLIT_ANALYSIS
+	if (var.max_split_hands > 1)
+#else
 	if (var.split)
+#endif
 		default_init_split += SPLIT;
 	fill(initial_actions_per_state.begin(),
 		initial_actions_per_state.end(), default_init);
@@ -258,6 +278,7 @@ play_map::hit_dealer(const dealer_state_type state, const card_type c) const {
 player_state_type
 play_map::deal_player(const card_type p1, const card_type p2,
 		const bool nat) const {
+	STACKTRACE_VERBOSE;
 	if (p1 == p2) {
 		return pair_offset +p1;
 	}

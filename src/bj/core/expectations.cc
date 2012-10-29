@@ -124,12 +124,22 @@ expectations::best_two(const action_mask& m) const {
 	if (p != pe) {
 	if (ret[0] == HIT) {
 		ret[1] = STAND;
-	} else if (p[0] == STAND) {
+	} else if (ret[0] == STAND) {
 		ret[1] = HIT;
 	}
 	// else ???
 	}
 	return pair<player_choice, player_choice>(ret[0], ret[1]);
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+ostream&
+expectations::dump_choice_actions(ostream& o) const {
+//	const util::precision_saver p(o, 4);
+	return o << "stand: " << stand()
+	<< "\nhit  : " << hit()
+	<< "\ndbl  : " << double_down()
+	<< "\nsplit: " << split() << endl;
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

@@ -40,7 +40,8 @@ compute_dealer_odds_basic_standard(const variation& var) {
 	card_type c = 0;		// TWO, ... TEN, Ace
 	for ( ; c < card_values; ++c) {
 		const card_type d = reveal_print_ordering[c];
-		dealer_hand_base dealer(play_map::d_initial_card_map[d]);
+		dealer_hand_base dealer;
+		dealer.set_upcard(d);
 		switch (d) {
 		case cards::TEN: if (var.peek_on_10) dealer.peek_no_Ace(); break;
 		case cards::ACE: if (var.peek_on_Ace) dealer.peek_no_10(); break;
@@ -68,11 +69,11 @@ compute_dealer_odds_dynamic_reveal_1(const variation& var,
 	card_type c = 0;		// TWO, ... TEN, Ace
 	for ( ; c < card_values; ++c) {
 		const card_type d = reveal_print_ordering[c];
-		dealer_situation_key_type
-			dk(play_map::d_initial_card_map[d], pd);
+		dealer_hand_base db;
+		db.set_upcard(d);
+		dealer_situation_key_type dk(db, pd);
 	if (dk.card_dist.remove_if_any(d)) {
 //		dk.card_dist.show_count(cout) << endl;
-		// post-peek conditions only
 		switch (d) {
 		case cards::TEN: if (var.peek_on_10) dk.peek_no_Ace(); break;
 		case cards::ACE: if (var.peek_on_Ace) dk.peek_no_10(); break;
@@ -154,8 +155,9 @@ compute_dealer_odds_dynamic_reveal_3(const variation& var,
 	card_type c = 0;		// TWO, ... TEN, Ace
 for ( ; c < card_values; ++c) {
 	const card_type d = reveal_print_ordering[c];
-	dealer_situation_key_type
-		dk(play_map::d_initial_card_map[d], pd);
+	dealer_hand_base db;
+	db.set_upcard(d);
+	dealer_situation_key_type dk(db, pd);
 	if (dk.card_dist.remove_if_any(d)) {
 //		dk.card_dist.show_count(cout) << endl;
 	// post-peek conditions only
@@ -212,8 +214,9 @@ compute_dealer_odds_exact_reveal_1(const variation& var,
 	card_type c = 0;		// TWO, ... TEN, Ace
 	for ( ; c < card_values; ++c) {
 		const card_type d = reveal_print_ordering[c];
-		dealer_situation_key_type
-			dk(play_map::d_initial_card_map[d], pd);
+		dealer_hand_base db;
+		db.set_upcard(d);
+		dealer_situation_key_type dk(db, pd);
 	if (dk.card_dist.remove_if_any(d)) {
 //		dk.card_dist.show_count(cout) << endl;
 		// post-peek conditions only
@@ -245,8 +248,9 @@ compute_dealer_odds_exact_reveal_3(const variation& var,
 	card_type c = 0;		// TWO, ... TEN, Ace
 for ( ; c < card_values; ++c) {
 	const card_type d = reveal_print_ordering[c];
-	dealer_situation_key_type
-		dk(play_map::d_initial_card_map[d], pd);
+	dealer_hand_base db;
+	db.set_upcard(d);
+	dealer_situation_key_type dk(db, pd);
 	if (dk.card_dist.remove_if_any(d)) {
 //		dk.card_dist.show_count(cout) << endl;
 	// post-peek conditions only

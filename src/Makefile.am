@@ -3,7 +3,7 @@
 AUTOMAKE_OPTIONS = 1.9 gnu subdir-objects
 
 bin_PROGRAMS = apps/boc2 apps/bjswoc apps/bjgrader \
-	apps/bj-dealer-odds
+	apps/bj-dealer-odds apps/bj-analyze-hand
 noinst_PROGRAMS = apps/bj-splitgen
 pkglib_LTLIBRARIES = util/libutil.la \
 	bj/core/libbjcore.la \
@@ -86,5 +86,8 @@ apps_bj_splitgen_LDADD = bj/core/libbjcore.la
 
 apps_bj_dealer_odds_SOURCES = apps/bj-dealer-odds.cc
 apps_bj_dealer_odds_LDADD = bj/core/libbjcore.la
+
+apps_bj_analyze_hand_SOURCES = apps/bj-analyze-hand.cc
+apps_bj_analyze_hand_LDADD = bj/core/libbjcore.la
 
 include $(top_srcdir)/globals.mk

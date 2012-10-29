@@ -29,7 +29,7 @@ card_index(const char c) {
 		// this is based on the enumeration in "deck.hh"
 		return c -'1';
 	}
-	return card_type(-1);
+	return card_type(INVALID_CARD);
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

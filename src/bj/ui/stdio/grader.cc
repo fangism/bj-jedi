@@ -796,7 +796,7 @@ grader::list_bookmarks(void) const {
 		i(bookmarks.begin()), e(bookmarks.end());
 	for ( ; i!=e; ++i) {
 //		i->dump(ostr) << endl;
-		i->dump(ostr, hi_lo_counter.first.c_str(), 
+		i->dump(ostr, play, hi_lo_counter.first.c_str(), 
 			hi_lo_counter.second) << endl;
 	}
 	ostr << "------ end bookmarks ------" << endl;

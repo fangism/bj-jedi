@@ -29,6 +29,24 @@ using cards::count_type;
 //=============================================================================
 // class split_state method definitions
 
+/**
+	Initializes split-state.
+	\param available number of splits (form variation)
+	\param p true if initial hand is a splittable pair.
+ */
+void
+split_state::initialize(const ssize_t n, const bool p) {
+	splits_remaining = n;
+	if (p) {
+		paired_hands = 1;
+		unpaired_hands = 0;
+	} else {
+		paired_hands = 0;
+		unpaired_hands = 1;
+	}
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ostream&
 split_state::dump_code(ostream& o) const {
 	const count_type Ps = std::min(splits_remaining, paired_hands);
@@ -223,6 +241,12 @@ player_hand_base::split(const play_map& play, const card_type c) {
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ostream&
+player_hand_base::dump_state_only(ostream& o, const state_machine& sm) const {
+	return o << sm[state].name;
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+ostream&
 player_hand_base::dump(ostream& o, const state_machine& sm) const {
 	o << sm[state].name << ", ";
 //	return player_options.dump_verbose(o);
@@ -232,6 +256,16 @@ player_hand_base::dump(ostream& o, const state_machine& sm) const {
 //=============================================================================
 // class dealer_hand_base method definitions
 
+void
+dealer_hand_base::set_upcard(const card_type c) {
+	assert(c < card_symbols);
+	const card_type d = card_value_map[c];
+	state = play_map::d_initial_card_map[d];
+	first_card = true;
+	// peek_state untouched
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ostream&
 dealer_hand_base::dump(ostream& o, const state_machine& sm) const {
 	o << sm[state].name << ' ';
@@ -308,13 +342,14 @@ player_hand::deal_player(const card_type p1, const card_type p2, const bool nat,
 	cards.clear();
 	cards.push_back(card_name[p1]);
 	cards.push_back(card_name[p2]);
+	const card_type dv = card_value_map[dr];
 	state = play->deal_player(card_value_map[p1], card_value_map[p2], nat);
 #if DEBUG_HAND
 	play->initial_actions_per_state[state].dump_debug(cout << "state : ") << endl;
-	play->initial_actions_given_dealer[dr].dump_debug(cout << "dealer: ") << endl;
+	play->initial_actions_given_dealer[dv].dump_debug(cout << "dealer: ") << endl;
 #endif
 	player_options = play->initial_actions_per_state[state]
-		& play->initial_actions_given_dealer[dr];
+		& play->initial_actions_given_dealer[dv];
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

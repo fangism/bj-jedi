@@ -330,8 +330,10 @@ if (bi.second) {
 
 ostream&
 player_situation_key_type::dump(ostream& o, const play_map& p) const {
-	player.hand.dump(o, p.player_hit);
-	return card_dist.show_count_brief(o);
+	player.hand.dump(o << "player: ", p.player_hit);
+	dealer.dump(o << ", dealer: ", p.dealer_hit);
+	card_dist.show_count_brief(o << ", deck:");
+	return o;
 }
 
 //=============================================================================
@@ -339,8 +341,8 @@ player_situation_key_type::dump(ostream& o, const play_map& p) const {
 
 ostream&
 player_situation_basic_key_type::dump(ostream& o, const play_map& p) const {
-	player.hand.dump(o, p.player_hit);
-	dealer.dump(o, p.dealer_hit);
+	player.hand.dump(o << "player: ", p.player_hit);
+	dealer.dump(o << ", dealer: ", p.dealer_hit);
 	return o;
 }
 
@@ -353,8 +355,10 @@ const expectations&
 player_outcome_cache_set::evaluate_player_basic(const play_map& play,
 		const player_situation_basic_key_type& k) {
 	STACKTRACE_BRIEF;
+	const action_mask& m(k.player.hand.player_options);
 #if ENABLE_STACKTRACE
 	k.dump(STACKTRACE_STREAM, play) << endl;
+	STACKTRACE_INDENT_PRINT("options: " << m.raw() << endl);
 #endif
 	typedef	basic_map_type::value_type		pair_type;
 	const player_hand_base ak(k.player.hand.state, play);
@@ -375,8 +379,8 @@ if (bi.second) {
 		dfv(dealer_outcome_cache.evaluate_dealer_basic(play, k.dealer));
 	// current state
 	const state_machine::node& ps(play.player_hit[k.player.hand.state]);
-	const action_mask& m(k.player.hand.player_options);
-	if (m.can_stand()) {
+	{
+		STACKTRACE("stand:");
 		// stand is always a legal option
 		// (busted hands considered as stand)
 		// compute just the odds of standing with this hand
@@ -385,6 +389,7 @@ if (bi.second) {
 		outcome_odds soo;
 		play.compute_player_final_outcome(p_final, dfv, soo);
 		ret.stand() = soo.edge();
+		STACKTRACE_INDENT_PRINT("edge(stand): " << ret.stand() << endl);
 	}
 	if (!ps.is_terminal()) {
 		// consider all possible actions, even illegal ones
@@ -394,27 +399,41 @@ if (bi.second) {
 			dref(get_basic_reduced_count(k.dealer.peek_state));
 		const count_type total_weight =
 			accumulate(dref.begin(), dref.end(), 0);
+		STACKTRACE_INDENT_PRINT("total_weight: " << total_weight << endl);
 		player_situation_basic_key_type nk(k);	// copy-and-modify state
-	if (m.can_double_down()) {
-		nk.player.hand.player_options &= play.post_double_down_actions;
+		action_mask& am(nk.player.hand.player_options);
+	{
+		STACKTRACE("double-down:");
+		const value_saver<action_mask> ams(am);
+		am &= play.post_double_down_actions;
 		card_type i = 0;
 		for ( ; i<card_values; ++i) {
 			const count_type& w(dref[i]);
 		if (w) {
+			STACKTRACE_INDENT_PRINT("weight: " << w << endl);
 			const value_saver<player_hand_base> __bs(nk.player.hand);
 			nk.player.hand.hit(play, i);
 			// yes, actually do recursion, in case of variations
 			const expectations child(evaluate_player_basic(play, nk));
+#if ENABLE_STACKTRACE
+			child.dump_choice_actions(std::cerr);
+			am.dump_debug(std::cerr) << endl;
+#endif
 			// weight by card probability
-			ret.double_down() += child.best(nk.player.hand.player_options) *w;
+			const edge_type e(child.best(am));
+			STACKTRACE_INDENT_PRINT("child.best: " << e << endl);
+			ret.double_down() += e *w;
 		}
 			// else 0 weight, leave as vector of 0s
 		}	// end for all next card possibilities
 		// normalize weighted sum of probabilities
 		ret.double_down() *= play.var.double_multiplier / total_weight;
+		STACKTRACE_INDENT_PRINT("edge(double): " << ret.double_down() << endl);
 	}
-	if (m.can_hit()) {
-		nk.player.hand.player_options &= play.post_double_down_actions;
+	{
+		STACKTRACE("hit:");
+		const value_saver<action_mask> ams(am);
+		am &= play.post_hit_actions;
 		card_type i = 0;
 		for ( ; i<card_values; ++i) {
 			const count_type& w(dref[i]);
@@ -423,14 +442,17 @@ if (bi.second) {
 			nk.player.hand.hit(play, i);
 			const expectations child(evaluate_player_basic(play, nk));
 			// weight by card probability
-			ret.hit() += child.best(nk.player.hand.player_options) *w;
+			ret.hit() += child.best(am) *w;
 		}
 			// else 0 weight, leave as vector of 0s
 		}	// end for all next card possibilities
 		// normalize weighted sum of probabilities
 		ret.hit() /= total_weight;
+		STACKTRACE_INDENT_PRINT("edge(hit): " << ret.hit() << endl);
 	}
-	if (m.can_split() && k.player.hand.is_paired()) {
+	if (k.player.hand.is_paired()) {
+		STACKTRACE("split:");
+		const value_saver<action_mask> ams(am);
 		const card_type pc = k.player.hand.pair_card();
 		// divide this into cases, based on post-split-state
 		const count_type& pw(dref[pc]);		// pairing cards
@@ -443,21 +465,21 @@ if (bi.second) {
 		pwa[0] = npw *(npw -1);	// 0 new pairs
 		pwa[1] = pwt -pwa[2] -pwa[0];	// 1 new pair
 		split_state ps[3];
-		k.player.splits.post_split_states(ps[2], ps[1], ps[0]);
-		player_situation_basic_key_type sk(k);
-		sk.player.hand.player_options &= play.post_split_actions;
-	if (k.player.splits.is_splittable()) {
+		split_state& pss(nk.player.splits);
+		pss.post_split_states(ps[2], ps[1], ps[0]);
+		am &= play.post_split_actions;
+	if (pss.is_splittable()) {
 		// weighted sum expected value of 3 sub cases
 		size_t j = 0;
 		for ( ; j<3; ++j) {
-			const value_saver<split_state> __ss(sk.player.splits, ps[j]);
-			const expectations child(evaluate_player_basic(play, sk));
-			ret.split() += child.best(sk.player.hand.player_options) *pwa[j];
+			const value_saver<split_state> __ss(pss, ps[j]);
+			const expectations child(evaluate_player_basic(play, k));
+			ret.split() += child.best(am) *pwa[j];
 		}
 		ret.split() /= pwt;
 	} else {
 		// no more splittable pairs
-		sk.player.hand.player_options -= SPLIT;
+		am -= SPLIT;
 		// splitting: hit card on top of base card
 		// assume that order of Xs and Ys are independent
 		// compute non-pairing edges (Y)
@@ -467,12 +489,12 @@ if (bi.second) {
 		for ( ; i<card_values; ++i) {
 			const count_type& w(dref[i]);
 		if (w) {
-			const value_saver<player_hand_base> __bs(sk.player.hand);
-			sk.player.hand.split(play, i);
+			const value_saver<player_hand_base> __bs(nk.player.hand);
+			nk.player.hand.split(play, i);
 			const expectations
-				child(evaluate_player_basic(play, sk));
+				child(evaluate_player_basic(play, nk));
 			// weight by card probability
-			const edge_type sub = child.best(sk.player.hand.player_options) *w;
+			const edge_type sub = child.best(am) *w;
 			if (i != pc) {
 				Y += sub;
 			}
@@ -491,8 +513,13 @@ if (bi.second) {
 		ret.split() /= pwt;
 	}	// splittable pairs remaining
 	}	// is paired, can split
-	}	// is terminal, else don't bother computing
+	} else {	// is terminal, else don't bother computing
+#if ENABLE_STACKTRACE
+		ret.dump_choice_actions(std::cerr);
+#endif
+	}
 	// surrender (if allowed) is constant expectation
+	ret.optimize(-play.var.surrender_penalty);	// sort
 } else {
 	STACKTRACE_INDENT_PRINT("cache hit\n");
 }

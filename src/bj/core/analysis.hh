@@ -69,6 +69,12 @@ struct analysis_parameters {
 	 */
 	probability_type			dynamic_threshold;
 //	probability_type			basic_threshold;
+#if 0
+	/**
+		Control the verbosity of the analysis.
+	 */
+	bool					verbose;
+#endif
 
 	analysis_parameters() : mode(ANALYSIS_BASIC),
 		parent_prob(1.0),
@@ -101,6 +107,8 @@ struct analysis_parameters {
 struct dealer_situation_key_type {
 	dealer_hand_base			dealer;
 	perceived_deck_state			card_dist;
+
+	dealer_situation_key_type() : dealer(), card_dist() { }
 
 	dealer_situation_key_type(const dealer_state_type ds,
 			const perceived_deck_state& d) :
@@ -192,6 +200,8 @@ struct player_situation_base {
 	player_hand_base			hand;
 	split_state				splits;
 
+	player_situation_base() : hand(), splits() { }
+
 	player_situation_base(const player_hand_base& h, 
 		const split_state& s) : hand(h), splits(s) { }
 
@@ -219,6 +229,8 @@ struct player_situation_base {
 struct player_situation_key_type : public dealer_situation_key_type {
 	typedef	dealer_situation_key_type	parent_type;
 	player_situation_base			player;
+
+	player_situation_key_type() : dealer_situation_key_type(), player() { }
 
 	player_situation_key_type(const player_hand_base& ph,
 			const split_state& ss,
@@ -255,11 +267,18 @@ struct player_situation_basic_key_type {
 	player_situation_basic_key_type(const player_situation_base& p, 
 		const dealer_hand_base& d) : player(p), dealer(d) { }
 
+	// explicit -- drops the card_dist from the key
+	player_situation_basic_key_type(const player_situation_key_type& s) :
+		player(s.player), dealer(s.dealer) { }
+
+	// default copy-ctor
+
 	int
 	compare(const player_situation_basic_key_type& r) const {
 		const int pc = player.compare(r.player);
 		if (pc) return pc;
-		return dealer.compare(r.dealer);
+		const int dc = dealer.compare(r.dealer);
+		return dc;
 	}
 
 	bool

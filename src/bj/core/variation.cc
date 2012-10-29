@@ -56,8 +56,12 @@ variation::dump(ostream& o) const {
 	o << "player may double-down on 11: " << yn(double_H11) << endl;
 	o << "player may double-down on other: " << yn(double_other) << endl;
 	o << "player double after split: " << yn(double_after_split) << endl;
+#if IMPROVED_SPLIT_ANALYSIS
+	o << "maximum number of split hands: " << max_split_hands << endl;
+#else
 	o << "player may split: " << yn(split) << endl;
 	o << "player may re-split: " << yn(resplit) << endl;
+#endif
 	o << "player may hit on split aces: " << yn(hit_split_aces) << endl;
 	o << "player may re-split aces: " << yn(resplit_aces) << endl;
 	o << "dealer 22 pushes against player: " << yn(push22) << endl;
@@ -276,10 +280,15 @@ DEFINE_VARIATION_MEMBER_COMMAND(
 	double_multiplier, "double-multiplier", "[real]: double-down cost")
 
 // splitting
+#if IMPROVED_SPLIT_ANALYSIS
+DEFINE_VARIATION_MEMBER_COMMAND(
+	max_split_hands, "max-split-hands", "[int]: allow split up to N hands")
+#else
 DEFINE_VARIATION_MEMBER_COMMAND(
 	split, "split", "[bool]: allow player split")
 DEFINE_VARIATION_MEMBER_COMMAND(
 	resplit, "resplit", "[bool]: allow player more than one split")
+#endif
 DEFINE_VARIATION_MEMBER_COMMAND(
 	hit_split_aces,
 	"hit-split-aces", "[bool]: allow player hit on split Aces")

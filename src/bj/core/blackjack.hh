@@ -111,6 +111,9 @@ public:
 	player_state_type
 	player_final_state_map(const player_state_type);
 
+	void
+	reset(void);
+
 private:
 	void
 	initialize_action_masks(void);

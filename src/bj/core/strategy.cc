@@ -575,7 +575,12 @@ reveal_strategy::compute_action_expectations(const play_map& play,
 	const action_mask drm(dm & play.post_split_actions);
 	const action_mask dfm(drm -SPLIT);	// final, no more split
 	// the following computed edges are post-peek
-if (var.split) {
+#if IMPROVED_SPLIT_ANALYSIS
+if (var.max_split_hands >= 2)
+#else
+if (var.split)
+#endif
+{
 #if 0
 	const bool DAS = var.double_after_split && var.some_double();
 #define	RESPLIT_DP	DAS, var.resplit
@@ -588,7 +593,12 @@ if (var.split) {
 #define	SPLIT_OPTION_ARG	sm
 #endif
 // cannot surrender after splitting, but that would be interesting...
-if (var.resplit) {
+#if IMPROVED_SPLIT_ANALYSIS
+if (var.max_split_hands > 2)
+#else
+if (var.resplit)
+#endif
+{
 	DEBUG_SPLIT_PRINT(cout, "Resplitting allowed." << endl);
 	DEBUG_SPLIT_PRINT(cout, "  nonsplit_edges 1" << endl);
 	// need to work backwards from post-split edges

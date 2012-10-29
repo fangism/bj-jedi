@@ -7,6 +7,11 @@
 #include "util/tokenize.hh"
 
 /**
+	Define to 1 to use more accurate split analysis.
+ */
+#define	IMPROVED_SPLIT_ANALYSIS			1
+
+/**
 	Define to 1 to implement Blackjack Switch's push-on-22 rule.
 	Goal: 1
 	Status: drafted, basically tested
@@ -79,9 +84,14 @@ struct variation {
 	/// surrender-after-split? (never heard of it)
 // TODO: options or resplitting: 2, 4, 8, INF
 	/// allow splitting (standard)
+#if IMPROVED_SPLIT_ANALYSIS
+	/// maximum number of hands allowed by splitting
+	size_t			max_split_hands;
+#else
 	bool			split;
 	/// allow resplitting, split-after-split (common)
 	bool			resplit;
+#endif
 
 	/// most casinos allow only 1 card on each split ace (common)
 	bool			hit_split_aces;
@@ -128,8 +138,12 @@ struct variation {
 		// double_ACEx(true),	// TODO:
 		double_other(true),
 		double_after_split(true),
+#if IMPROVED_SPLIT_ANALYSIS
+		max_split_hands(2),
+#else
 		split(true),
 		resplit(false),
+#endif
 		hit_split_aces(false),
 		resplit_aces(false),
 		push22(false),

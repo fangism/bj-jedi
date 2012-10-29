@@ -9,7 +9,7 @@
 namespace cards {
 
 // card_type
-enum {
+enum card_enum {
 	ACE = 0,		// index of Ace (card_odds)
 	TEN = 9,		// index of 10 (T) (card_odds)
 	card_values = 10,	// number of unique card values (TJQK = 10)
@@ -18,8 +18,8 @@ enum {
 	JACK = TEN+1,
 	QUEEN = JACK+1,
 	KING = QUEEN+1,
-	card_symbols = KING+1	// number of unique card symbols, (+JQK)
-	// INVALID_CARD ?
+	card_symbols = KING+1,	// number of unique card symbols, (+JQK)
+	INVALID_CARD = -1	// invalid card id
 };
 extern	const char		card_name[];	// use util::array?
 extern	card_type		card_index(const char);	// reverse-map of card_name

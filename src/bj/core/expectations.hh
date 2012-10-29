@@ -48,7 +48,7 @@ struct expectations {
 	action_preference		actions;
 
 	expectations() {
-		stand() = 0.0;
+		stand() = -1.0;
 		hit() = -1.0;
 		double_down() = -2.0;
 		split() = -2.0;
@@ -142,6 +142,9 @@ struct expectations {
 			const edge_type& r) const {
 		return value(f, r) -value(s, r);
 	}
+
+	ostream&
+	dump_choice_actions(ostream&) const;
 
 	ostream&
 	dump_choice_actions(ostream&, const edge_type&) const;
