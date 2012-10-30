@@ -57,6 +57,13 @@ struct split_state {
 		unpaired_hands(1) { }
 
 	void
+	initialize_default(void) {
+		splits_remaining = 1;
+		paired_hands = 0;
+		unpaired_hands = 1;
+	}
+
+	void
 	initialize(const ssize_t, const bool);
 
 	bool
@@ -155,6 +162,10 @@ struct player_hand_base {
 	// split and take next card
 	void
 	split(const play_map&, const card_type);
+
+	// split and take next card
+	void
+	final_split(const play_map&, const card_type);
 
 	// lexicographical key compare
 	int

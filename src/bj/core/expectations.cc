@@ -8,12 +8,14 @@
 #include "util/iosfmt_saver.hh"
 
 #define	DEBUG_OPT				0
+#define	ENABLE_STACKTRACE			DEBUG_OPT
 
 #if DEBUG_OPT
 #define	DEBUG_OPT_PRINT(o, x)			o << x
 #else
 #define	DEBUG_OPT_PRINT(o, x)
 #endif
+#include "util/stacktrace.hh"
 
 namespace blackjack {
 using std::cout;
@@ -48,6 +50,7 @@ expectations::best(void) const {
  */
 void
 expectations::optimize(const edge_type& surrender) {
+	STACKTRACE_VERBOSE;
 	typedef	std::multimap<edge_type, player_choice>	sort_type;
 	sort_type s;
 	s.insert(make_pair(stand(), STAND));
@@ -61,6 +64,8 @@ expectations::optimize(const edge_type& surrender) {
 	++i;	actions[2] = i->second;
 	++i;	actions[1] = i->second;
 	++i;	actions[0] = i->second;	// best choice
+	STACKTRACE_INDENT_PRINT("best: " << actions[0] <<
+		", " << actions[1] << endl);
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -75,6 +80,7 @@ expectations::optimize(const edge_type& surrender) {
  */
 pair<player_choice, player_choice>
 expectations::best_two(const action_mask& m) const {
+	STACKTRACE_VERBOSE;
 	const bool h = m.can_hit();
 	const bool d = m.can_double_down();
 	const bool s = m.can_split();
@@ -129,6 +135,10 @@ expectations::best_two(const action_mask& m) const {
 	}
 	// else ???
 	}
+#if DEBUG_OPT
+	STACKTRACE_INDENT_PRINT("best: " << ret[0] << ", next: " << ret[1]
+		<< endl);
+#endif
 	return pair<player_choice, player_choice>(ret[0], ret[1]);
 }
 

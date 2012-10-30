@@ -235,8 +235,18 @@ player_hand_base::split(const play_map& play) {
 void
 player_hand_base::split(const play_map& play, const card_type c) {
 	assert(c < card_symbols);
-	state = play.split_player(state, card_value_map[c]);
+	const card_type cv = card_value_map[c];
+	state = play.split_player(state, cv);
 	// assume re-splittable
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+void
+player_hand_base::final_split(const play_map& play, const card_type c) {
+	assert(c < card_symbols);
+	const card_type cv = card_value_map[c];
+	state = play.final_split_player(state, cv);
+	// assume not re-splittable
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

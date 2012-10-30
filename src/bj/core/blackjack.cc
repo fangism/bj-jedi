@@ -245,11 +245,33 @@ play_map::hit_player(const player_state_type state, const card_type c) const {
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
 	For now, assume re-splittable.
+	\param c is card enum from 0-9.
  */
 player_state_type
 play_map::split_player(const player_state_type state, const card_type c) const {
 	assert(c < card_values);
-	const state_machine::node& current(player_resplit[state]);
+	const player_state_type po = state -pair_offset;
+	assert(po < card_values);
+	const state_machine::node& current(player_resplit[po]);
+	if (!current.is_terminal()) {
+		return current[c];
+	} else {
+		return state;
+	}
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
+	For now, assume not re-splittable.
+	\param c is card enum from 0-9.
+ */
+player_state_type
+play_map::final_split_player(const player_state_type state,
+		const card_type c) const {
+	assert(c < card_values);
+	const player_state_type po = state -pair_offset;
+	assert(po < card_values);
+	const state_machine::node& current(last_split[po]);
 	if (!current.is_terminal()) {
 		return current[c];
 	} else {

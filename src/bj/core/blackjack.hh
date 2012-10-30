@@ -165,6 +165,9 @@ public:
 	player_state_type
 	split_player(const player_state_type, const card_type) const;
 
+	player_state_type
+	final_split_player(const player_state_type, const card_type) const;
+
 	dealer_state_type
 	hit_dealer(const dealer_state_type, const card_type) const;
 

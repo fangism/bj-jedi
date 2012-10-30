@@ -343,6 +343,11 @@ public:
 	evaluate_player_basic(const play_map&,
 		const player_situation_basic_key_type&);
 
+private:
+	const expectations&
+	evaluate_split_basic(const play_map&,
+		const player_situation_basic_key_type&);
+
 };	// end struct player_outcome_cache_set
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

@@ -14,6 +14,7 @@
 #include "util/stacktrace.hh"
 #include "util/value_saver.hh"
 
+#define	DEBUG_DEALER_ANALYSIS			(0 && ENABLE_STACKTRACE)
 namespace blackjack {
 using std::pair;
 using std::accumulate;
@@ -99,9 +100,11 @@ get_basic_reduced_count(const peek_state_enum e) {
 const dealer_final_vector&
 dealer_outcome_cache_set::evaluate_dealer_basic(const play_map& play,
 		const dealer_hand_base& k) {
+#if DEBUG_DEALER_ANALYSIS
 	STACKTRACE_BRIEF;
 #if ENABLE_STACKTRACE
 	k.dump(STACKTRACE_STREAM, play.dealer_hit) << endl;
+#endif
 #endif
 	typedef	basic_map_type::value_type		pair_type;
 	const pair_type probe(k, dealer_final_null);
@@ -109,7 +112,9 @@ dealer_outcome_cache_set::evaluate_dealer_basic(const play_map& play,
 		bi(basic_cache.insert(probe));
 	dealer_final_vector& ret(bi.first->second);
 if (bi.second) {
+#if DEBUG_DEALER_ANALYSIS
 	STACKTRACE_INDENT_PRINT("cache miss, calculating\n");
+#endif
 	// cache-miss: then this is a newly inserted entry, compute it
 	// is this a hit or stand state?
 	const state_machine::node& ds(play.dealer_hit[k.state]);
@@ -147,9 +152,11 @@ if (bi.second) {
 		}
 	}
 } else {
+#if DEBUG_DEALER_ANALYSIS
 	STACKTRACE_INDENT_PRINT("cache hit\n");
+#endif
 }
-#if ENABLE_STACKTRACE
+#if DEBUG_DEALER_ANALYSIS
 	dump_dealer_final_vector(STACKTRACE_STREAM << '\t', ret, false) << endl;
 #endif
 	// else return cached entry
@@ -342,6 +349,9 @@ player_situation_key_type::dump(ostream& o, const play_map& p) const {
 ostream&
 player_situation_basic_key_type::dump(ostream& o, const play_map& p) const {
 	player.hand.dump(o << "player: ", p.player_hit);
+	if (player.hand.is_paired()) {
+		player.splits.dump_code(o << " [") << "]";
+	}
 	dealer.dump(o << ", dealer: ", p.dealer_hit);
 	return o;
 }
@@ -406,6 +416,7 @@ if (bi.second) {
 		STACKTRACE("double-down:");
 		const value_saver<action_mask> ams(am);
 		am &= play.post_double_down_actions;
+		ret.double_down() = 0.0;
 		card_type i = 0;
 		for ( ; i<card_values; ++i) {
 			const count_type& w(dref[i]);
@@ -420,7 +431,7 @@ if (bi.second) {
 			am.dump_debug(std::cerr) << endl;
 #endif
 			// weight by card probability
-			const edge_type e(child.best(am));
+			const edge_type e(child.action_edge(child.best(am)));
 			STACKTRACE_INDENT_PRINT("child.best: " << e << endl);
 			ret.double_down() += e *w;
 		}
@@ -434,15 +445,20 @@ if (bi.second) {
 		STACKTRACE("hit:");
 		const value_saver<action_mask> ams(am);
 		am &= play.post_hit_actions;
+		ret.hit() = 0.0;
 		card_type i = 0;
 		for ( ; i<card_values; ++i) {
 			const count_type& w(dref[i]);
 		if (w) {
 			const value_saver<player_hand_base> __bs(nk.player.hand);
+			STACKTRACE_INDENT_PRINT("+card: " << cards::card_name[i] << endl);
 			nk.player.hand.hit(play, i);
 			const expectations child(evaluate_player_basic(play, nk));
 			// weight by card probability
-			ret.hit() += child.best(am) *w;
+			const edge_type e(child.action_edge(child.best(am)));
+			STACKTRACE_INDENT_PRINT("child.best = " << e <<
+				", w = " << w << endl);
+			ret.hit() += e *w;
 		}
 			// else 0 weight, leave as vector of 0s
 		}	// end for all next card possibilities
@@ -450,15 +466,20 @@ if (bi.second) {
 		ret.hit() /= total_weight;
 		STACKTRACE_INDENT_PRINT("edge(hit): " << ret.hit() << endl);
 	}
+#if 1
 	if (k.player.hand.is_paired()) {
 		STACKTRACE("split:");
+#if ENABLE_STACKTRACE
+		k.player.splits.dump_code(
+			STACKTRACE_INDENT_PRINT("split code: ")) << endl;
+#endif
 		const value_saver<action_mask> ams(am);
 		const card_type pc = k.player.hand.pair_card();
 		// divide this into cases, based on post-split-state
 		const count_type& pw(dref[pc]);		// pairing cards
 		// here, using weights that account for pair-card removal
 		// instead of p^2, q^2, 2pq
-		const count_type npw = total_weight -pw;	// non-pairing cards
+		const count_type npw = total_weight -pw;	// non-pairing
 		const count_type pwt = npw *(npw -1);
 		count_type pwa[3];	// should be const
 		pwa[2] = pw *(pw -1);	// 2 new pairs
@@ -468,17 +489,23 @@ if (bi.second) {
 		split_state& pss(nk.player.splits);
 		pss.post_split_states(ps[2], ps[1], ps[0]);
 		am &= play.post_split_actions;
+		ret.split() = 0.0;
 	if (pss.is_splittable()) {
+		STACKTRACE_INDENT_PRINT("has splittable pair(s)" << endl);
 		// weighted sum expected value of 3 sub cases
 		size_t j = 0;
 		for ( ; j<3; ++j) {
+			STACKTRACE("iterate over three cases");
+			STACKTRACE_INDENT_PRINT("for j = " << j << endl);
 			const value_saver<split_state> __ss(pss, ps[j]);
-			const expectations child(evaluate_player_basic(play, k));
-			ret.split() += child.best(am) *pwa[j];
+			const expectations child(evaluate_player_basic(play, nk));
+			const player_choice b(child.best(am));
+			const edge_type e(child.action_edge(b));
+			ret.split() += e *(pwa[j]);
 		}
 		ret.split() /= pwt;
 	} else {
-		// no more splittable pairs
+		STACKTRACE_INDENT_PRINT("no more splittable pairs" << endl);
 		am -= SPLIT;
 		// splitting: hit card on top of base card
 		// assume that order of Xs and Ys are independent
@@ -490,11 +517,13 @@ if (bi.second) {
 			const count_type& w(dref[i]);
 		if (w) {
 			const value_saver<player_hand_base> __bs(nk.player.hand);
-			nk.player.hand.split(play, i);
+			nk.player.hand.final_split(play, i);
+			nk.player.splits.initialize_default();
 			const expectations
 				child(evaluate_player_basic(play, nk));
 			// weight by card probability
-			const edge_type sub = child.best(am) *w;
+			const edge_type e(child.action_edge(child.best(am)));
+			const edge_type sub = e *w;
 			if (i != pc) {
 				Y += sub;
 			}
@@ -513,16 +542,17 @@ if (bi.second) {
 		ret.split() /= pwt;
 	}	// splittable pairs remaining
 	}	// is paired, can split
-	} else {	// is terminal, else don't bother computing
-#if ENABLE_STACKTRACE
-		ret.dump_choice_actions(std::cerr);
 #endif
-	}
+	}	// is terminal, else don't bother computing
 	// surrender (if allowed) is constant expectation
 	ret.optimize(-play.var.surrender_penalty);	// sort
 } else {
 	STACKTRACE_INDENT_PRINT("cache hit\n");
 }
+#if ENABLE_STACKTRACE
+	k.dump(STACKTRACE_STREAM, play) << endl;
+	ret.dump_choice_actions(std::cerr);
+#endif
 	// else return cached entry
 	return ret;
 }
