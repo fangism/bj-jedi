@@ -365,8 +365,8 @@ const expectations&
 player_outcome_cache_set::evaluate_player_basic(const play_map& play,
 		const player_situation_basic_key_type& k) {
 	STACKTRACE_BRIEF;
-	const action_mask& m(k.player.hand.player_options);
 #if ENABLE_STACKTRACE
+	const action_mask& m(k.player.hand.player_options);
 	k.dump(STACKTRACE_STREAM, play) << endl;
 	STACKTRACE_INDENT_PRINT("options: " << m.raw() << endl);
 #endif

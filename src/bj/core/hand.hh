@@ -5,6 +5,14 @@
 
 #include <iosfwd>
 #include <string>
+
+#include "config.h"
+#if defined(HAVE_UNISTD_H)
+#include <unistd.h>			// for <sys/types.h>: ssize_t
+#elif defined(HAVE_SYS_TYPES_H)
+#include <sys/types.h>			// for ssize_t
+#endif
+
 #include "bj/core/enums.hh"		// for player_blackjack
 #include "bj/core/num.hh"
 #include "bj/core/player_action.hh"
