@@ -79,6 +79,9 @@ struct split_state {
 		return splits_remaining && paired_hands;
 	}
 
+	ssize_t
+	total_hands(void) const { return paired_hands +unpaired_hands; }
+
 	ostream&
 	dump_code(ostream&) const;
 

@@ -358,33 +358,16 @@ player_situation_basic_key_type::dump(ostream& o, const play_map& p) const {
 
 //=============================================================================
 /**
-	Evaluate basic strategy odds of the dealer's final state, 
-	based solely on the standard card distribution (w/ replacement).
+	Re-compute edges of actions in given situation.
+	This applies to a single hand only.
+	\param ret is overwritten and updated (return)
  */
-const expectations&
-player_outcome_cache_set::evaluate_player_basic(const play_map& play,
-		const player_situation_basic_key_type& k) {
+void
+player_outcome_cache_set::__evaluate_player_basic_single(const play_map& play,
+		const player_situation_basic_key_type& k, 
+		expectations& ret) {
 	STACKTRACE_BRIEF;
-#if ENABLE_STACKTRACE
-	const action_mask& m(k.player.hand.player_options);
-	k.dump(STACKTRACE_STREAM, play) << endl;
-	STACKTRACE_INDENT_PRINT("options: " << m.raw() << endl);
-#endif
-	typedef	basic_map_type::value_type		pair_type;
-	const player_hand_base ak(k.player.hand.state, play);
-	const player_situation_base psb(ak, k.player.splits);
-	const pair_type probe(
-		player_situation_basic_key_type(psb, k.dealer),
-		null_expectations);
-	const pair<basic_map_type::iterator, bool>
-		bi(basic_cache.insert(probe));
-	expectations& ret(bi.first->second);
-if (bi.second) {
-	STACKTRACE_INDENT_PRINT("cache miss, calculating\n");
-	// cache-miss: then this is a newly inserted entry, compute it
-	// in basic analysis mode, dealer's final outcome spread
-	// is independent of card distribution and player action,
-	// thus we can look it up once.
+	// here, dealer's progression is assumed independent from player actions
 	const dealer_final_vector&
 		dfv(dealer_outcome_cache.evaluate_dealer_basic(play, k.dealer));
 	// current state
@@ -467,83 +450,90 @@ if (bi.second) {
 		STACKTRACE_INDENT_PRINT("edge(hit): " << ret.hit() << endl);
 	}
 #if 1
+	// can we just skip evaluation if split is not permitted?
 	if (k.player.hand.is_paired()) {
 		STACKTRACE("split:");
-#if ENABLE_STACKTRACE
-		k.player.splits.dump_code(
-			STACKTRACE_INDENT_PRINT("split code: ")) << endl;
-#endif
-		const value_saver<action_mask> ams(am);
+#if 0
 		const card_type pc = k.player.hand.pair_card();
-		// divide this into cases, based on post-split-state
-		const count_type& pw(dref[pc]);		// pairing cards
-		// here, using weights that account for pair-card removal
-		// instead of p^2, q^2, 2pq
-		const count_type npw = total_weight -pw;	// non-pairing
-		const count_type pwt = npw *(npw -1);
-		count_type pwa[3];	// should be const
-		pwa[2] = pw *(pw -1);	// 2 new pairs
-		pwa[0] = npw *(npw -1);	// 0 new pairs
-		pwa[1] = pwt -pwa[2] -pwa[0];	// 1 new pair
-		split_state ps[3];
-		split_state& pss(nk.player.splits);
-		pss.post_split_states(ps[2], ps[1], ps[0]);
-		am &= play.post_split_actions;
-		ret.split() = 0.0;
-	if (pss.is_splittable()) {
-		STACKTRACE_INDENT_PRINT("has splittable pair(s)" << endl);
-		// weighted sum expected value of 3 sub cases
-		size_t j = 0;
-		for ( ; j<3; ++j) {
-			STACKTRACE("iterate over three cases");
-			STACKTRACE_INDENT_PRINT("for j = " << j << endl);
-			const value_saver<split_state> __ss(pss, ps[j]);
-			const expectations child(evaluate_player_basic(play, nk));
-			const player_choice b(child.best(am));
-			const edge_type e(child.action_edge(b));
-			ret.split() += e *(pwa[j]);
-		}
-		ret.split() /= pwt;
-	} else {
-		STACKTRACE_INDENT_PRINT("no more splittable pairs" << endl);
-		am -= SPLIT;
-		// splitting: hit card on top of base card
-		// assume that order of Xs and Ys are independent
-		// compute non-pairing edges (Y)
-		edge_type X = 0.0;	// possible pair card next
-		edge_type Y = 0.0;	// non-paired only
-		card_type i = 0;
-		for ( ; i<card_values; ++i) {
-			const count_type& w(dref[i]);
-		if (w) {
-			const value_saver<player_hand_base> __bs(nk.player.hand);
-			nk.player.hand.final_split(play, i);
-			nk.player.splits.initialize_default();
-			const expectations
-				child(evaluate_player_basic(play, nk));
-			// weight by card probability
-			const edge_type e(child.action_edge(child.best(am)));
-			const edge_type sub = e *w;
-			if (i != pc) {
-				Y += sub;
-			}
-			X += sub;
-		}
-		}
-		Y /= npw;
-		X /= total_weight;
-		// TODO: cache X and Y, this is a basic approximation
-		size_t j = 0;
-		for ( ; j<3; ++j) {
-			const edge_type nX = X *ps[j].nonsplit_pairs();
-			const edge_type nY = Y *ps[j].unpaired_hands;
-			ret.split() += pwa[j] *(nX +nY);
-		}
-		ret.split() /= pwt;
-	}	// splittable pairs remaining
+		// reduce hand to single-card, post-split state
+		// in other words, don't show player's second card yet
+		nk.player.hand.initial_state(pc);
+#endif
+		ret.split() = __evaluate_split_basic(play, nk);
+		// inside: deduct splits remaining, evaluate cases of second cards
 	}	// is paired, can split
 #endif
 	}	// is terminal, else don't bother computing
+	// surrender (if allowed) is constant expectation
+	ret.optimize(-play.var.surrender_penalty);	// sort
+#if ENABLE_STACKTRACE
+	k.dump(STACKTRACE_STREAM, play) << endl;
+	ret.dump_choice_actions(std::cerr);
+#endif
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
+	Multiple hands are ordered: Ps, Xs, Ys (paired-splittable, 
+		paired-nonsplittable, unpaired)
+	Action is taken (precedence) on first paired-splittable hand (if any), 
+		then on first paired-nonsplittable hand, 
+		then unpaired hands.  
+	Subsequent hands are considered independent (approximation).
+ */
+void
+player_outcome_cache_set::__evaluate_player_basic_multi(
+		const play_map&,// play,
+		const player_situation_basic_key_type&,// k,
+		expectations&// ret
+		) {
+	// for the non-split (terminal) choices, use the single hand case
+	// take weighted sum of expectations over multiple hands
+{
+	// if this hand is splittable and player chooses not to split
+	// then remaining splittable-hands are considered unsplittable.
+}{
+}
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
+	Evaluate basic strategy odds of the dealer's final state, 
+	based solely on the standard card distribution (w/ replacement).
+ */
+const expectations&
+player_outcome_cache_set::evaluate_player_basic(const play_map& play,
+		const player_situation_basic_key_type& k) {
+	STACKTRACE_BRIEF;
+	// if multiple hands, if single hand
+#if ENABLE_STACKTRACE
+	const action_mask& m(k.player.hand.player_options);
+	k.dump(STACKTRACE_STREAM, play) << endl;
+	STACKTRACE_INDENT_PRINT("options: " << m.raw() << endl);
+#endif
+	typedef	basic_map_type::value_type		pair_type;
+	const bool multi_or_split = k.player.hand.is_paired() ||
+		(k.player.splits.total_hands() > 1);
+	// (total hands > 2) => paired
+	const player_hand_base ak(k.player.hand.state, play);
+	const player_situation_base psb(ak, k.player.splits);
+	const pair_type probe(
+		player_situation_basic_key_type(psb, k.dealer),
+		null_expectations);
+	const pair<basic_map_type::iterator, bool>
+		bi(basic_cache.insert(probe));
+	expectations& ret(bi.first->second);
+if (bi.second) {
+	STACKTRACE_INDENT_PRINT("cache miss, calculating\n");
+	// cache-miss: then this is a newly inserted entry, compute it
+	// in basic analysis mode, dealer's final outcome spread
+	// is independent of card distribution and player action,
+	// thus we can look it up once.
+	if (multi_or_split) {
+		__evaluate_player_basic_multi(play, k, ret);
+	} else {
+		__evaluate_player_basic_single(play, k, ret);
+	}
 	// surrender (if allowed) is constant expectation
 	ret.optimize(-play.var.surrender_penalty);	// sort
 } else {
@@ -556,6 +546,104 @@ if (bi.second) {
 	// else return cached entry
 	return ret;
 }
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
+	Routine for recursively analyzing split scenarios.
+	Splits are handled differently, using split_states.
+	\param k situation key, must be a single-card state, post-split, 
+		*prior* to taking any other cards.
+		For example: A,A -> A.
+	\return edge of splitting in this state (optimal)
+	TODO: account for post-split action limitations.
+ */
+edge_type
+player_outcome_cache_set::__evaluate_split_basic(const play_map& play, 
+		const player_situation_basic_key_type& k) {
+	STACKTRACE_VERBOSE;
+	assert(k.player.hand.is_paired());
+	player_situation_basic_key_type nk(k);	// copy-and-modify state
+	action_mask& am(nk.player.hand.player_options);
+#if ENABLE_STACKTRACE
+	k.player.splits.dump_code(
+		STACKTRACE_INDENT_PRINT("split code: ")) << endl;
+#endif
+	const value_saver<action_mask> ams(am);
+	const card_type pc = k.player.hand.pair_card();
+	// divide this into cases, based on post-split-state
+	const deck_count_type&
+		dref(get_basic_reduced_count(k.dealer.peek_state));
+	const count_type total_weight =
+		accumulate(dref.begin(), dref.end(), 0);
+	const count_type& pw(dref[pc]);		// pairing cards
+	// here, using weights that account for pair-card removal
+	// instead of p^2, q^2, 2pq
+	const count_type npw = total_weight -pw;	// non-pairing
+	const count_type pwt = npw *(npw -1);
+	count_type pwa[3];	// should be const
+	pwa[2] = pw *(pw -1);	// 2 new pairs
+	pwa[0] = npw *(npw -1);	// 0 new pairs
+	pwa[1] = pwt -pwa[2] -pwa[0];	// 1 new pair
+	split_state ps[3];
+	split_state& pss(nk.player.splits);
+	pss.post_split_states(ps[2], ps[1], ps[0]);
+	am &= play.post_split_actions;
+	edge_type ret = 0.0;
+if (pss.is_splittable()) {
+	STACKTRACE_INDENT_PRINT("has splittable pair(s)" << endl);
+	// weighted sum expected value of 3 sub cases
+	size_t j = 0;
+	for ( ; j<3; ++j) {
+		STACKTRACE("iterate over three cases");
+		STACKTRACE_INDENT_PRINT("for j = " << j << endl);
+		const value_saver<split_state> __ss(pss, ps[j]);
+		const expectations child(evaluate_player_basic(play, nk));
+//		const expectations child(__evaluate_split_basic(play, nk));
+		const player_choice b(child.best(am));
+		const edge_type e(child.action_edge(b));
+		ret += e *(pwa[j]);
+	}
+	ret /= pwt;
+} else {
+	STACKTRACE_INDENT_PRINT("no more splittable pairs" << endl);
+	// now accumulate over Xs and Ys
+	am -= SPLIT;
+	// splitting: hit card on top of base card
+	// assume that order of Xs and Ys are independent
+	// compute non-pairing edges (Y)
+	edge_type X = 0.0;	// possible pair card next
+	edge_type Y = 0.0;	// non-paired only
+	// loop over possible second cards
+	card_type i = 0;
+	for ( ; i<card_values; ++i) {
+		const count_type& w(dref[i]);
+	if (w) {
+		const value_saver<player_hand_base> __bs(nk.player.hand);
+		nk.player.hand.final_split(play, i);
+		nk.player.splits.initialize_default();
+		const expectations
+			child(evaluate_player_basic(play, nk));
+		// weight by card probability
+		const edge_type e(child.action_edge(child.best(am)));
+		const edge_type sub = e *w;
+		if (i != pc) {
+			Y += sub;
+		}
+		X += sub;
+	}
+	}
+	Y /= npw;
+	X /= total_weight;
+	// TODO: cache X and Y, this is a basic approximation
+	size_t j = 0;
+	for ( ; j<3; ++j) {
+		const edge_type nX = X *ps[j].nonsplit_pairs();
+		const edge_type nY = Y *ps[j].unpaired_hands;
+		ret += pwa[j] *(nX +nY);
+	}
+	ret /= pwt;
+}	// splittable pairs remaining
+}	// end __evaluate_split_basic
 
 //=============================================================================
 }	// end namespace blackjack
