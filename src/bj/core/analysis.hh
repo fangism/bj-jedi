@@ -17,6 +17,8 @@
 namespace blackjack {
 using std::ostream;
 class play_map;
+class player_outcome_cache_set;
+class basic_split_situation_key_type;
 
 /**
 	Enumeration representing analysis mode.
@@ -271,6 +273,9 @@ struct player_situation_basic_key_type {
 	player_situation_basic_key_type(const player_situation_key_type& s) :
 		player(s.player), dealer(s.dealer) { }
 
+	player_situation_basic_key_type(const basic_split_situation_key_type&, 
+		const card_type);
+
 	// default copy-ctor
 
 	int
@@ -290,6 +295,115 @@ struct player_situation_basic_key_type {
 	dump(ostream&, const play_map&) const;
 
 };	// end struct player_situation_basic_key_type
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
+	A split situation is uniquely identified by the 
+	composition of multiple hands (or single paired hand)
+	and the permissible actions.
+	Almost the same as player_situation_basic_key_type,
+	but without player.hand.state.
+	Alternatively, could just derive from player_situation_basic_key_type
+	and just *not* compare player.hand.state.
+ */
+struct basic_split_situation_key_type {
+	/// state of (possibly) multiple paired hands
+	split_state				splits;
+	/// permissible actions
+	action_mask				actions;
+	/// dealer's reveal
+	dealer_hand_base			dealer;
+
+	basic_split_situation_key_type(const split_state& s, 
+		const action_mask& m, const dealer_hand_base& d) :
+		splits(s), actions(m), dealer(d) { }
+
+	explicit
+	basic_split_situation_key_type(const player_situation_basic_key_type&);
+
+	int
+	compare(const basic_split_situation_key_type& r) const {
+		const int sc = splits.compare(r.splits);
+		if (sc) return sc;
+		const int ac = actions.compare(r.actions);
+		if (ac) return ac;
+		const int dc = dealer.compare(r.dealer);
+		return dc;
+	}
+
+	bool
+	operator < (const basic_split_situation_key_type& r) const {
+		return compare(r) < 0;
+	}
+};	// end struct basic_split_situation_key_type
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
+	For a given split-card, this structure tracks the 
+	partial expectations of outcomes for split actions.
+	There will be one of these structures per split-card.
+	There's no need for a cache to cross-reference another
+	entry with a different split-card.
+	key: [split_state]
+	Q: action_mask needed?
+	value: expectations structure
+ */
+class player_split_basic_cache_type {
+	typedef	player_split_basic_cache_type	this_type;
+	/// self-referential index to this entry
+	typedef	basic_split_situation_key_type	key_type;
+	typedef	edge_type			value_type;
+//	typedef	expectations			value_type;
+	typedef	std::map<key_type, value_type>	map_type;
+public:
+	card_type				split_card;
+	// pointer to overall outcome cache (for non-split results)
+	player_outcome_cache_set*		_outcome_cache;
+private:
+	map_type				_map;
+	// since card distribution is not evaluated
+	// we can pre-compute the basic expectations of 
+	// the terminal hands: non-splittable pairs, and unpaired hands
+	// these should be computed once and cached (X and Y)
+	edge_type				nonsplit_pair_exp;
+	edge_type				unpaired_exp;
+	bool					nonsplit_exp_valid;
+
+private:
+	// non-copyable, due to bare-pointer
+	explicit
+	player_split_basic_cache_type(const this_type&);
+
+	this_type&
+	operator = (const this_type&);
+
+public:
+	// default constructor -- split_card will be set by caller
+	player_split_basic_cache_type() :
+		_outcome_cache(NULL), _map(), 
+		nonsplit_pair_exp(0.0), unpaired_exp(0.0), 
+		nonsplit_exp_valid(false) { }
+
+	// default destructor
+
+	void
+	update_nonsplit_cache_outcome(const play_map&,
+		const player_situation_basic_key_type&);
+
+	// this will call basic analysis on outcome cache
+	// for non-split actions.
+	const value_type&
+	evaluate(const play_map&, const key_type&);
+
+	const value_type&
+	evaluate(const play_map&, const player_situation_basic_key_type&);
+
+};	// end class player_split_basic_cache_type
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+class player_split_basic_cache_array {
+	player_split_basic_cache_type		split_cache[card_values];
+};	// end class player_split_basic_cache_array
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// TODO: there's a lot of redundant information computed, due to

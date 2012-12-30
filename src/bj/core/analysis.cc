@@ -646,5 +646,171 @@ if (pss.is_splittable()) {
 }	// end __evaluate_split_basic
 
 //=============================================================================
+// class player_split_basic_cache_type method definitions
+
+/**
+	Key down-slicing, stripping out player_state.
+ */
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+basic_split_situation_key_type::basic_split_situation_key_type(
+		const player_situation_basic_key_type& k) :
+		splits(k.player.splits),
+		// omit player.hand.state
+		actions(k.player.hand.player_options),
+		dealer(k.dealer) {
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
+	Re-construct basic key from split key with card.
+ */
+player_situation_basic_key_type::player_situation_basic_key_type(
+		const basic_split_situation_key_type& k, 
+		const card_type c) :
+		player(player_situation_base(
+			player_hand_base(
+				play_map::paired_state(c),
+				k.actions),
+			split_state(k.splits))), 
+		dealer(k.dealer) {
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
+	Compute the odds of case terminal hands XX and XY, where
+	XX is non-splittable pair
+	XY is an unpaired hand (Y != X)
+	This should be done up front once.  
+	\param k is the player state of a non-splittable pair XX.
+ */
+void
+player_split_basic_cache_type::update_nonsplit_cache_outcome(
+		const play_map& play, 
+		const player_situation_basic_key_type& k) {
+	STACKTRACE_VERBOSE;
+	assert(_outcome_cache);	// must already be set
+	assert(k.player.hand.is_paired());
+	assert(split_card == k.player.hand.pair_card());
+if (!nonsplit_exp_valid) {
+	const deck_count_type&
+		dref(get_basic_reduced_count(k.dealer.peek_state));
+	const count_type& pw(dref[split_card]);		// pairing cards
+	// here, using weights that account for pair-card removal
+	edge_type& X(nonsplit_pair_exp);	// possible pair card next
+	edge_type& Y(unpaired_exp);		// non-paired only
+	player_situation_basic_key_type nk(k);		// copy
+	action_mask& am(nk.player.hand.player_options);
+	am -= SPLIT;			// terminal, never consider split
+//	rm &= post_split_actions;
+	count_type npw = 0;
+	card_type i = 0;
+	for ( ; i<card_values; ++i) {
+		const count_type& w(dref[i]);
+		const value_saver<player_hand_base> __bs(nk.player.hand);
+		nk.player.hand.final_split(play, i);
+		nk.player.splits.initialize_default();
+		const expectations&
+			child(_outcome_cache->evaluate_player_basic(play, nk));
+		const edge_type e(child.action_edge(child.best(am)));
+		const edge_type sub = e *w;
+		if (i != split_card) {
+			Y += sub;
+			npw += w;
+		} else {
+			X = e;
+		}
+	}	// end for
+	Y /= npw;
+	nonsplit_exp_valid = true;
+}
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
+	Automatically converts basic_key_type to split_key_type.
+ */
+const edge_type&
+player_split_basic_cache_type::evaluate(const play_map& play,
+		const player_situation_basic_key_type& k) {
+	assert(split_card == k.player.hand.pair_card());
+	const key_type kk(k);
+	return evaluate(play, kk);
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
+	This evaluates the expectation of a split action 
+	from a paired state.
+	computation:
+	if there are splittable pairs P, do (recursion)
+	else no more splittable pairs, 
+		weighted sum over pair and unpaired hands
+	Need permissible action mask.
+ */
+const edge_type&
+player_split_basic_cache_type::evaluate(const play_map& play,
+		const key_type& k) {
+	STACKTRACE_VERBOSE;
+	typedef	map_type::iterator		iterator;
+	const pair<iterator, bool>
+		p(_map.insert(std::make_pair(k, value_type(0.0))));
+	value_type& e(p.first->second);
+if (p.second) {
+		// was cache miss, compute
+	const player_state_type pst = play_map::paired_state(split_card);
+#if ENABLE_STACKTRACE
+	k.splits.dump_code(
+		STACKTRACE_INDENT_PRINT("split code: ")) << endl;
+#endif
+	// divide this into cases, based on post-split-state
+	const deck_count_type&
+		dref(get_basic_reduced_count(k.dealer.peek_state));
+	const count_type total_weight =
+		accumulate(dref.begin(), dref.end(), 0);
+	const count_type& pw(dref[split_card]);		// pairing cards
+	// here, using weights that account for pair-card removal
+	// instead of p^2, q^2, 2pq
+	const count_type npw = total_weight -pw;	// non-pairing
+	const count_type pwt = npw *(npw -1);
+	count_type pwa[3];	// should be const
+	pwa[2] = pw *(pw -1);	// 2 new pairs
+	pwa[0] = npw *(npw -1);	// 0 new pairs
+	pwa[1] = pwt -pwa[2] -pwa[0];	// 1 new pair
+	split_state ps[3];
+	const split_state& pss(k.splits);
+	pss.post_split_states(ps[2], ps[1], ps[0]);
+	e = 0.0;
+if (pss.is_splittable()) {
+	STACKTRACE_INDENT_PRINT("has splittable pair(s)" << endl);
+	// weighted sum expected value of 3 sub cases
+	key_type nk(k);		// copy
+	size_t j = 0;
+	for ( ; j<3; ++j) {
+		STACKTRACE("iterate over three cases");
+		STACKTRACE_INDENT_PRINT("for j = " << j << endl);
+		const value_saver<split_state> __ss(nk.splits, ps[j]);
+		const edge_type exp = evaluate(play, nk);
+		e += exp *(pwa[j]);
+	}
+	e /= pwt;
+	// weighted average
+} else {
+	STACKTRACE_INDENT_PRINT("no more splittable pairs" << endl);
+	// now accumulate over Xs and Ys
+	// splitting: hit card on top of base card
+	if (!nonsplit_exp_valid) {
+		player_situation_basic_key_type nk(k, split_card);
+		nk.player.hand.player_options -= SPLIT;
+		update_nonsplit_cache_outcome(play, nk);
+	}
+	// assume that order of Xs and Ys are independent, weighted sum
+	e = nonsplit_pair_exp *k.splits.nonsplit_pairs()
+		+unpaired_exp *k.splits.unpaired_hands;
+}	// splittable pairs remaining
+}	// was cache hit, re-use
+	return e;
+}
+
+//=============================================================================
 }	// end namespace blackjack
 

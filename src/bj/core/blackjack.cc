@@ -261,6 +261,15 @@ play_map::split_player(const player_state_type state, const card_type c) const {
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+#if 0
+// inline
+player_state_type
+play_map::paired_state(const card_type i) const {
+	return pair_offset +i;
+}
+#endif
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
 	For now, assume not re-splittable.
 	\param c is card enum from 0-9.

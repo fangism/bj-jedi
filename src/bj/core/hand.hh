@@ -89,7 +89,7 @@ struct split_state {
 	post_split_states(split_state&, split_state&, split_state&) const;
 
 	ssize_t
-	nonsplit_pairs(void) {
+	nonsplit_pairs(void) const {
 		if (paired_hands > splits_remaining) {
 			return paired_hands -splits_remaining;
 		}

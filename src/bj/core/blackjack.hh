@@ -149,6 +149,12 @@ public:
 	bool
 	is_player_pair(const player_state_type) const;
 
+	static
+	player_state_type
+	paired_state(const card_type i) {
+		return pair_offset +i;
+	}
+
 	// action transitions
 	player_state_type
 	initial_card_player(const card_type) const;
