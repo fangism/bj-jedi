@@ -21,6 +21,10 @@ using util::value_saver;
 using namespace blackjack;
 
 static
+basic_dealer_outcome_cache_set
+basic_dealer_cache;
+
+static
 dealer_outcome_cache_set
 dealer_cache;
 
@@ -48,7 +52,7 @@ compute_dealer_odds_basic_standard(const variation& var) {
 		default: break;
 		}
 		const dealer_final_vector&
-			dfv(dealer_cache.evaluate_dealer_basic(play, dealer));
+			dfv(basic_dealer_cache.evaluate(play, dealer));
 		cout << card_name[d] << '\t';
 		dump_dealer_final_vector(cout, dfv, false);
 	}

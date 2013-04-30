@@ -52,6 +52,8 @@ operator << (ostream& o, const analysis_mode);
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
 	Bundle of analysis parameters.
+	TODO: use independent settings for dealer calculation
+	and player calculation.
  */
 struct analysis_parameters {
 	/**
@@ -152,20 +154,46 @@ struct dealer_situation_key_type {
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 typedef	std::map<dealer_situation_key_type, dealer_final_vector>
 			dealer_outcome_cache_map_type;
-typedef	std::map<dealer_hand_base, dealer_final_vector>
-			dealer_outcome_basic_cache_map_type;
 
+/**
+	This cache is really only valid for one given variation
+	(play_map).
+	When play_map is altered, this cache (and all others)
+	should be invalidated.
+ */
+class basic_dealer_outcome_cache_set {
+public:
+	typedef	dealer_hand_base		key_type;
+	typedef	dealer_final_vector		value_type;
+private:
+	typedef	std::map<key_type, value_type>
+				dealer_outcome_basic_cache_map_type;
+	typedef	dealer_outcome_basic_cache_map_type	basic_map_type;
+	// basic map could be replaced with a table...
+	basic_map_type				basic_cache;
+
+public:
+	ostream&
+	dump(ostream&) const;
+
+	void
+	invalidate(void) { basic_cache.clear(); }
+
+	const value_type&
+	evaluate(const play_map&, const key_type&);
+
+};	// end class basic_dealer_outcome_cache_set
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
 	Collection of outcome vector caches.
 	One for each accuracy setting.
  */
 class dealer_outcome_cache_set {
 	typedef	dealer_outcome_cache_map_type		map_type;
-	typedef	dealer_outcome_basic_cache_map_type	basic_map_type;
 	// mutable
 	map_type				exact_cache;
 	map_type				dynamic_cache;
-	basic_map_type				basic_cache;
 
 public:
 	ostream&
@@ -188,9 +216,6 @@ public:
 		const dealer_situation_key_type&,
 		const analysis_parameters&);
 
-	const dealer_final_vector&
-	evaluate_dealer_basic(const play_map&,
-		const dealer_hand_base&);
 
 };	// end struct dealer_outcome_cache_set
 
@@ -457,6 +482,45 @@ public:
 	evaluate_player_basic(const play_map&,
 		const player_situation_basic_key_type&);
 
+#if 0
+private:
+	void
+	__evaluate_player_basic_single(const play_map&,
+		const player_situation_basic_key_type&, 
+		expectations&);
+
+	void
+	__evaluate_player_basic_multi(const play_map&,
+		const player_situation_basic_key_type&, 
+		expectations&);
+#endif
+
+	edge_type
+	__evaluate_split_basic(const play_map&,
+		const player_situation_basic_key_type&);
+
+};	// end struct player_outcome_cache_set
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
+	This contains the single-hand evaluator and the split-hand
+	evaluator.
+	TODO: basic strategy could be organized as a 2d-table
+	instead of a map because it is small.
+ */
+class basic_strategy_analyzer {
+	typedef	player_outcome_basic_cache_map_type	basic_map_type;
+	basic_map_type				basic_cache;
+	player_split_basic_cache_array		split_cache;
+	/// really, only basic dealer outcome cache is needed
+	/// using reference because this is shared with other analyzers
+	basic_dealer_outcome_cache_set		dealer_cache;
+public:
+
+	const expectations&
+	evaluate_player_basic(const play_map&,
+		const player_situation_basic_key_type&);
+
 private:
 	void
 	__evaluate_player_basic_single(const play_map&,
@@ -472,8 +536,7 @@ private:
 	__evaluate_split_basic(const play_map&,
 		const player_situation_basic_key_type&);
 
-};	// end struct player_outcome_cache_set
-
+};	// end class basic_strategy_analyzer
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 }	// end namespace blackjack
 

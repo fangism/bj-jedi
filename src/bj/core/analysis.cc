@@ -73,8 +73,13 @@ dealer_outcome_cache_set::compute_dealer_final_distribution(
 		return evaluate_dealer_dynamic(play, k, p);
 	default: break;
 	}
-//	case ANALYSIS_BASIC:
+#if 0
+	// no longer connected to basic outcome cache
+	case ANALYSIS_BASIC:
 	return evaluate_dealer_basic(play, k.dealer);
+#else
+	return evaluate_dealer_dynamic(play, k, p);
+#endif
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -98,8 +103,8 @@ get_basic_reduced_count(const peek_state_enum e) {
 	based solely on the standard card distribution (w/ replacement).
  */
 const dealer_final_vector&
-dealer_outcome_cache_set::evaluate_dealer_basic(const play_map& play,
-		const dealer_hand_base& k) {
+basic_dealer_outcome_cache_set::evaluate(const play_map& play,
+		const key_type& k) {
 #if DEBUG_DEALER_ANALYSIS
 	STACKTRACE_BRIEF;
 #if ENABLE_STACKTRACE
@@ -136,8 +141,7 @@ if (bi.second) {
 		if (w) {
 			dealer_hand_base nk(ds[i]);	// NO_PEEK
 			nk.check_blackjack(k.first_card);
-			const dealer_final_vector
-				child(evaluate_dealer_basic(play, nk));
+			const dealer_final_vector& child(evaluate(play, nk));
 			// weight by card probability
 			dealer_state_type j = 0;
 			for ( ; j<d_final_states; ++j) {
@@ -161,7 +165,7 @@ if (bi.second) {
 #endif
 	// else return cached entry
 	return ret;
-}
+}	// end basic_dealer_outcome_cache_set::evaluate()
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
@@ -363,13 +367,14 @@ player_situation_basic_key_type::dump(ostream& o, const play_map& p) const {
 	\param ret is overwritten and updated (return)
  */
 void
-player_outcome_cache_set::__evaluate_player_basic_single(const play_map& play,
+basic_strategy_analyzer::__evaluate_player_basic_single(const play_map& play,
 		const player_situation_basic_key_type& k, 
 		expectations& ret) {
 	STACKTRACE_BRIEF;
 	// here, dealer's progression is assumed independent from player actions
 	const dealer_final_vector&
-		dfv(dealer_outcome_cache.evaluate_dealer_basic(play, k.dealer));
+		dfv(dealer_cache.evaluate(play, k.dealer));
+//		dfv(dealer_outcome_cache.evaluate_dealer_basic(play, k.dealer));
 	// current state
 	const state_machine::node& ps(play.player_hit[k.player.hand.state]);
 	{
@@ -408,7 +413,8 @@ player_outcome_cache_set::__evaluate_player_basic_single(const play_map& play,
 			const value_saver<player_hand_base> __bs(nk.player.hand);
 			nk.player.hand.hit(play, i);
 			// yes, actually do recursion, in case of variations
-			const expectations child(evaluate_player_basic(play, nk));
+			expectations child;
+			__evaluate_player_basic_single(play, nk, child);
 #if ENABLE_STACKTRACE
 			child.dump_choice_actions(std::cerr);
 			am.dump_debug(std::cerr) << endl;
@@ -436,7 +442,8 @@ player_outcome_cache_set::__evaluate_player_basic_single(const play_map& play,
 			const value_saver<player_hand_base> __bs(nk.player.hand);
 			STACKTRACE_INDENT_PRINT("+card: " << cards::card_name[i] << endl);
 			nk.player.hand.hit(play, i);
-			const expectations child(evaluate_player_basic(play, nk));
+			expectations child;
+			__evaluate_player_basic_single(play, nk, child);
 			// weight by card probability
 			const edge_type e(child.action_edge(child.best(am)));
 			STACKTRACE_INDENT_PRINT("child.best = " << e <<
@@ -482,7 +489,7 @@ player_outcome_cache_set::__evaluate_player_basic_single(const play_map& play,
 	Subsequent hands are considered independent (approximation).
  */
 void
-player_outcome_cache_set::__evaluate_player_basic_multi(
+basic_strategy_analyzer::__evaluate_player_basic_multi(
 		const play_map&,// play,
 		const player_situation_basic_key_type&,// k,
 		expectations&// ret
@@ -502,7 +509,7 @@ player_outcome_cache_set::__evaluate_player_basic_multi(
 	based solely on the standard card distribution (w/ replacement).
  */
 const expectations&
-player_outcome_cache_set::evaluate_player_basic(const play_map& play,
+basic_strategy_analyzer::evaluate_player_basic(const play_map& play,
 		const player_situation_basic_key_type& k) {
 	STACKTRACE_BRIEF;
 	// if multiple hands, if single hand

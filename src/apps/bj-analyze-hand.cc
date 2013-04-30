@@ -26,8 +26,8 @@ using util::value_saver;
 using namespace blackjack;
 
 static
-player_outcome_cache_set
-player_cache;
+basic_strategy_analyzer
+basic_player_cache;
 
 #if 0
 /**
@@ -460,7 +460,7 @@ if (!err) {
 	case ANALYSIS_BASIC: {
 		const player_situation_basic_key_type s(opt.key);
 		const expectations&
-			e(player_cache.evaluate_player_basic(opt.play, s));
+			e(basic_player_cache.evaluate_player_basic(opt.play, s));
 		e.dump_choice_actions(cout, -opt.var.surrender_penalty);
 		break;
 	}
