@@ -203,11 +203,13 @@ On the player's first two cards, the player is given the option to
 double-down: double the original bet and take exactly one more card.
 The expected value of doubling-down is computed as an inner-product
 of the card distribution vector and the vector of expected values for the
-post-double-down states.
+post-double-down states, multiplied by the double-down multiplier, $d$.
+Typically, the cost of doubling-down is the original bet amount, 
+so $d$ is 2.0.
 
 \begin{eqnarray}
-\ExpAct{double}{s_i} &=& \Vec{c}\cdot \ExpActVec{stand}{s_i} \nonumber \\
-&=& \Sum{j=1}{10}{\Prob{c=j}\ExpAct{stand}{\NextState{s}{i}{j}}}
+\ExpAct{double}{s_i} &=& d \Paren{\Vec{c}\cdot \ExpActVec{stand}{s_i}} \nonumber \\
+&=& d \Sum{j=1}{10}{\Prob{c=j}\ExpAct{stand}{\NextState{s}{i}{j}}}
 \end{eqnarray}
 
 Where doubling-down is permitted, the expression for the
