@@ -650,6 +650,7 @@ if (pss.is_splittable()) {
 	}
 	ret /= pwt;
 }	// splittable pairs remaining
+	return ret;
 }	// end __evaluate_split_basic
 
 //=============================================================================
@@ -701,7 +702,7 @@ player_split_basic_cache_type::update_nonsplit_cache_outcome(
 if (!nonsplit_exp_valid) {
 	const deck_count_type&
 		dref(get_basic_reduced_count(k.dealer.peek_state));
-	const count_type& pw(dref[split_card]);		// pairing cards
+//	const count_type& pw(dref[split_card]);		// pairing cards
 	// here, using weights that account for pair-card removal
 	edge_type& X(nonsplit_pair_exp);	// possible pair card next
 	edge_type& Y(unpaired_exp);		// non-paired only
@@ -764,7 +765,7 @@ player_split_basic_cache_type::evaluate(const play_map& play,
 	value_type& e(p.first->second);
 if (p.second) {
 		// was cache miss, compute
-	const player_state_type pst = play_map::paired_state(split_card);
+//	const player_state_type pst = play_map::paired_state(split_card);
 #if ENABLE_STACKTRACE
 	k.splits.dump_code(
 		STACKTRACE_INDENT_PRINT("split code: ")) << endl;
