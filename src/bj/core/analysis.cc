@@ -361,6 +361,19 @@ player_situation_basic_key_type::dump(ostream& o, const play_map& p) const {
 }
 
 //=============================================================================
+// basic_strategy_analyzer method definitions
+
+basic_strategy_analyzer::basic_strategy_analyzer() :
+		basic_cache(), dealer_cache() {
+	// initialize back-reference pointers
+	card_type i = 0;
+	for ( ; i<card_values; ++i) {
+		split_cache[i].split_card = i;
+		split_cache[i]._basic_analyzer = this;
+	}
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
 	Re-compute edges of actions in given situation.
 	This applies to a single hand only.
@@ -429,8 +442,7 @@ basic_strategy_analyzer::__evaluate_player_basic_single(const play_map& play,
 		// normalize weighted sum of probabilities
 		ret.double_down() *= play.var.double_multiplier / total_weight;
 		STACKTRACE_INDENT_PRINT("edge(double): " << ret.double_down() << endl);
-	}
-	{
+	}{
 		STACKTRACE("hit:");
 		const value_saver<action_mask> ams(am);
 		am &= play.post_hit_actions;
@@ -456,20 +468,14 @@ basic_strategy_analyzer::__evaluate_player_basic_single(const play_map& play,
 		ret.hit() /= total_weight;
 		STACKTRACE_INDENT_PRINT("edge(hit): " << ret.hit() << endl);
 	}
-#if 1
 	// can we just skip evaluation if split is not permitted?
 	if (k.player.hand.is_paired()) {
 		STACKTRACE("split:");
-#if 0
-		const card_type pc = k.player.hand.pair_card();
-		// reduce hand to single-card, post-split state
-		// in other words, don't show player's second card yet
-		nk.player.hand.initial_state(pc);
-#endif
-		ret.split() = __evaluate_split_basic(play, nk);
+//		ret.split() = __evaluate_split_basic(play, nk);
+		ret.split() = split_cache[k.player.hand.pair_card()]
+			.evaluate(play, nk);
 		// inside: deduct splits remaining, evaluate cases of second cards
 	}	// is paired, can split
-#endif
 	}	// is terminal, else don't bother computing
 	// surrender (if allowed) is constant expectation
 	ret.optimize(-play.var.surrender_penalty);	// sort
@@ -477,9 +483,10 @@ basic_strategy_analyzer::__evaluate_player_basic_single(const play_map& play,
 	k.dump(STACKTRACE_STREAM, play) << endl;
 	ret.dump_choice_actions(std::cerr);
 #endif
-}
+}	// end __evaluate_player_basic_single
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+#if 0
 /**
 	Multiple hands are ordered: Ps, Xs, Ys (paired-splittable, 
 		paired-nonsplittable, unpaired)
@@ -502,6 +509,7 @@ basic_strategy_analyzer::__evaluate_player_basic_multi(
 }{
 }
 }
+#endif
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
@@ -536,11 +544,15 @@ if (bi.second) {
 	// in basic analysis mode, dealer's final outcome spread
 	// is independent of card distribution and player action,
 	// thus we can look it up once.
+#if 0
 	if (multi_or_split) {
 		__evaluate_player_basic_multi(play, k, ret);
 	} else {
 		__evaluate_player_basic_single(play, k, ret);
 	}
+#else
+	__evaluate_player_basic_single(play, k, ret);
+#endif
 	// surrender (if allowed) is constant expectation
 	ret.optimize(-play.var.surrender_penalty);	// sort
 } else {
@@ -696,7 +708,7 @@ player_split_basic_cache_type::update_nonsplit_cache_outcome(
 		const play_map& play, 
 		const player_situation_basic_key_type& k) {
 	STACKTRACE_VERBOSE;
-	assert(_outcome_cache);	// must already be set
+	assert(_basic_analyzer);	// must already be set
 	assert(k.player.hand.is_paired());
 	assert(split_card == k.player.hand.pair_card());
 if (!nonsplit_exp_valid) {
@@ -718,7 +730,7 @@ if (!nonsplit_exp_valid) {
 		nk.player.hand.final_split(play, i);
 		nk.player.splits.initialize_default();
 		const expectations&
-			child(_outcome_cache->evaluate_player_basic(play, nk));
+			child(_basic_analyzer->evaluate_player_basic(play, nk));
 		const edge_type e(child.action_edge(child.best(am)));
 		const edge_type sub = e *w;
 		if (i != split_card) {
@@ -731,14 +743,15 @@ if (!nonsplit_exp_valid) {
 	Y /= npw;
 	nonsplit_exp_valid = true;
 }
-}
+}	// end update_nonsplit_cache_outcome
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
 	Automatically converts basic_key_type to split_key_type.
  */
 const edge_type&
-player_split_basic_cache_type::evaluate(const play_map& play,
+player_split_basic_cache_type::evaluate(
+		const play_map& play,
 		const player_situation_basic_key_type& k) {
 	assert(split_card == k.player.hand.pair_card());
 	const key_type kk(k);
@@ -747,6 +760,7 @@ player_split_basic_cache_type::evaluate(const play_map& play,
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
+	TODO: move this into basic_strategy_analyzer
 	This evaluates the expectation of a split action 
 	from a paired state.
 	computation:

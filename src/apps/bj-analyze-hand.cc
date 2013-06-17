@@ -153,7 +153,7 @@ struct options {
 	 */
 	bool
 	set_dealer_upcard(const card_type c) {
-		if (upcard != INVALID_CARD) {
+		if (upcard != card_type(INVALID_CARD)) {
 			cerr << "Dealer's upcard may only be set once."
 				<< endl;
 			return true;
@@ -195,11 +195,11 @@ options::initialize_player_situation(void) {
 	perceived_deck_state& deck(key.card_dist);
 	const card_type p1 = card_index(hand[0]);
 	const card_type p2 = card_index(hand[1]);
-	if (p1 == INVALID_CARD) {
+	if (p1 == card_type(INVALID_CARD)) {
 		cerr << "Invalid card: " << hand[0] << endl;
 		return true;
 	}
-	if (p2 == INVALID_CARD) {
+	if (p2 == card_type(INVALID_CARD)) {
 		cerr << "Invalid card: " << hand[1] << endl;
 		return true;
 	}
@@ -220,7 +220,7 @@ options::initialize_player_situation(void) {
 	string::const_iterator hi(hand.begin() +2), he(hand.end());
 	for ( ; hi != he; ++hi) {
 		const card_type n = card_index(*hi);
-		if (n == INVALID_CARD) {
+		if (n == card_type(INVALID_CARD)) {
 			cerr << "Invalid card: " << *hi << endl;
 			return true;
 		}
@@ -311,7 +311,7 @@ __add_cards(options& o, const char* arg) {
 	string::const_iterator i(args.begin()), e(args.end());
 	for (; i!=e; ++i) {
 		const card_type c(cards::card_index(*i));
-		if (c != card_type(-1)) {	// INVALID_CARD
+		if (c != card_type(INVALID_CARD)) {
 			o.key.card_dist.add(c, 1);
 		} else {
 			cerr << "Ignoring invalid card: " << *i << endl;
@@ -330,7 +330,7 @@ __remove_cards(options& o, const char* arg) {
 	string::const_iterator i(args.begin()), e(args.end());
 	for (; i!=e; ++i) {
 		const card_type c(cards::card_index(*i));
-		if (c != card_type(-1)) {	// INVALID_CARD
+		if (c != card_type(INVALID_CARD)) {
 			o.key.card_dist.remove_if_any(c);
 		} else {
 			cerr << "Ignoring invalid card: " << *i << endl;
@@ -348,7 +348,7 @@ __set_dealer_upcard(options& o, const char* arg) {
 	if (args.length() == 1) {
 		const card_type c = card_index(args[0]);
 		// check for valid card!
-		if (c == INVALID_CARD) {
+		if (c == card_type(INVALID_CARD)) {
 			cerr << "Invalid card: " << args[0] << endl;
 			throw util::getopt_exception(2);
 		}
@@ -440,7 +440,7 @@ if (opt.help_option) {
 	usage(cout, argv[0]);
 	return 0;
 }
-	if (opt.upcard == INVALID_CARD) {
+	if (opt.upcard == card_type(INVALID_CARD)) {
 		cerr << "Dealer's upcard must be set with -U." << endl;
 		return 1;
 	}

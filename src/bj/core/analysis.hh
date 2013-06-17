@@ -19,6 +19,7 @@ using std::ostream;
 class play_map;
 class player_outcome_cache_set;
 class basic_split_situation_key_type;
+class basic_strategy_analyzer;
 
 /**
 	Enumeration representing analysis mode.
@@ -374,6 +375,7 @@ struct basic_split_situation_key_type {
 	value: expectations structure
  */
 class player_split_basic_cache_type {
+	friend class basic_strategy_analyzer;
 	typedef	player_split_basic_cache_type	this_type;
 	/// self-referential index to this entry
 	typedef	basic_split_situation_key_type	key_type;
@@ -382,14 +384,15 @@ class player_split_basic_cache_type {
 	typedef	std::map<key_type, value_type>	map_type;
 public:
 	card_type				split_card;
-	// pointer to overall outcome cache (for non-split results)
-	player_outcome_cache_set*		_outcome_cache;
 private:
+	// back-reference to overall outcome cache (for non-split results)
+	basic_strategy_analyzer*		_basic_analyzer;
 	map_type				_map;
 	// since card distribution is not evaluated
 	// we can pre-compute the basic expectations of 
 	// the terminal hands: non-splittable pairs, and unpaired hands
 	// these should be computed once and cached (X and Y)
+	// this will become a map for dynamic cache type (distribution key)
 	edge_type				nonsplit_pair_exp;
 	edge_type				unpaired_exp;
 	bool					nonsplit_exp_valid;
@@ -405,14 +408,15 @@ private:
 public:
 	// default constructor -- split_card will be set by caller
 	player_split_basic_cache_type() :
-		_outcome_cache(NULL), _map(), 
+		_basic_analyzer(NULL), _map(), 
 		nonsplit_pair_exp(0.0), unpaired_exp(0.0), 
 		nonsplit_exp_valid(false) { }
 
 	// default destructor
 
 	void
-	update_nonsplit_cache_outcome(const play_map&,
+	update_nonsplit_cache_outcome(
+		const play_map&,
 		const player_situation_basic_key_type&);
 
 	// this will call basic analysis on outcome cache
@@ -426,9 +430,11 @@ public:
 };	// end class player_split_basic_cache_type
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+#if 0
 class player_split_basic_cache_array {
 	player_split_basic_cache_type		split_cache[card_values];
 };	// end class player_split_basic_cache_array
+#endif
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// TODO: there's a lot of redundant information computed, due to
@@ -510,16 +516,29 @@ private:
  */
 class basic_strategy_analyzer {
 	typedef	player_outcome_basic_cache_map_type	basic_map_type;
+	// play_map				play;	// ?
 	basic_map_type				basic_cache;
-	player_split_basic_cache_array		split_cache;
+	player_split_basic_cache_type		split_cache[card_values];
+//	player_split_basic_cache_array		split_cache;
 	/// really, only basic dealer outcome cache is needed
 	/// using reference because this is shared with other analyzers
 	basic_dealer_outcome_cache_set		dealer_cache;
 public:
 
+	basic_strategy_analyzer();
+
 	const expectations&
 	evaluate_player_basic(const play_map&,
 		const player_situation_basic_key_type&);
+
+private:
+	// non-copyable
+	explicit
+	basic_strategy_analyzer(const basic_strategy_analyzer&);
+
+	// non-assignable
+	basic_strategy_analyzer&
+	operator = (const basic_strategy_analyzer&);
 
 private:
 	void
@@ -527,16 +546,21 @@ private:
 		const player_situation_basic_key_type&, 
 		expectations&);
 
+#if 0
 	void
 	__evaluate_player_basic_multi(const play_map&,
 		const player_situation_basic_key_type&, 
 		expectations&);
+#endif
 
+#if 0
 	edge_type
 	__evaluate_split_basic(const play_map&,
 		const player_situation_basic_key_type&);
+#endif
 
 };	// end class basic_strategy_analyzer
+
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 }	// end namespace blackjack
 

@@ -158,6 +158,7 @@ struct player_hand_base {
 		return state >= pair_offset && state < pair_offset +card_values;
 	}
 
+	// if hand is a paired hand, return the paired card
 	card_type
 	pair_card(void) const {
 		return state - pair_offset;
