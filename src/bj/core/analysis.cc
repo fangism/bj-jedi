@@ -22,6 +22,7 @@ using std::endl;
 using cards::TEN;
 using cards::ACE;
 using cards::state_machine;
+using cards::card_name;
 using util::value_saver;
 
 // initial default vector of all 0s
@@ -108,7 +109,7 @@ basic_dealer_outcome_cache_set::evaluate(const play_map& play,
 #if DEBUG_DEALER_ANALYSIS
 	STACKTRACE_BRIEF;
 #if ENABLE_STACKTRACE
-	k.dump(STACKTRACE_STREAM, play.dealer_hit) << endl;
+	k.dump(STACKTRACE_INDENT_PRINT("dealer: "), play.dealer_hit) << endl;
 #endif
 #endif
 	typedef	basic_map_type::value_type		pair_type;
@@ -178,7 +179,7 @@ dealer_outcome_cache_set::evaluate_dealer_dynamic(const play_map& play,
 		const analysis_parameters& p) {
 	STACKTRACE_BRIEF;
 #if ENABLE_STACKTRACE
-	k.dump(STACKTRACE_STREAM, play) << endl;
+	k.dump(STACKTRACE_INDENT_PRINT("dealer: "), play) << endl;
 #endif
 	typedef	map_type::value_type		pair_type;
 	const pair_type probe(k, dealer_final_null);
@@ -265,7 +266,7 @@ dealer_outcome_cache_set::evaluate_dealer_exact(const play_map& play,
 		const analysis_parameters& p) {
 	STACKTRACE_BRIEF;
 #if ENABLE_STACKTRACE
-	k.dump(STACKTRACE_STREAM, play) << endl;
+	k.dump(STACKTRACE_INDENT_PRINT("dealer: "), play) << endl;
 #endif
 	typedef	map_type::value_type		pair_type;
 	const pair_type probe(k, dealer_final_null);
@@ -377,6 +378,7 @@ basic_strategy_analyzer::basic_strategy_analyzer() :
 /**
 	Re-compute edges of actions in given situation.
 	This applies to a single hand only.
+	This is an uncached computation.
 	\param ret is overwritten and updated (return)
  */
 void
@@ -384,6 +386,9 @@ basic_strategy_analyzer::__evaluate_player_basic_single(const play_map& play,
 		const player_situation_basic_key_type& k, 
 		expectations& ret) {
 	STACKTRACE_BRIEF;
+#if ENABLE_STACKTRACE
+	k.dump(STACKTRACE_INDENT_PRINT("player: "), play) << endl;
+#endif
 	// here, dealer's progression is assumed independent from player actions
 	const dealer_final_vector&
 		dfv(dealer_cache.evaluate(play, k.dealer));
@@ -391,7 +396,7 @@ basic_strategy_analyzer::__evaluate_player_basic_single(const play_map& play,
 	// current state
 	const state_machine::node& ps(play.player_hit[k.player.hand.state]);
 	{
-		STACKTRACE("stand:");
+		// STACKTRACE("stand:");
 		// stand is always a legal option
 		// (busted hands considered as stand)
 		// compute just the odds of standing with this hand
@@ -400,7 +405,8 @@ basic_strategy_analyzer::__evaluate_player_basic_single(const play_map& play,
 		outcome_odds soo;
 		play.compute_player_final_outcome(p_final, dfv, soo);
 		ret.stand() = soo.edge();
-		STACKTRACE_INDENT_PRINT("edge(stand): " << ret.stand() << endl);
+		STACKTRACE_INDENT_PRINT("stand: edge(stand): "
+			<< ret.stand() << endl);
 	}
 	if (!ps.is_terminal()) {
 		// consider all possible actions, even illegal ones
@@ -422,15 +428,21 @@ basic_strategy_analyzer::__evaluate_player_basic_single(const play_map& play,
 		for ( ; i<card_values; ++i) {
 			const count_type& w(dref[i]);
 		if (w) {
-			STACKTRACE_INDENT_PRINT("weight: " << w << endl);
+			STACKTRACE_INDENT_PRINT("card: " << card_name[i] <<
+				", weight: " << w << endl);
 			const value_saver<player_hand_base> __bs(nk.player.hand);
 			nk.player.hand.hit(play, i);
 			// yes, actually do recursion, in case of variations
+#if 0
 			expectations child;
 			__evaluate_player_basic_single(play, nk, child);
+#else
+			const expectations&
+				child(evaluate_player_basic(play, nk));
+#endif
 #if ENABLE_STACKTRACE
-			child.dump_choice_actions(std::cerr);
-			am.dump_debug(std::cerr) << endl;
+			child.dump_choice_actions_1(STACKTRACE_INDENT_PRINT("child: "));
+			am.dump_debug(STACKTRACE_INDENT_PRINT("options: ")) << endl;
 #endif
 			// weight by card probability
 			const edge_type e(child.action_edge(child.best(am)));
@@ -454,8 +466,13 @@ basic_strategy_analyzer::__evaluate_player_basic_single(const play_map& play,
 			const value_saver<player_hand_base> __bs(nk.player.hand);
 			STACKTRACE_INDENT_PRINT("+card: " << cards::card_name[i] << endl);
 			nk.player.hand.hit(play, i);
+#if 0
 			expectations child;
 			__evaluate_player_basic_single(play, nk, child);
+#else
+			const expectations&
+				child(evaluate_player_basic(play, nk));
+#endif
 			// weight by card probability
 			const edge_type e(child.action_edge(child.best(am)));
 			STACKTRACE_INDENT_PRINT("child.best = " << e <<
@@ -480,8 +497,8 @@ basic_strategy_analyzer::__evaluate_player_basic_single(const play_map& play,
 	// surrender (if allowed) is constant expectation
 	ret.optimize(-play.var.surrender_penalty);	// sort
 #if ENABLE_STACKTRACE
-	k.dump(STACKTRACE_STREAM, play) << endl;
-	ret.dump_choice_actions(std::cerr);
+	k.dump(STACKTRACE_INDENT_PRINT("player: "), play) << endl;
+	ret.dump_choice_actions_1(STACKTRACE_INDENT_PRINT("options: "));
 #endif
 }	// end __evaluate_player_basic_single
 
@@ -515,6 +532,7 @@ basic_strategy_analyzer::__evaluate_player_basic_multi(
 /**
 	Evaluate basic strategy odds of the dealer's final state, 
 	based solely on the standard card distribution (w/ replacement).
+	This computation is cached.
  */
 const expectations&
 basic_strategy_analyzer::evaluate_player_basic(const play_map& play,
@@ -523,7 +541,7 @@ basic_strategy_analyzer::evaluate_player_basic(const play_map& play,
 	// if multiple hands, if single hand
 #if ENABLE_STACKTRACE
 	const action_mask& m(k.player.hand.player_options);
-	k.dump(STACKTRACE_STREAM, play) << endl;
+	k.dump(STACKTRACE_INDENT_PRINT("player: "), play) << endl;
 	STACKTRACE_INDENT_PRINT("options: " << m.raw() << endl);
 #endif
 	typedef	basic_map_type::value_type		pair_type;
@@ -544,6 +562,9 @@ if (bi.second) {
 	// in basic analysis mode, dealer's final outcome spread
 	// is independent of card distribution and player action,
 	// thus we can look it up once.
+	// TODO: do lookup with maximal action options,
+	// then caller should filter out the disallowed choices
+	// should result in better cache locality
 #if 0
 	if (multi_or_split) {
 		__evaluate_player_basic_multi(play, k, ret);
@@ -559,12 +580,12 @@ if (bi.second) {
 	STACKTRACE_INDENT_PRINT("cache hit\n");
 }
 #if ENABLE_STACKTRACE
-	k.dump(STACKTRACE_STREAM, play) << endl;
-	ret.dump_choice_actions(std::cerr);
+	k.dump(STACKTRACE_INDENT_PRINT("player: "), play) << endl;
+	ret.dump_choice_actions_1(STACKTRACE_INDENT_PRINT("options: "));
 #endif
 	// else return cached entry
 	return ret;
-}
+}	// end evaluate_player_basic
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**

@@ -144,6 +144,18 @@ struct expectations {
 	}
 
 	ostream&
+	__dump_choice_actions(ostream&, const char* sep) const;
+
+	ostream&
+	__dump_choice_actions(ostream&, const edge_type&, const char* sep) const;
+
+
+	/// print results of evaluation on one line
+	ostream&
+	dump_choice_actions_1(ostream&) const;
+
+	/// print results of evaluation as table
+	ostream&
 	dump_choice_actions(ostream&) const;
 
 	ostream&

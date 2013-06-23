@@ -144,12 +144,33 @@ expectations::best_two(const action_mask& m) const {
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ostream&
-expectations::dump_choice_actions(ostream& o) const {
+expectations::__dump_choice_actions(ostream& o, const char* sep) const {
 //	const util::precision_saver p(o, 4);
 	return o << "stand: " << stand()
-	<< "\nhit  : " << hit()
-	<< "\ndbl  : " << double_down()
-	<< "\nsplit: " << split() << endl;
+		<< sep << "hit  : " << hit()
+		<< sep << "dbl  : " << double_down()
+		<< sep << "split: " << split();
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+ostream&
+expectations::__dump_choice_actions(ostream& o,
+		const edge_type& surr, const char* sep) const {
+	return __dump_choice_actions(o, sep)
+		<< sep << "surr.: " << surr;
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+ostream&
+expectations::dump_choice_actions_1(ostream& o) const {
+	return __dump_choice_actions(o, ", ") << endl;
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+ostream&
+expectations::dump_choice_actions(ostream& o) const {
+//	const util::precision_saver p(o, 4);
+	return __dump_choice_actions(o, "\n") << endl;
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -157,11 +178,7 @@ ostream&
 expectations::dump_choice_actions(ostream& o,
 		const edge_type& surr) const {
 //	const util::precision_saver p(o, 4);
-	return o << "stand: " << stand()
-	<< "\nhit  : " << hit()
-	<< "\ndbl  : " << double_down()
-	<< "\nsplit: " << split()
-	<< "\nsurr.: " << surr << endl;
+	return __dump_choice_actions(o, surr, "\n") << endl;
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
