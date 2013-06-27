@@ -545,8 +545,10 @@ basic_strategy_analyzer::evaluate_player_basic(const play_map& play,
 	STACKTRACE_INDENT_PRINT("options: " << m.raw() << endl);
 #endif
 	typedef	basic_map_type::value_type		pair_type;
+#if 0
 	const bool multi_or_split = k.player.hand.is_paired() ||
 		(k.player.splits.total_hands() > 1);
+#endif
 	// (total hands > 2) => paired
 	const player_hand_base ak(k.player.hand.state, play);
 	const player_situation_base psb(ak, k.player.splits);
