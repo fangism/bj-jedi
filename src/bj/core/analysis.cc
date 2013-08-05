@@ -525,9 +525,11 @@ basic_strategy_analyzer::__evaluate_player_basic_single(const play_map& play,
 		// TODO: don't forget to adjust action_mask
 		const deck_count_type&
 			dref(get_basic_reduced_count(k.dealer.peek_state));
+#if 0
 		const count_type total_weight =
 			accumulate(dref.begin(), dref.end(), 0);
 		STACKTRACE_INDENT_PRINT("total_weight: " << total_weight << endl);
+#endif
 	if (local_compute_actions.can_double_down()) {
 		ret.double_down() = __evaluate_double_down(play, k, dref);
 	}
