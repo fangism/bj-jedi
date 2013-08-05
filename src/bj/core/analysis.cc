@@ -599,6 +599,7 @@ basic_strategy_analyzer::evaluate_player_basic(const play_map& play,
 #if 0
 	const bool multi_or_split = k.player.hand.is_paired() ||
 		(k.player.splits.total_hands() > 1);
+#endif
 	// (total hands > 2) => paired
 #endif
 #if EVALUATE_TERMINAL_ACTIONS_FIRST
