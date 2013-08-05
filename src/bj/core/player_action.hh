@@ -28,6 +28,7 @@ private:
 public:
 	static const action_mask		stand;
 	static const action_mask		stand_hit;
+	static const action_mask		stand_surrender;
 	static const action_mask		all;
 	static const action_mask		all_but_split;
 	static const action_mask		no_stand;
@@ -105,6 +106,16 @@ public:
 		return action_mask(_bits & ~(1 << p));
 	}
 
+	action_mask
+	operator + (const action_mask& p) const {
+		return action_mask(_bits | p._bits);
+	}
+
+	action_mask
+	operator - (const action_mask& p) const {
+		return action_mask(_bits & ~p._bits);
+	}
+
 	action_mask&
 	operator += (const player_choice p) {
 		if (p != NIL) {
@@ -173,6 +184,12 @@ public:
 	bool
 	has_multiple_choice(void) const {
 		return _bits & no_stand._bits;
+	}
+
+	// \return true if any actions are avilable
+	// typically test after - operator
+	operator bool () const {
+		return _bits;
 	}
 
 	player_choice

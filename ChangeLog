@@ -1,5 +1,9 @@
 # "ChangeLog"
 
+2013-08-04	David Fang		<fangism@users.sourceforge.net>
+	recursive basic strategy evaluation: always compute terminal
+	set of actions before nonterminal actions, recursively.
+
 2012-09-05	David Fang		<fangism@users.sourceforge.net>
 	Show/report count using perceived_deck_state.
 	Bookmark using perceived_deck_state.

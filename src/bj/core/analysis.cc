@@ -15,6 +15,13 @@
 #include "util/value_saver.hh"
 
 #define	DEBUG_DEALER_ANALYSIS			(0 && ENABLE_STACKTRACE)
+
+/**
+	An optimization to calculation to avoid recomputing
+	the same double-down repeatedly.
+ */
+#define	EVALUATE_TERMINAL_ACTIONS_FIRST			1
+
 namespace blackjack {
 using std::pair;
 using std::accumulate;
@@ -253,7 +260,7 @@ if (bi.second) {
 #endif
 	// else return cached entry
 	return ret;
-}
+}	// end evaluate_dealer_dynamic
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
@@ -335,7 +342,7 @@ if (bi.second) {
 #endif
 	// else return cached entry
 	return ret;
-}
+}	// end evaluate_dealer_exact
 
 //=============================================================================
 // class player_situation_key_type method definitions
@@ -375,6 +382,102 @@ basic_strategy_analyzer::basic_strategy_analyzer() :
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+edge_type
+basic_strategy_analyzer::__evaluate_stand(const play_map& play, 
+		const player_situation_basic_key_type& k) {
+	// STACKTRACE("stand:");
+	// stand is always a legal option
+	// (busted hands considered as stand)
+	// compute just the odds of standing with this hand
+	const dealer_final_vector&
+		dfv(dealer_cache.evaluate(play, k.dealer));
+	const player_state_type p_final =
+		play.player_final_state_map(k.player.hand.state);
+	outcome_odds soo;
+	play.compute_player_final_outcome(p_final, dfv, soo);
+	const edge_type ret = soo.edge();
+	STACKTRACE_INDENT_PRINT("stand: edge(stand): "
+		<< ret << endl);
+	return ret;
+}	// end __evaluate_stand
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+edge_type
+basic_strategy_analyzer::__evaluate_double_down(const play_map& play, 
+		const player_situation_basic_key_type& k, 
+		const deck_count_type& dref) {
+	STACKTRACE("double-down:");
+	player_situation_basic_key_type nk(k);	// copy-and-modify state
+	action_mask& am(nk.player.hand.player_options);
+	const count_type total_weight =
+		accumulate(dref.begin(), dref.end(), 0);
+//	const value_saver<action_mask> ams(am);
+	am &= play.post_double_down_actions;
+	edge_type ret = 0.0;
+	card_type i = 0;
+	for ( ; i<card_values; ++i) {
+		const count_type& w(dref[i]);
+	if (w) {
+		STACKTRACE_INDENT_PRINT("card: " << card_name[i] <<
+			", weight: " << w << endl);
+		const value_saver<player_hand_base> __bs(nk.player.hand);
+		nk.player.hand.hit(play, i);
+		// yes, do recursion, in case of non-terminal variations
+		const expectations& child(evaluate_player_basic(play, nk));
+#if ENABLE_STACKTRACE
+		child.dump_choice_actions_1(STACKTRACE_INDENT_PRINT("child: "));
+		am.dump_debug(STACKTRACE_INDENT_PRINT("options: ")) << endl;
+#endif
+		// weight by card probability
+		const edge_type e(child.action_edge(child.best(am)));
+		STACKTRACE_INDENT_PRINT("child.best: " << e << endl);
+		ret += e *w;
+	}
+		// else 0 weight, leave as vector of 0s
+	}	// end for all next card possibilities
+	// normalize weighted sum of probabilities
+	ret *= play.var.double_multiplier / total_weight;
+	// triple-down??
+	STACKTRACE_INDENT_PRINT("edge(double): " << ret << endl);
+	return ret;
+}	// end __evaluate_double_down
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+edge_type
+basic_strategy_analyzer::__evaluate_hit(const play_map& play, 
+		const player_situation_basic_key_type& k, 
+		const deck_count_type& dref) {
+	STACKTRACE("hit:");
+	player_situation_basic_key_type nk(k);	// copy-and-modify state
+	action_mask& am(nk.player.hand.player_options);
+	const count_type total_weight =
+		accumulate(dref.begin(), dref.end(), 0);
+//	const value_saver<action_mask> ams(am);
+	am &= play.post_hit_actions;
+	edge_type ret = 0.0;
+	card_type i = 0;
+	for ( ; i<card_values; ++i) {
+		const count_type& w(dref[i]);
+	if (w) {
+		const value_saver<player_hand_base> __bs(nk.player.hand);
+		STACKTRACE_INDENT_PRINT("+card: " << cards::card_name[i] << endl);
+		nk.player.hand.hit(play, i);
+		const expectations& child(evaluate_player_basic(play, nk));
+		// weight by card probability
+		const edge_type e(child.action_edge(child.best(am)));
+		STACKTRACE_INDENT_PRINT("child.best = " << e <<
+			", w = " << w << endl);
+		ret += e *w;
+	}
+		// else 0 weight, leave as vector of 0s
+	}	// end for all next card possibilities
+	// normalize weighted sum of probabilities
+	ret /= total_weight;
+	STACKTRACE_INDENT_PRINT("edge(hit): " << ret << endl);
+	return ret;
+}	// end __evaluate_hit
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
 	Re-compute edges of actions in given situation.
 	This applies to a single hand only.
@@ -387,28 +490,36 @@ basic_strategy_analyzer::__evaluate_player_basic_single(const play_map& play,
 		expectations& ret) {
 	STACKTRACE_BRIEF;
 #if ENABLE_STACKTRACE
-	k.dump(STACKTRACE_INDENT_PRINT("player: "), play) << endl;
+	k.dump(STACKTRACE_INDENT_PRINT(""), play) << endl;
+#endif
+#if EVALUATE_TERMINAL_ACTIONS_FIRST
+	// always consider terminal actions first, mask those out
+	const action_mask nonterminal_actions =
+		k.player.hand.player_options - play.terminal_actions;
+	const bool nonterminal_eval = nonterminal_actions;	// any left?
+	const action_mask local_compute_actions =
+		(nonterminal_eval ? nonterminal_actions : play.terminal_actions);
+	STACKTRACE_INDENT_PRINT(
+		(nonterminal_eval ? "non-" : "") << "terminal evaluation" << endl);
+	if (nonterminal_eval) {
+		STACKTRACE("re-calling evaluate on terminal actions");
+		// calculate terminal actions once
+		player_situation_basic_key_type tk(k);
+		tk.player.hand.player_options = play.terminal_actions;
+		ret = evaluate_player_basic(play, tk);;
+		// even illegal actions are included
+		// caller's responsibility to evaluate only legal actions
+	}
+#else
+	const action_mask local_compute_actions = action_mask::all;
 #endif
 	// here, dealer's progression is assumed independent from player actions
-	const dealer_final_vector&
-		dfv(dealer_cache.evaluate(play, k.dealer));
-//		dfv(dealer_outcome_cache.evaluate_dealer_basic(play, k.dealer));
 	// current state
 	const state_machine::node& ps(play.player_hit[k.player.hand.state]);
-	{
-		// STACKTRACE("stand:");
-		// stand is always a legal option
-		// (busted hands considered as stand)
-		// compute just the odds of standing with this hand
-		const player_state_type p_final =
-			play.player_final_state_map(k.player.hand.state);
-		outcome_odds soo;
-		play.compute_player_final_outcome(p_final, dfv, soo);
-		ret.stand() = soo.edge();
-		STACKTRACE_INDENT_PRINT("stand: edge(stand): "
-			<< ret.stand() << endl);
+	if (local_compute_actions.can_stand()) {
+		ret.stand() = __evaluate_stand(play, k);
 	}
-	if (!ps.is_terminal()) {
+	if (!ps.is_terminal()) {	// i.e. not blackjack or bust
 		// consider all possible actions, even illegal ones
 		// let caller pick among the legal options
 		// TODO: don't forget to adjust action_mask
@@ -417,77 +528,17 @@ basic_strategy_analyzer::__evaluate_player_basic_single(const play_map& play,
 		const count_type total_weight =
 			accumulate(dref.begin(), dref.end(), 0);
 		STACKTRACE_INDENT_PRINT("total_weight: " << total_weight << endl);
-		player_situation_basic_key_type nk(k);	// copy-and-modify state
-		action_mask& am(nk.player.hand.player_options);
-	{
-		STACKTRACE("double-down:");
-		const value_saver<action_mask> ams(am);
-		am &= play.post_double_down_actions;
-		ret.double_down() = 0.0;
-		card_type i = 0;
-		for ( ; i<card_values; ++i) {
-			const count_type& w(dref[i]);
-		if (w) {
-			STACKTRACE_INDENT_PRINT("card: " << card_name[i] <<
-				", weight: " << w << endl);
-			const value_saver<player_hand_base> __bs(nk.player.hand);
-			nk.player.hand.hit(play, i);
-			// yes, actually do recursion, in case of variations
-#if 0
-			expectations child;
-			__evaluate_player_basic_single(play, nk, child);
-#else
-			const expectations&
-				child(evaluate_player_basic(play, nk));
-#endif
-#if ENABLE_STACKTRACE
-			child.dump_choice_actions_1(STACKTRACE_INDENT_PRINT("child: "));
-			am.dump_debug(STACKTRACE_INDENT_PRINT("options: ")) << endl;
-#endif
-			// weight by card probability
-			const edge_type e(child.action_edge(child.best(am)));
-			STACKTRACE_INDENT_PRINT("child.best: " << e << endl);
-			ret.double_down() += e *w;
-		}
-			// else 0 weight, leave as vector of 0s
-		}	// end for all next card possibilities
-		// normalize weighted sum of probabilities
-		ret.double_down() *= play.var.double_multiplier / total_weight;
-		STACKTRACE_INDENT_PRINT("edge(double): " << ret.double_down() << endl);
-	}{
-		STACKTRACE("hit:");
-		const value_saver<action_mask> ams(am);
-		am &= play.post_hit_actions;
-		ret.hit() = 0.0;
-		card_type i = 0;
-		for ( ; i<card_values; ++i) {
-			const count_type& w(dref[i]);
-		if (w) {
-			const value_saver<player_hand_base> __bs(nk.player.hand);
-			STACKTRACE_INDENT_PRINT("+card: " << cards::card_name[i] << endl);
-			nk.player.hand.hit(play, i);
-#if 0
-			expectations child;
-			__evaluate_player_basic_single(play, nk, child);
-#else
-			const expectations&
-				child(evaluate_player_basic(play, nk));
-#endif
-			// weight by card probability
-			const edge_type e(child.action_edge(child.best(am)));
-			STACKTRACE_INDENT_PRINT("child.best = " << e <<
-				", w = " << w << endl);
-			ret.hit() += e *w;
-		}
-			// else 0 weight, leave as vector of 0s
-		}	// end for all next card possibilities
-		// normalize weighted sum of probabilities
-		ret.hit() /= total_weight;
-		STACKTRACE_INDENT_PRINT("edge(hit): " << ret.hit() << endl);
+	if (local_compute_actions.can_double_down()) {
+		ret.double_down() = __evaluate_double_down(play, k, dref);
+	}
+	if (local_compute_actions.can_hit()) {
+		ret.hit() = __evaluate_hit(play, k, dref);
 	}
 	// can we just skip evaluation if split is not permitted?
-	if (k.player.hand.is_paired()) {
+	if (k.player.hand.is_paired() && local_compute_actions.can_split()) {
 		STACKTRACE("split:");
+		player_situation_basic_key_type nk(k);	// copy-and-modify state
+//		action_mask& am(nk.player.hand.player_options);
 //		ret.split() = __evaluate_split_basic(play, nk);
 		ret.split() = split_cache[k.player.hand.pair_card()]
 			.evaluate(play, nk);
@@ -497,7 +548,7 @@ basic_strategy_analyzer::__evaluate_player_basic_single(const play_map& play,
 	// surrender (if allowed) is constant expectation
 	ret.optimize(-play.var.surrender_penalty);	// sort
 #if ENABLE_STACKTRACE
-	k.dump(STACKTRACE_INDENT_PRINT("player: "), play) << endl;
+	k.dump(STACKTRACE_INDENT_PRINT(""), play) << endl;
 	ret.dump_choice_actions_1(STACKTRACE_INDENT_PRINT("options: "));
 #endif
 }	// end __evaluate_player_basic_single
@@ -541,46 +592,45 @@ basic_strategy_analyzer::evaluate_player_basic(const play_map& play,
 	// if multiple hands, if single hand
 #if ENABLE_STACKTRACE
 	const action_mask& m(k.player.hand.player_options);
-	k.dump(STACKTRACE_INDENT_PRINT("player: "), play) << endl;
+	k.dump(STACKTRACE_INDENT_PRINT(""), play) << endl;
 	STACKTRACE_INDENT_PRINT("options: " << m.raw() << endl);
 #endif
 	typedef	basic_map_type::value_type		pair_type;
+#if 0
 	const bool multi_or_split = k.player.hand.is_paired() ||
 		(k.player.splits.total_hands() > 1);
 	// (total hands > 2) => paired
+#endif
+#if EVALUATE_TERMINAL_ACTIONS_FIRST
+	// don't use maximal set of actions
+	const pair_type probe(k, null_expectations);
+#else
 	const player_hand_base ak(k.player.hand.state, play);
 	const player_situation_base psb(ak, k.player.splits);
+	// TODO: do lookup with maximal action options,
+	// then caller should filter out the disallowed choices
+	// should result in better cache locality
 	const pair_type probe(
 		player_situation_basic_key_type(psb, k.dealer),
 		null_expectations);
+#endif
 	const pair<basic_map_type::iterator, bool>
 		bi(basic_cache.insert(probe));
 	expectations& ret(bi.first->second);
 if (bi.second) {
-	STACKTRACE_INDENT_PRINT("cache miss, calculating\n");
+	STACKTRACE_INDENT_PRINT("cache miss (basic), calculating\n");
 	// cache-miss: then this is a newly inserted entry, compute it
 	// in basic analysis mode, dealer's final outcome spread
 	// is independent of card distribution and player action,
 	// thus we can look it up once.
-	// TODO: do lookup with maximal action options,
-	// then caller should filter out the disallowed choices
-	// should result in better cache locality
-#if 0
-	if (multi_or_split) {
-		__evaluate_player_basic_multi(play, k, ret);
-	} else {
-		__evaluate_player_basic_single(play, k, ret);
-	}
-#else
 	__evaluate_player_basic_single(play, k, ret);
-#endif
 	// surrender (if allowed) is constant expectation
 	ret.optimize(-play.var.surrender_penalty);	// sort
 } else {
-	STACKTRACE_INDENT_PRINT("cache hit\n");
+	STACKTRACE_INDENT_PRINT("cache hit (basic)\n");
 }
 #if ENABLE_STACKTRACE
-	k.dump(STACKTRACE_INDENT_PRINT("player: "), play) << endl;
+	k.dump(STACKTRACE_INDENT_PRINT(""), play) << endl;
 	ret.dump_choice_actions_1(STACKTRACE_INDENT_PRINT("options: "));
 #endif
 	// else return cached entry

@@ -158,9 +158,16 @@ struct player_hand_base {
 		return state >= pair_offset && state < pair_offset +card_values;
 	}
 
+	void
+	maximize_options(void) {
+		player_options = is_paired() ? action_mask::all
+			: action_mask::all_but_split;
+	}
+
 	// if hand is a paired hand, return the paired card
 	card_type
 	pair_card(void) const {
+		// assert(is_paired());
 		return state - pair_offset;
 	}
 

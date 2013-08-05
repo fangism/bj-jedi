@@ -559,6 +559,19 @@ private:
 		const player_situation_basic_key_type&);
 #endif
 
+// uncached computations
+	edge_type
+	__evaluate_stand(const play_map&,
+		const player_situation_basic_key_type&);
+
+	edge_type
+	__evaluate_hit(const play_map&,
+		const player_situation_basic_key_type&, const deck_count_type&);
+
+	edge_type
+	__evaluate_double_down(const play_map&,
+		const player_situation_basic_key_type&, const deck_count_type&);
+
 };	// end class basic_strategy_analyzer
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

@@ -109,7 +109,9 @@ play_map::play_map(const variation& v) : var(v),
 		// some variations allow surrender-after-hit!
 		post_double_down_actions(action_mask::stand),
 		// some variations allow surrender-after-double-down!
-		post_split_actions(action_mask::stand_hit)
+		post_split_actions(action_mask::stand_hit),
+		// double-down is also usually terminal, but we evaluate this
+		terminal_actions(action_mask::stand_surrender)
 		{
 	reset();
 }
@@ -189,6 +191,20 @@ play_map::initialize_action_masks(void) {
 	}
 	// TODO: restrictions given dealer reveal
 	// restrict surrenders, e.g. only vs. dealer A,10
+
+	// determine set of terminal actions
+	// stand is alawys (by definition) terminal
+	// hit is never terminal
+	// surrender is always terminal
+	// double-down is *usually* terminal
+	if (post_double_down_actions == action_mask::stand) {
+		// in rare variations, surrender-after-double is allowed
+		terminal_actions += DOUBLE;
+	}
+	// splitting is rarely terminal
+	if (post_split_actions == action_mask::stand) {
+		terminal_actions += SPLIT;
+	}
 #if DUMP_DURING_EVALUATE
 	i = 0;
 	for ( ; i<p_action_states; ++i) {
@@ -196,7 +212,7 @@ play_map::initialize_action_masks(void) {
 			cout << "initial state " << i << ": ") << endl;
 	}
 #endif
-}
+}	// end initialize_action_masks
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 player_state_type

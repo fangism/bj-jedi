@@ -88,6 +88,9 @@ public:
 	/// after a player splits, action options are restricted
 	action_mask			post_split_actions;
 
+	/// calculated: actions that are always final
+	action_mask			terminal_actions;
+
 private:
 	/// in the dealer/player final states, who wins
 	typedef	array<outcome, d_final_states>		outcome_array_type;

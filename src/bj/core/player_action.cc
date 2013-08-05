@@ -13,6 +13,7 @@ using util::yn;
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const action_mask action_mask::stand(STAND);
 const action_mask action_mask::stand_hit(STAND, HIT);
+const action_mask action_mask::stand_surrender(STAND, SURRENDER);
 const action_mask action_mask::all(stand_hit +DOUBLE +SPLIT +SURRENDER);
 const action_mask action_mask::all_but_split(stand_hit +DOUBLE +SURRENDER);
 const action_mask action_mask::no_stand(all -STAND);
