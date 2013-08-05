@@ -175,6 +175,10 @@ struct variation {
 	void
 	load(istream&);
 
+	static
+	ostream&
+	option_help(ostream&);
+
 };	// end struct variation
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

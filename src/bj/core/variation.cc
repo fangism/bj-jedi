@@ -2,11 +2,13 @@
 
 #include <iostream>
 #include <fstream>
+#include <set>
 #include "bj/core/variation.hh"
 
 #include "util/configure_option.hh"
 #include "util/command.tcc"
 #include "util/value_saver.hh"
+#include "util/cppcat.h"
 
 namespace blackjack {
 typedef	util::Command<variation>	VariationCommand;
@@ -24,6 +26,7 @@ using std::map;
 using std::ofstream;
 using std::ifstream;
 using std::getline;
+using std::set;
 using util::string_list;
 using util::Command;
 using util::CommandStatus;
@@ -227,8 +230,22 @@ if (args.size() != 2) {
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 DECLARE_PRINTER_MAP(variation)
 
+static
+set<string> option_keys;
+
+struct __add_member_option_key {
+	explicit
+	__add_member_option_key(const char* k) {
+		option_keys.insert(string(k));
+	}
+} __ATTRIBUTE_UNUSED__ ;
+
+#define	ADD_MEMBER_OPTION_KEY(k)					\
+static const __add_member_option_key UNIQUIFY(__vomk_) (k);
+
 #define	DEFINE_VARIATION_MEMBER_COMMAND(mem, str, desc)			\
-	DEFINE_GENERIC_OPTION_MEMBER_COMMAND(variation, mem, str, desc)
+	DEFINE_GENERIC_OPTION_MEMBER_COMMAND(variation, mem, str, desc)	\
+	ADD_MEMBER_OPTION_KEY(str)
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // game play
@@ -340,6 +357,18 @@ variation::load(istream& i) {
 		cerr << "error: EOF reached before seeing \"END-variation\""
 			<< endl;
 	}
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+ostream&
+variation::option_help(ostream& o) {
+	const set<string>& m(variation_commands::option_keys);
+	set<string>::const_iterator i(m.begin()), e(m.end());
+	for ( ; i!=e; ++i) {
+		variation_command_registry::help_command(o << '\t', *i);
+		o << endl;
+	}
+	return o;
 }
 
 //=============================================================================

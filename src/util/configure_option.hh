@@ -9,6 +9,7 @@
 #include "util/string.tcc"	// for string_to_num
 #include "util/tokenize.hh"	// for string_list
 #include "util/command.hh"
+#include "util/attributes.h"	// for __ATTRIBUTE_UNUSD__
 
 namespace util {
 using strings::string_to_num;
@@ -116,8 +117,8 @@ __printer_ ## mem (ostream& o, const T& v) {				\
 	o << v.mem;							\
 }									\
 static									\
-int __init_name_ ## mem = T ## _add_var_name(str, & __printer_ ## mem );
-// __ATTRIBUTE_UNUSED__
+int __init_name_ ## mem __ATTRIBUTE_UNUSED__ = 				\
+T ## _add_var_name(str, & __printer_ ## mem );
 
 //=============================================================================
 }	// end namespace util

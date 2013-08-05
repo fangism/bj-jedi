@@ -432,7 +432,9 @@ o << prog << " [options]\n"
 "  -H : dealer hits on soft-17\n"
 "  -S : dealer stands on soft-17\n"
 "  -o <option=value>: other variation option commands\n"
-"	e.g. peek-10=0, peek-ace=0\n"
+"\tVariation Options:\n";
+	blackjack::variation::option_help(o);
+o <<
 "deck modification:\n"
 "  -n <int> : number of decks.\n"	// " h for half-deck\n"
 "  -r <cards> : remove the string of cards from deck initially (after -n)\n"
