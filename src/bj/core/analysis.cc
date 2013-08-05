@@ -1,5 +1,7 @@
 /**
 	\file "bj/core/analysis.cc"
+	Implementation of edge analysis classes.  
+	Includes variants of edge analysis: basic, dynamic, exact.
 	$Id: $
  */
 
@@ -19,6 +21,7 @@
 /**
 	An optimization to calculation to avoid recomputing
 	the same double-down repeatedly.
+	Status: tested, works
  */
 #define	EVALUATE_TERMINAL_ACTIONS_FIRST			1
 
@@ -511,7 +514,7 @@ basic_strategy_analyzer::__evaluate_player_basic_single(const play_map& play,
 		// caller's responsibility to evaluate only legal actions
 	}
 #else
-	const action_mask local_compute_actions = action_mask::all;
+	const action_mask& local_compute_actions(action_mask::all);
 #endif
 	// here, dealer's progression is assumed independent from player actions
 	// current state
@@ -539,7 +542,8 @@ basic_strategy_analyzer::__evaluate_player_basic_single(const play_map& play,
 	// can we just skip evaluation if split is not permitted?
 	if (k.player.hand.is_paired() && local_compute_actions.can_split()) {
 		STACKTRACE("split:");
-		player_situation_basic_key_type nk(k);	// copy-and-modify state
+		const player_situation_basic_key_type& nk(k);	// alias
+//		player_situation_basic_key_type nk(k);	// copy-and-modify state
 //		action_mask& am(nk.player.hand.player_options);
 //		ret.split() = __evaluate_split_basic(play, nk);
 		ret.split() = split_cache[k.player.hand.pair_card()]
