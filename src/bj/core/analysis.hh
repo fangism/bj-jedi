@@ -430,13 +430,6 @@ public:
 };	// end class player_split_basic_cache_type
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-#if 0
-class player_split_basic_cache_array {
-	player_split_basic_cache_type		split_cache[card_values];
-};	// end class player_split_basic_cache_array
-#endif
-
-//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// TODO: there's a lot of redundant information computed, due to
 /// overlap in the action_masks, should take advantage of it somehow
 /// is it correct to always compute for all actions, even illegal ones?
@@ -449,6 +442,8 @@ typedef	std::map<player_situation_basic_key_type, expectations>
 /**
 	Collection of outcome vector caches.
 	One for each accuracy setting.
+	NOTE: this class is being phased out in favor of
+	having one distinct class per analysis strategy.
  */
 class player_outcome_cache_set {
 	typedef	player_outcome_cache_map_type		map_type;
@@ -488,19 +483,6 @@ public:
 	evaluate_player_basic(const play_map&,
 		const player_situation_basic_key_type&);
 
-#if 0
-private:
-	void
-	__evaluate_player_basic_single(const play_map&,
-		const player_situation_basic_key_type&, 
-		expectations&);
-
-	void
-	__evaluate_player_basic_multi(const play_map&,
-		const player_situation_basic_key_type&, 
-		expectations&);
-#endif
-
 	edge_type
 	__evaluate_split_basic(const play_map&,
 		const player_situation_basic_key_type&);
@@ -519,7 +501,6 @@ class basic_strategy_analyzer {
 	// play_map				play;	// ?
 	basic_map_type				basic_cache;
 	player_split_basic_cache_type		split_cache[card_values];
-//	player_split_basic_cache_array		split_cache;
 	/// really, only basic dealer outcome cache is needed
 	/// using reference because this is shared with other analyzers
 	basic_dealer_outcome_cache_set		dealer_cache;
@@ -545,19 +526,6 @@ private:
 	__evaluate_player_basic_single(const play_map&,
 		const player_situation_basic_key_type&, 
 		expectations&);
-
-#if 0
-	void
-	__evaluate_player_basic_multi(const play_map&,
-		const player_situation_basic_key_type&, 
-		expectations&);
-#endif
-
-#if 0
-	edge_type
-	__evaluate_split_basic(const play_map&,
-		const player_situation_basic_key_type&);
-#endif
 
 // uncached computations
 	edge_type

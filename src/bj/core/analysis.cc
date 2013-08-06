@@ -560,32 +560,6 @@ basic_strategy_analyzer::__evaluate_player_basic_single(const play_map& play,
 }	// end __evaluate_player_basic_single
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-#if 0
-/**
-	Multiple hands are ordered: Ps, Xs, Ys (paired-splittable, 
-		paired-nonsplittable, unpaired)
-	Action is taken (precedence) on first paired-splittable hand (if any), 
-		then on first paired-nonsplittable hand, 
-		then unpaired hands.  
-	Subsequent hands are considered independent (approximation).
- */
-void
-basic_strategy_analyzer::__evaluate_player_basic_multi(
-		const play_map&,// play,
-		const player_situation_basic_key_type&,// k,
-		expectations&// ret
-		) {
-	// for the non-split (terminal) choices, use the single hand case
-	// take weighted sum of expectations over multiple hands
-{
-	// if this hand is splittable and player chooses not to split
-	// then remaining splittable-hands are considered unsplittable.
-}{
-}
-}
-#endif
-
-//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
 	Evaluate basic strategy odds of the dealer's final state, 
 	based solely on the standard card distribution (w/ replacement).
@@ -602,11 +576,6 @@ basic_strategy_analyzer::evaluate_player_basic(const play_map& play,
 	STACKTRACE_INDENT_PRINT("options: " << m.raw() << endl);
 #endif
 	typedef	basic_map_type::value_type		pair_type;
-#if 0
-	const bool multi_or_split = k.player.hand.is_paired() ||
-		(k.player.splits.total_hands() > 1);
-	// (total hands > 2) => paired
-#endif
 #if EVALUATE_TERMINAL_ACTIONS_FIRST
 	// don't use maximal set of actions
 	const pair_type probe(k, null_expectations);
