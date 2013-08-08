@@ -3,13 +3,15 @@
 AUTOMAKE_OPTIONS = 1.9 gnu
 
 SUFFIXES = .bj-in .bj-out .bj-diff .bj-exp .bj-test
+SUFFIXES += .sh .out .diff .expect .test
 
-BJ_EXE = ../src/apps/bjgrader
+APPS_DIR = ../src/apps
+BJG_EXE = $(APPS_DIR)/bjgrader
 
 SHELL_INTERPRETER = "\#!$(SHELL)"
 
 .bj-in.bj-out:
-	$(BJ_EXE) < $< > $@
+	$(BJG_EXE) < $< > $@
 
 .bj-out.bj-diff:
 	@exp=$(srcdir)/`echo $@ | $(SED) 's|\.bj-diff|.bj-exp|'` && \
@@ -18,18 +20,36 @@ SHELL_INTERPRETER = "\#!$(SHELL)"
 	$(ECHO) "$(DIFF) -u $$exp $< > $@" && \
 	$(DIFF) -u $$exp $< > $@ || :
 
-.bj-diff.bj-test:
-	@$(ECHO) "Summarizing $@ ..." && \
+
+DEFAULT_DIFF_TEST_SCRIPT = \
+	$(ECHO) "Summarizing $@ ..." && \
 	{ $(ECHO) $(SHELL_INTERPRETER) && \
-	$(ECHO) "# \"$@\"" && \
+	$(ECHO) "\# \"$@\"" && \
 	if test -s $< ; then \
 	  $(ECHO) "$(ECHO) $< is non-empty!" && \
 	  $(ECHO) "exit 1" ; \
 	fi ;} > $@ && \
 	$(CHMOD) +x $@
 
+.bj-diff.bj-test:
+	@$(DEFAULT_DIFF_TEST_SCRIPT)
 
-TEST_CASES = defaults \
+#	PATH=$(APPS_DIR):$$PATH
+.sh.out:
+	$(SHELL) $< > $@
+
+.out.diff:
+	@exp=$(srcdir)/`echo $@ | $(SED) 's|\.diff|.expect|'` && \
+	$(RM) $@ && \
+	test -f $$exp || { $(ECHO) "$$exp not found." ; exit 1 ;} && \
+	$(ECHO) "$(DIFF) -u $$exp $< > $@" && \
+	$(DIFF) -u $$exp $< > $@ || :
+
+.diff.test:
+	@$(DEFAULT_DIFF_TEST_SCRIPT)
+
+# these test use the bj-grader interpreter/simulator
+BJ_TEST_CASES = defaults \
 	session-000 session-001 session-002 session-003 session-004 \
 	session-005 session-006 session-007 session-008 session-009 \
 	session-basic-000 session-basic-001 session-basic-002 \
@@ -57,33 +77,60 @@ TEST_CASES = defaults \
 #	basic-resplit-all
 #	basic-resplit-aces-all
 
-TESTS = $(TEST_CASES:=.bj-test)
+# general script tests
+TEST_CASES =  \
+	dealer-odds-basic \
+	dealer-odds-dynamic \
+	dealer-odds-dynamic-composition-H17 \
+	dealer-odds-dynamic-composition-S17 \
+	dealer-odds-dynamic-sensitivity-H17 \
+	dealer-odds-dynamic-sensitivity-S17 \
+	dealer-odds-exact-composition-H17 \
+	dealer-odds-exact-composition-S17 \
+	dealer-odds-exact-sensitivity-H17 \
+	dealer-odds-exact-sensitivity-S17
 
-TEST_OUTPUTS = $(TEST_CASES:=.bj-out)
+TESTS = $(BJ_TEST_CASES:=.bj-test)
+TESTS += $(TEST_CASES:=.test)
+
+BJ_TEST_OUTPUTS = $(BJ_TEST_CASES:=.bj-out)
+TEST_OUTPUTS = $(TEST_CASES:=.out)
+
+BJ_TEST_DIFFS = \
+	$(BJ_TEST_CASES:=.bj-diff) \
+	$(BJ_TEST_CASES:=.bj-test)
 
 TEST_DIFFS = \
-	$(TEST_CASES:=.bj-diff) \
-	$(TEST_CASES:=.bj-test)
+	$(TEST_CASES:=.diff) \
+	$(TEST_CASES:=.test)
 
 test-summaries: force
 	-cat *.bj-diff > $@
 
-$(TEST_OUTPUTS): $(BJ_EXE)
+$(BJ_TEST_OUTPUTS): $(BJG_EXE)
+# $TEST_OUTPUTS): $(BJG_EXE)
 
-CLEANFILES = $(TEST_OUTPUTS) $(TEST_DIFFS)
+CLEANFILES = $(BJ_TEST_OUTPUTS) $(BJ_TEST_DIFFS)
+CLEANFILES += $(TEST_OUTPUTS) $(TEST_DIFFS)
 
+keep-files: $(BJ_TEST_OUTPUTS) $(BJ_TEST_DIFFS)
 keep-files: $(TEST_OUTPUTS) $(TEST_DIFFS)
 
 EXTRA_DIST = \
-	$(TEST_CASES:=.bj-in) \
-	$(TEST_CASES:=.bj-exp) \
+	$(BJ_TEST_CASES:=.bj-in) \
+	$(BJ_TEST_CASES:=.bj-exp) \
+	$(TEST_CASES:=.sh) \
+	$(TEST_CASES:=.expect) \
 	update-tests.sh
 
 -include test.autodepend
 test.autodepend: Makefile
-	for f in $(TEST_CASES) ; \
+	{ for f in $(BJ_TEST_CASES) ; \
 	do $(ECHO) "$$f.bj-diff: $$f.bj-exp" ; \
-	done > $@
+	done ; \
+	for f in $(TEST_CASES) ; \
+	do $(ECHO) "$$f.diff: $$f.expect" ; \
+	done ;} > $@
 
 DISTCLEANFILES = test.autodepend
 

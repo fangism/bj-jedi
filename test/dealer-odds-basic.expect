@@ -1,0 +1,81 @@
+*** dealer state odds, basic calculation, H17 ***
+number of decks: 1
+maximum penetration: 0.75
+dealer soft 17: hits
+player early surrender: no
+player late surrender: yes
+dealer peek on 10: yes
+dealer peek on A: yes
+player loses ties: no
+player wins ties: no
+player may double-down on 9: yes
+player may double-down on 10: yes
+player may double-down on 11: yes
+player may double-down on other: yes
+player double after split: yes
+maximum number of split hands: 2
+player may hit on split aces: no
+player may re-split aces: no
+dealer 22 pushes against player: no
+blackjack pays: 1.5
+insurance pays: 2
+surrender penalty: 0.5
+double-down multiplier: 2
+
+perceived count:
+card:	   2   3   4   5   6   7   8   9   T   A   !10  !A	total
+rem:	   4   4   4   4   4   4   4   4  16   4     0   0	52
+
+evaluation method: basic
+dealer	17	18	19	20	21	BJ	bust	push
+2	0.1301	0.1365	0.1313	0.1257	0.1196	0	0.3567	0	
+3	0.1263	0.132	0.1271	0.1218	0.1162	0	0.3767	0	
+4	0.1224	0.1273	0.1228	0.1179	0.1126	0	0.3971	0	
+5	0.1184	0.1229	0.1184	0.1138	0.1089	0	0.4177	0	
+6	0.1148	0.1148	0.1148	0.1103	0.1057	0	0.4395	0	
+7	0.3686	0.1378	0.07863	0.07863	0.07407	0	0.2623	0	
+8	0.1286	0.3593	0.1286	0.06939	0.06939	0	0.2447	0	
+9	0.12	0.12	0.3508	0.12	0.06082	0	0.2284	0	
+T	0.1207	0.1207	0.1207	0.3707	0.03738	0	0.2298	0	
+A	0.08305	0.2069	0.2069	0.2069	0.09574	0	0.2007	0	
+
+*** dealer state odds, basic calculation, S17 ***
+number of decks: 1
+maximum penetration: 0.75
+dealer soft 17: stands
+player early surrender: no
+player late surrender: yes
+dealer peek on 10: yes
+dealer peek on A: yes
+player loses ties: no
+player wins ties: no
+player may double-down on 9: yes
+player may double-down on 10: yes
+player may double-down on 11: yes
+player may double-down on other: yes
+player double after split: yes
+maximum number of split hands: 2
+player may hit on split aces: no
+player may re-split aces: no
+dealer 22 pushes against player: no
+blackjack pays: 1.5
+insurance pays: 2
+surrender penalty: 0.5
+double-down multiplier: 2
+
+perceived count:
+card:	   2   3   4   5   6   7   8   9   T   A   !10  !A	total
+rem:	   4   4   4   4   4   4   4   4  16   4     0   0	52
+
+evaluation method: basic
+dealer	17	18	19	20	21	BJ	bust	push
+2	0.1398	0.1349	0.1297	0.124	0.118	0	0.3536	0	
+3	0.135	0.1305	0.1256	0.1203	0.1147	0	0.3739	0	
+4	0.1305	0.1259	0.1214	0.1165	0.1112	0	0.3945	0	
+5	0.1223	0.1223	0.1177	0.1131	0.1082	0	0.4164	0	
+6	0.1654	0.1063	0.1063	0.1017	0.09716	0	0.4232	0	
+7	0.3686	0.1378	0.07863	0.07863	0.07407	0	0.2623	0	
+8	0.1286	0.3593	0.1286	0.06939	0.06939	0	0.2447	0	
+9	0.12	0.12	0.3508	0.12	0.06082	0	0.2284	0	
+T	0.1207	0.1207	0.1207	0.3707	0.03738	0	0.2298	0	
+A	0.1889	0.1889	0.1889	0.1889	0.07781	0	0.1665	0	

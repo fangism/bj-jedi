@@ -22,7 +22,10 @@ done
 for f
 do
 	b=`echo $f | cut -d. -f1`
-	e=$b.bj-exp
+	case $f in
+	*.bj* ) e=$b.bj-exp ;;
+	*.* ) e=$b.expect ;;
+	esac
 	echo "cp $f $srcdir/$e"
 	cp $f $srcdir/$e
 done
