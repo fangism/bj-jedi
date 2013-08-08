@@ -100,6 +100,7 @@ perceived_deck_state::perceived_deck_state(const size_t n) : remaining(),
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// copy distribution, and remove one card
 perceived_deck_state::perceived_deck_state(const perceived_deck_state& p,
 		const card_type r) :
 		remaining(p.remaining),
@@ -249,10 +250,23 @@ default: break;
 	See math paper in text/.
 	TODO: compute four power terms more efficiently w/ valarray,
 	vector operations, or the like.
+	\param p the current state of peeking the dealer's undercard
  */
 void
-perceived_deck_state::distribution_weight_adjustment(deck_count_type& d) const {
+perceived_deck_state::distribution_weight_adjustment(const peek_state_enum p, 
+		deck_count_type& d) const {
 	STACKTRACE_BRIEF;
+	// allow local temporary changes with the promise of restoring
+	perceived_deck_state& _this(const_cast<perceived_deck_state&>(*this));
+	const value_saver<count_type> _a(_this.remaining[ACE]);
+	const value_saver<count_type> _b(_this.remaining[TEN]);
+	const value_saver<count_type> _c(_this.remaining_total);
+	switch (p) {
+	case PEEKED_NO_ACE: _this.remove_all(ACE); break;
+	case PEEKED_NO_10: _this.remove_all(TEN); break;
+	default: break;
+	}
+if (peeked_not_10s || peeked_not_Aces) {
 	// computing integer power, just multiply
 	// unlikely to have high powers
 	const count_type p_nA = remaining_total -remaining[ACE];
@@ -274,17 +288,22 @@ perceived_deck_state::distribution_weight_adjustment(deck_count_type& d) const {
 	// element multiply
 	transform(d.begin(), d.end(), remaining.begin(), d.begin(), 
 		multiplies<count_type>());
+} else {
+	copy(remaining.begin(), remaining.end(), d.begin());
+}
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
 	Copy the 10 weight to J,Q,K.
+	FIXME: Divide by 4?
  */
 void
 perceived_deck_state::distribution_weight_adjustment(
+		const peek_state_enum p,
 		extended_deck_count_type& d) const {
 	deck_count_type t;
-	distribution_weight_adjustment(t);
+	distribution_weight_adjustment(p, t);
 	// this assumes a particular enumeration ordering
 	copy(t.begin(), t.end(), d.begin());
 	fill(&d[JACK], &d[KING+1], d[TEN]);

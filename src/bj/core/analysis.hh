@@ -181,6 +181,9 @@ public:
 	invalidate(void) { basic_cache.clear(); }
 
 	const value_type&
+	evaluate(const play_map&, const key_type&, const perceived_deck_state&);
+
+	const value_type&
 	evaluate(const play_map&, const key_type&);
 
 };	// end class basic_dealer_outcome_cache_set
@@ -417,15 +420,16 @@ public:
 	void
 	update_nonsplit_cache_outcome(
 		const play_map&,
-		const player_situation_basic_key_type&);
+		const player_situation_basic_key_type&, 
+		const perceived_deck_state&);
 
 	// this will call basic analysis on outcome cache
 	// for non-split actions.
 	const value_type&
-	evaluate(const play_map&, const key_type&);
+	evaluate(const play_map&, const key_type&, const perceived_deck_state&);
 
 	const value_type&
-	evaluate(const play_map&, const player_situation_basic_key_type&);
+	evaluate(const play_map&, const player_situation_basic_key_type&, const perceived_deck_state&);
 
 };	// end class player_split_basic_cache_type
 
@@ -439,6 +443,7 @@ typedef	std::map<player_situation_key_type, expectations>
 typedef	std::map<player_situation_basic_key_type, expectations>
 			player_outcome_basic_cache_map_type;
 
+#if 0
 /**
 	Collection of outcome vector caches.
 	One for each accuracy setting.
@@ -488,6 +493,7 @@ public:
 		const player_situation_basic_key_type&);
 
 };	// end struct player_outcome_cache_set
+#endif
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
@@ -509,8 +515,14 @@ public:
 	basic_strategy_analyzer();
 
 	const expectations&
-	evaluate_player_basic(const play_map&,
-		const player_situation_basic_key_type&);
+	evaluate(const play_map&,
+		const player_situation_basic_key_type&,
+		const perceived_deck_state&);
+
+	// assume standard distribution
+	const expectations&
+	evaluate(const play_map& p,
+		const player_situation_basic_key_type& k);
 
 private:
 	// non-copyable
@@ -525,22 +537,37 @@ private:
 	void
 	__evaluate_player_basic_single(const play_map&,
 		const player_situation_basic_key_type&, 
+		const perceived_deck_state&,
 		expectations&);
 
 // uncached computations
 	edge_type
 	__evaluate_stand(const play_map&,
-		const player_situation_basic_key_type&);
+		const player_situation_basic_key_type&,
+		const perceived_deck_state&);
 
 	edge_type
 	__evaluate_hit(const play_map&,
-		const player_situation_basic_key_type&, const deck_count_type&);
+		const player_situation_basic_key_type&,
+		const perceived_deck_state&);
 
 	edge_type
 	__evaluate_double_down(const play_map&,
-		const player_situation_basic_key_type&, const deck_count_type&);
+		const player_situation_basic_key_type&,
+		const perceived_deck_state&);
 
 };	// end class basic_strategy_analyzer
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
+	The dynamic strategy analysis takes into account the
+	current distribution of cards remaining in the deck.
+	This is really just a collection of basic_strategy_analyzers,
+	one for each distribution.  
+	Reminder that card removal is not modeled (i.e. with replacement).
+ */
+class dynamic_strategy_analyzer {
+};	// end class dynamic_strategy_analyzer
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 }	// end namespace blackjack

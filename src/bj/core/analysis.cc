@@ -94,6 +94,7 @@ dealer_outcome_cache_set::compute_dealer_final_distribution(
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+#if 0
 static
 const deck_count_type&
 get_basic_reduced_count(const peek_state_enum e) {
@@ -107,6 +108,7 @@ get_basic_reduced_count(const peek_state_enum e) {
 //	case NO_PEEK:
 	return cards::standard_deck_count_reduced;
 }
+#endif
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
@@ -115,7 +117,7 @@ get_basic_reduced_count(const peek_state_enum e) {
  */
 const dealer_final_vector&
 basic_dealer_outcome_cache_set::evaluate(const play_map& play,
-		const key_type& k) {
+		const key_type& k, const perceived_deck_state& pd) {
 #if DEBUG_DEALER_ANALYSIS
 	STACKTRACE_BRIEF;
 #if ENABLE_STACKTRACE
@@ -141,18 +143,31 @@ if (bi.second) {
 	} else {
 		// dealer must hit
 		// what distribution to use? (any peek?)
+#if 0
 		const deck_count_type&
 			dref(get_basic_reduced_count(k.peek_state));
+#else
+		deck_count_type dref;
+		pd.distribution_weight_adjustment(k.peek_state, dref);
+//		STACKTRACE_INDENT_PRINT(dref << endl);
+#endif
 		const count_type total_weight =
 			accumulate(dref.begin(), dref.end(), 0);
-		// don't bother with distribution_weight_adjustment, infinite deck
 		card_type i = 0;
 		for ( ; i<card_values; ++i) {
+#if 0
+			// when accounting for card removal
+			perceived_deck_state npd(pd);
+			npd.reveal(k.peek_state, i);
+#else
+			// don't bother removing cards for basic analysis
+			const perceived_deck_state& npd(pd);	// re-use
+#endif
 			const count_type& w(dref[i]);
 		if (w) {
 			dealer_hand_base nk(ds[i]);	// NO_PEEK
 			nk.check_blackjack(k.first_card);
-			const dealer_final_vector& child(evaluate(play, nk));
+			const dealer_final_vector& child(evaluate(play, nk, npd));
 			// weight by card probability
 			dealer_state_type j = 0;
 			for ( ; j<d_final_states; ++j) {
@@ -177,6 +192,14 @@ if (bi.second) {
 	// else return cached entry
 	return ret;
 }	// end basic_dealer_outcome_cache_set::evaluate()
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const dealer_final_vector&
+basic_dealer_outcome_cache_set::evaluate(const play_map& play,
+		const key_type& k) {
+	static const perceived_deck_state pd(1);
+	return evaluate(play, k, pd);
+}
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
@@ -207,8 +230,9 @@ if (bi.second) {
 	} else {
 		// dealer must hit
 		// what distribution to use? (any peek?)
-		perceived_deck_state d(k.card_dist);
+		const perceived_deck_state& d(k.card_dist);
 		perceived_deck_state subd(d);
+#if 0
 		switch (k.dealer.peek_state) {
 		case PEEKED_NO_10: d.remove_all(TEN); d.unpeek_not_10();
 			subd.unpeek_not_10(); break;
@@ -216,9 +240,12 @@ if (bi.second) {
 			subd.unpeek_not_Ace(); break;
 		default: break;
 		}
+#else
+		// folded into distribution_weight_adjustment()
+#endif
 		// effective weights, given peeked not-10, not-Ace
 		deck_count_type wd;
-		d.distribution_weight_adjustment(wd);
+		d.distribution_weight_adjustment(k.dealer.peek_state, wd);
 #if ENABLE_STACKTRACE && 0
 		d.show_count_brief(STACKTRACE_STREAM);
 		STACKTRACE_STREAM << wd << endl;
@@ -294,8 +321,9 @@ if (bi.second) {
 	} else {
 		// dealer must hit
 		// what distribution to use? (any peek?)
-		perceived_deck_state d(k.card_dist);
+		const perceived_deck_state& d(k.card_dist);
 		perceived_deck_state subd(d);
+#if 0
 		switch (k.dealer.peek_state) {
 		case PEEKED_NO_10: d.remove_all(TEN); d.unpeek_not_10();
 			subd.unpeek_not_10(); break;
@@ -303,9 +331,12 @@ if (bi.second) {
 			subd.unpeek_not_Ace(); break;
 		default: break;
 		}
+#else
+		// folded into distribution_weight_adjustment()
+#endif
 		// effective weights, given peeked not-10, not-Ace
 		deck_count_type wd;
-		d.distribution_weight_adjustment(wd);
+		d.distribution_weight_adjustment(k.dealer.peek_state, wd);
 		const count_type total_weight =
 			accumulate(wd.begin(), wd.end(), 0);
 		card_type i = 0;
@@ -387,13 +418,14 @@ basic_strategy_analyzer::basic_strategy_analyzer() :
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 edge_type
 basic_strategy_analyzer::__evaluate_stand(const play_map& play, 
-		const player_situation_basic_key_type& k) {
+		const player_situation_basic_key_type& k,
+		const perceived_deck_state& pd) {
 	// STACKTRACE("stand:");
 	// stand is always a legal option
 	// (busted hands considered as stand)
 	// compute just the odds of standing with this hand
 	const dealer_final_vector&
-		dfv(dealer_cache.evaluate(play, k.dealer));
+		dfv(dealer_cache.evaluate(play, k.dealer, pd));
 	const player_state_type p_final =
 		play.player_final_state_map(k.player.hand.state);
 	outcome_odds soo;
@@ -408,8 +440,10 @@ basic_strategy_analyzer::__evaluate_stand(const play_map& play,
 edge_type
 basic_strategy_analyzer::__evaluate_double_down(const play_map& play, 
 		const player_situation_basic_key_type& k, 
-		const deck_count_type& dref) {
+		const perceived_deck_state& pd) {
 	STACKTRACE("double-down:");
+	deck_count_type dref;
+	pd.distribution_weight_adjustment(k.dealer.peek_state, dref);
 	player_situation_basic_key_type nk(k);	// copy-and-modify state
 	action_mask& am(nk.player.hand.player_options);
 	const count_type total_weight =
@@ -426,7 +460,8 @@ basic_strategy_analyzer::__evaluate_double_down(const play_map& play,
 		const value_saver<player_hand_base> __bs(nk.player.hand);
 		nk.player.hand.hit(play, i);
 		// yes, do recursion, in case of non-terminal variations
-		const expectations& child(evaluate_player_basic(play, nk));
+		// don't bother accounting for car removal for basic analysis
+		const expectations& child(evaluate(play, nk, pd));
 #if ENABLE_STACKTRACE
 		child.dump_choice_actions_1(STACKTRACE_INDENT_PRINT("child: "));
 		am.dump_debug(STACKTRACE_INDENT_PRINT("options: ")) << endl;
@@ -449,8 +484,10 @@ basic_strategy_analyzer::__evaluate_double_down(const play_map& play,
 edge_type
 basic_strategy_analyzer::__evaluate_hit(const play_map& play, 
 		const player_situation_basic_key_type& k, 
-		const deck_count_type& dref) {
+		const perceived_deck_state& pd) {
 	STACKTRACE("hit:");
+	deck_count_type dref;
+	pd.distribution_weight_adjustment(k.dealer.peek_state, dref);
 	player_situation_basic_key_type nk(k);	// copy-and-modify state
 	action_mask& am(nk.player.hand.player_options);
 	const count_type total_weight =
@@ -465,7 +502,7 @@ basic_strategy_analyzer::__evaluate_hit(const play_map& play,
 		const value_saver<player_hand_base> __bs(nk.player.hand);
 		STACKTRACE_INDENT_PRINT("+card: " << cards::card_name[i] << endl);
 		nk.player.hand.hit(play, i);
-		const expectations& child(evaluate_player_basic(play, nk));
+		const expectations& child(evaluate(play, nk, pd));
 		// weight by card probability
 		const edge_type e(child.action_edge(child.best(am)));
 		STACKTRACE_INDENT_PRINT("child.best = " << e <<
@@ -490,6 +527,7 @@ basic_strategy_analyzer::__evaluate_hit(const play_map& play,
 void
 basic_strategy_analyzer::__evaluate_player_basic_single(const play_map& play,
 		const player_situation_basic_key_type& k, 
+		const perceived_deck_state& pd,
 		expectations& ret) {
 	STACKTRACE_BRIEF;
 #if ENABLE_STACKTRACE
@@ -509,7 +547,7 @@ basic_strategy_analyzer::__evaluate_player_basic_single(const play_map& play,
 		// calculate terminal actions once
 		player_situation_basic_key_type tk(k);
 		tk.player.hand.player_options = play.terminal_actions;
-		ret = evaluate_player_basic(play, tk);;
+		ret = evaluate(play, tk, pd);;
 		// even illegal actions are included
 		// caller's responsibility to evaluate only legal actions
 	}
@@ -520,24 +558,28 @@ basic_strategy_analyzer::__evaluate_player_basic_single(const play_map& play,
 	// current state
 	const state_machine::node& ps(play.player_hit[k.player.hand.state]);
 	if (local_compute_actions.can_stand()) {
-		ret.stand() = __evaluate_stand(play, k);
+		ret.stand() = __evaluate_stand(play, k, pd);
 	}
 	if (!ps.is_terminal()) {	// i.e. not blackjack or bust
 		// consider all possible actions, even illegal ones
 		// let caller pick among the legal options
 		// TODO: don't forget to adjust action_mask
+#if 0
 		const deck_count_type&
 			dref(get_basic_reduced_count(k.dealer.peek_state));
+		deck_count_type dref;
+		pd.distribution_weight_adjustment(k.dealer.peek_state, dref);
+#endif
 #if 0
 		const count_type total_weight =
 			accumulate(dref.begin(), dref.end(), 0);
 		STACKTRACE_INDENT_PRINT("total_weight: " << total_weight << endl);
 #endif
 	if (local_compute_actions.can_double_down()) {
-		ret.double_down() = __evaluate_double_down(play, k, dref);
+		ret.double_down() = __evaluate_double_down(play, k, pd);
 	}
 	if (local_compute_actions.can_hit()) {
-		ret.hit() = __evaluate_hit(play, k, dref);
+		ret.hit() = __evaluate_hit(play, k, pd);
 	}
 	// can we just skip evaluation if split is not permitted?
 	if (k.player.hand.is_paired() && local_compute_actions.can_split()) {
@@ -547,7 +589,7 @@ basic_strategy_analyzer::__evaluate_player_basic_single(const play_map& play,
 //		action_mask& am(nk.player.hand.player_options);
 //		ret.split() = __evaluate_split_basic(play, nk);
 		ret.split() = split_cache[k.player.hand.pair_card()]
-			.evaluate(play, nk);
+			.evaluate(play, nk, pd);
 		// inside: deduct splits remaining, evaluate cases of second cards
 	}	// is paired, can split
 	}	// is terminal, else don't bother computing
@@ -566,8 +608,9 @@ basic_strategy_analyzer::__evaluate_player_basic_single(const play_map& play,
 	This computation is cached.
  */
 const expectations&
-basic_strategy_analyzer::evaluate_player_basic(const play_map& play,
-		const player_situation_basic_key_type& k) {
+basic_strategy_analyzer::evaluate(const play_map& play,
+		const player_situation_basic_key_type& k, 
+		const perceived_deck_state& pd) {
 	STACKTRACE_BRIEF;
 	// if multiple hands, if single hand
 #if ENABLE_STACKTRACE
@@ -598,7 +641,7 @@ if (bi.second) {
 	// in basic analysis mode, dealer's final outcome spread
 	// is independent of card distribution and player action,
 	// thus we can look it up once.
-	__evaluate_player_basic_single(play, k, ret);
+	__evaluate_player_basic_single(play, k, pd, ret);
 	// surrender (if allowed) is constant expectation
 	ret.optimize(-play.var.surrender_penalty);	// sort
 } else {
@@ -610,9 +653,19 @@ if (bi.second) {
 #endif
 	// else return cached entry
 	return ret;
-}	// end evaluate_player_basic
+}	// end basic_strategy_analyzer::evaluate
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const expectations&
+basic_strategy_analyzer::evaluate(const play_map& play,
+		const player_situation_basic_key_type& k) {
+	// number of decks doesn't matter, modeling with replacement
+	static const perceived_deck_state pd(1);
+	return evaluate(play, k, pd);
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+#if 0
 /**
 	Routine for recursively analyzing split scenarios.
 	Splits are handled differently, using split_states.
@@ -644,7 +697,7 @@ player_outcome_cache_set::__evaluate_split_basic(const play_map& play,
 	// here, using weights that account for pair-card removal
 	// instead of p^2, q^2, 2pq
 	const count_type npw = total_weight -pw;	// non-pairing
-	const count_type pwt = npw *(npw -1);
+	const count_type pwt = total_weight *(total_weight -1);
 	count_type pwa[3];	// should be const
 	pwa[2] = pw *(pw -1);	// 2 new pairs
 	pwa[0] = npw *(npw -1);	// 0 new pairs
@@ -710,6 +763,7 @@ if (pss.is_splittable()) {
 }	// splittable pairs remaining
 	return ret;
 }	// end __evaluate_split_basic
+#endif
 
 //=============================================================================
 // class player_split_basic_cache_type method definitions
@@ -752,14 +806,20 @@ player_situation_basic_key_type::player_situation_basic_key_type(
 void
 player_split_basic_cache_type::update_nonsplit_cache_outcome(
 		const play_map& play, 
-		const player_situation_basic_key_type& k) {
+		const player_situation_basic_key_type& k, 
+		const perceived_deck_state& pd) {
 	STACKTRACE_VERBOSE;
 	assert(_basic_analyzer);	// must already be set
 	assert(k.player.hand.is_paired());
 	assert(split_card == k.player.hand.pair_card());
 if (!nonsplit_exp_valid) {
+#if 0
 	const deck_count_type&
 		dref(get_basic_reduced_count(k.dealer.peek_state));
+#else
+	deck_count_type dref;
+	pd.distribution_weight_adjustment(k.dealer.peek_state, dref);
+#endif
 //	const count_type& pw(dref[split_card]);		// pairing cards
 	// here, using weights that account for pair-card removal
 	edge_type& X(nonsplit_pair_exp);	// possible pair card next
@@ -776,7 +836,7 @@ if (!nonsplit_exp_valid) {
 		nk.player.hand.final_split(play, i);
 		nk.player.splits.initialize_default();
 		const expectations&
-			child(_basic_analyzer->evaluate_player_basic(play, nk));
+			child(_basic_analyzer->evaluate(play, nk, pd));
 		const edge_type e(child.action_edge(child.best(am)));
 		const edge_type sub = e *w;
 		if (i != split_card) {
@@ -798,10 +858,11 @@ if (!nonsplit_exp_valid) {
 const edge_type&
 player_split_basic_cache_type::evaluate(
 		const play_map& play,
-		const player_situation_basic_key_type& k) {
+		const player_situation_basic_key_type& k, 
+		const perceived_deck_state& pd) {
 	assert(split_card == k.player.hand.pair_card());
 	const key_type kk(k);
-	return evaluate(play, kk);
+	return evaluate(play, kk, pd);
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -817,8 +878,8 @@ player_split_basic_cache_type::evaluate(
  */
 const edge_type&
 player_split_basic_cache_type::evaluate(const play_map& play,
-		const key_type& k) {
-	STACKTRACE_VERBOSE;
+		const key_type& k, const perceived_deck_state& pd) {
+	STACKTRACE("player_split_basic_cache_type::evaluate");
 	typedef	map_type::iterator		iterator;
 	const pair<iterator, bool>
 		p(_map.insert(std::make_pair(k, value_type(0.0))));
@@ -831,19 +892,32 @@ if (p.second) {
 		STACKTRACE_INDENT_PRINT("split code: ")) << endl;
 #endif
 	// divide this into cases, based on post-split-state
+#if 0
 	const deck_count_type&
 		dref(get_basic_reduced_count(k.dealer.peek_state));
+#else
+	deck_count_type dref;
+	pd.distribution_weight_adjustment(k.dealer.peek_state, dref);
+	STACKTRACE_INDENT_PRINT(dref << endl);
+#endif
 	const count_type total_weight =
 		accumulate(dref.begin(), dref.end(), 0);
+	STACKTRACE_INDENT_PRINT("total_weight = " << total_weight << endl);
 	const count_type& pw(dref[split_card]);		// pairing cards
 	// here, using weights that account for pair-card removal
 	// instead of p^2, q^2, 2pq
 	const count_type npw = total_weight -pw;	// non-pairing
-	const count_type pwt = npw *(npw -1);
+	const count_type pwt = total_weight *(total_weight -1);
+	STACKTRACE_INDENT_PRINT("pw = " << pw << endl);
+	STACKTRACE_INDENT_PRINT("npw = " << npw << endl);
+	STACKTRACE_INDENT_PRINT("pwt = " << pwt << endl);
 	count_type pwa[3];	// should be const
 	pwa[2] = pw *(pw -1);	// 2 new pairs
 	pwa[0] = npw *(npw -1);	// 0 new pairs
 	pwa[1] = pwt -pwa[2] -pwa[0];	// 1 new pair
+	STACKTRACE_INDENT_PRINT("pwa[] = {" << pwa[0] << ", "
+		<< pwa[1] << ", " << pwa[2] << "}" << endl);
+	assert(pwa[0] +pwa[1] +pwa[2] == pwt);
 	split_state ps[3];
 	const split_state& pss(k.splits);
 	pss.post_split_states(ps[2], ps[1], ps[0]);
@@ -853,13 +927,16 @@ if (pss.is_splittable()) {
 	// weighted sum expected value of 3 sub cases
 	key_type nk(k);		// copy
 	size_t j = 0;
-	for ( ; j<3; ++j) {
+	do {
 		STACKTRACE("iterate over three cases");
 		STACKTRACE_INDENT_PRINT("for j = " << j << endl);
 		const value_saver<split_state> __ss(nk.splits, ps[j]);
-		const edge_type exp = evaluate(play, nk);
+		const edge_type exp = evaluate(play, nk, pd);
+		STACKTRACE_INDENT_PRINT("exp = " << exp << endl);
+		STACKTRACE_INDENT_PRINT("pwa[j] = " << pwa[j] << endl);
 		e += exp *(pwa[j]);
-	}
+		++j;
+	} while (j<2);
 	e /= pwt;
 	// weighted average
 } else {
@@ -869,13 +946,14 @@ if (pss.is_splittable()) {
 	if (!nonsplit_exp_valid) {
 		player_situation_basic_key_type nk(k, split_card);
 		nk.player.hand.player_options -= SPLIT;
-		update_nonsplit_cache_outcome(play, nk);
+		update_nonsplit_cache_outcome(play, nk, pd);
 	}
 	// assume that order of Xs and Ys are independent, weighted sum
 	e = nonsplit_pair_exp *k.splits.nonsplit_pairs()
 		+unpaired_exp *k.splits.unpaired_hands;
 }	// splittable pairs remaining
 }	// was cache hit, re-use
+	STACKTRACE_INDENT_PRINT("edge = " << e << endl);
 	return e;
 }
 

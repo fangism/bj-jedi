@@ -143,18 +143,22 @@ public:
 		return remaining_total;
 	}
 
-	void
-	distribution_weight_adjustment(deck_count_type&) const;
-
-	void
-	distribution_weight_adjustment(extended_deck_count_type&) const;
-
 	// re-weighted distribution using peek information, see math paper
+	void
+	distribution_weight_adjustment(const peek_state_enum,
+		deck_count_type&) const;
+
+	void
+	distribution_weight_adjustment(const peek_state_enum,
+		extended_deck_count_type&) const;
+
+#if 0
 	void
 	effective_distribution(deck_count_type&) const;
 
 	void
 	effective_distribution(extended_deck_count_type&) const;
+#endif
 
 	int
 	compare(const perceived_deck_state&) const;

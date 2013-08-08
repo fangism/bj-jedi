@@ -462,7 +462,7 @@ if (!err) {
 	case ANALYSIS_BASIC: {
 		const player_situation_basic_key_type s(opt.key);
 		const expectations&
-			e(basic_player_cache.evaluate_player_basic(opt.play, s));
+			e(basic_player_cache.evaluate(opt.play, s));
 		e.dump_choice_actions(cout, -opt.var.surrender_penalty);
 		break;
 	}
