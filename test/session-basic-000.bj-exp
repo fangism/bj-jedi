@@ -395,7 +395,7 @@ dealer: 3
 action? [hsdrbc?!]> !
 *** dynamic strategy beats basic ***
 perceived count:
-card:	   2   3   4   5   6   7   8   9   T   A   !10  !A	total
+card:	   2   3   4   5   6   7   8   9   T   A   !T  !A	total
 rem:	  14  18  15  17  16  16  14  17  67  15     0   2	207
 actual count:
 card:	   2   3   4   5   6   7   8   9   T   A	total	%
@@ -455,7 +455,7 @@ No dealer blackjack.
 action? [hsdrbc?!]> !
 *** dynamic strategy beats basic ***
 perceived count:
-card:	   2   3   4   5   6   7   8   9   T   A   !10  !A	total
+card:	   2   3   4   5   6   7   8   9   T   A   !T  !A	total
 rem:	  13  16  15  16  16  14  13  14  62  15     0   3	191
 actual count:
 card:	   2   3   4   5   6   7   8   9   T   A	total	%
@@ -846,7 +846,7 @@ auto: hit
 action? [hsbc?!]> !
 *** dynamic strategy beats basic ***
 perceived count:
-card:	   2   3   4   5   6   7   8   9   T   A   !10  !A	total
+card:	   2   3   4   5   6   7   8   9   T   A   !T  !A	total
 rem:	   4   8   9   8  11   9   7   5  25   9     1   8	86
 actual count:
 card:	   2   3   4   5   6   7   8   9   T   A	total	%
@@ -993,21 +993,21 @@ initial deal histogram: {
 table> bookmarks-list
 -------- bookmarks --------
 perceived count:
-card:	   2   3   4   5   6   7   8   9   T   A   !10  !A	total
+card:	   2   3   4   5   6   7   8   9   T   A   !T  !A	total
 rem:	  14  18  15  17  16  16  14  17  67  15     0   2	207
 hi-lo: 2, true-count: 0.50
 dealer: 3, player: 12
 options: double:yes, split:no, surrender:yes
 
 perceived count:
-card:	   2   3   4   5   6   7   8   9   T   A   !10  !A	total
+card:	   2   3   4   5   6   7   8   9   T   A   !T  !A	total
 rem:	  13  16  15  16  16  14  13  14  62  15     0   3	191
 hi-lo: 1, true-count: 0.27
 dealer: Q, player: 15
 options: double:yes, split:no, surrender:yes
 
 perceived count:
-card:	   2   3   4   5   6   7   8   9   T   A   !10  !A	total
+card:	   2   3   4   5   6   7   8   9   T   A   !T  !A	total
 rem:	   4   8   9   8  11   9   7   5  25   9     1   8	86
 hi-lo: -6, true-count: -3.63
 dealer: 3, player: 15

@@ -361,7 +361,7 @@ perceived_deck_state::show_count_brief(ostream& o) const {
 		const card_type j = reveal_print_ordering[i];
 		o << ' ' << card_name[j] << ':' << remaining[j];
 	}
-	o << " !10:" << peeked_not_10s;
+	o << " !T:" << peeked_not_10s;
 	o << " !A:" << peeked_not_Aces;
 	o << " tot:" << actual_remaining() << endl;
 	// or prefer get_remaining_total()?
@@ -378,7 +378,7 @@ perceived_deck_state::show_count(ostream& o) const {
 		const card_type j = reveal_print_ordering[i];
 		o << "   " << card_name[j];
 	}
-	o << "   !10  !A\ttotal\n";
+	o << "   !T  !A\ttotal\n";
 	o << "rem:\t";
 	for (i=0; i<card_values; ++i) {
 		const card_type j = reveal_print_ordering[i];

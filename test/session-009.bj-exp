@@ -98,7 +98,7 @@ dealer: 2
 action? [hsdrbc?!]> !
 *** dynamic strategy beats basic ***
 perceived count:
-card:	   2   3   4   5   6   7   8   9   T   A   !10  !A	total
+card:	   2   3   4   5   6   7   8   9   T   A   !T  !A	total
 rem:	  23  24  24  23  21  24  22  22  94  21     0   0	298
 actual count:
 card:	   2   3   4   5   6   7   8   9   T   A	total	%
@@ -235,7 +235,7 @@ dealer: 2
 action? [hsdrbc?!]> !
 *** dynamic strategy beats basic ***
 perceived count:
-card:	   2   3   4   5   6   7   8   9   T   A   !10  !A	total
+card:	   2   3   4   5   6   7   8   9   T   A   !T  !A	total
 rem:	  20  21  21  21  19  19  18  19  84  21     0   1	262
 actual count:
 card:	   2   3   4   5   6   7   8   9   T   A	total	%
@@ -559,7 +559,7 @@ dealer: 8
 action? [hsdprbc?!]> !
 *** dynamic strategy beats basic ***
 perceived count:
-card:	   2   3   4   5   6   7   8   9   T   A   !10  !A	total
+card:	   2   3   4   5   6   7   8   9   T   A   !T  !A	total
 rem:	  12  14  12  15  10  12  14  14  54  17     0   4	170
 actual count:
 card:	   2   3   4   5   6   7   8   9   T   A	total	%
@@ -1028,21 +1028,21 @@ initial deal histogram: {
 table> bookmarks-list
 -------- bookmarks --------
 perceived count:
-card:	   2   3   4   5   6   7   8   9   T   A   !10  !A	total
+card:	   2   3   4   5   6   7   8   9   T   A   !T  !A	total
 rem:	  23  24  24  23  21  24  22  22  94  21     0   0	298
 hi-lo: 0, true-count: 0.00
 dealer: 2, player: A,6
 options: double:yes, split:no, surrender:yes
 
 perceived count:
-card:	   2   3   4   5   6   7   8   9   T   A   !10  !A	total
+card:	   2   3   4   5   6   7   8   9   T   A   !T  !A	total
 rem:	  20  21  21  21  19  19  18  19  84  21     0   1	262
 hi-lo: 3, true-count: 0.60
 dealer: 2, player: 12
 options: double:yes, split:no, surrender:yes
 
 perceived count:
-card:	   2   3   4   5   6   7   8   9   T   A   !10  !A	total
+card:	   2   3   4   5   6   7   8   9   T   A   !T  !A	total
 rem:	  12  14  12  15  10  12  14  14  54  17     0   4	170
 hi-lo: 8, true-count: 2.45
 dealer: 8, player: 7,7

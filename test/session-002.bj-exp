@@ -545,7 +545,7 @@ dealer: 3
 action? [hsdrbc?!]> !
 *** dynamic strategy beats basic ***
 perceived count:
-card:	   2   3   4   5   6   7   8   9   T   A   !10  !A	total
+card:	   2   3   4   5   6   7   8   9   T   A   !T  !A	total
 rem:	  13  19  14  15  15  17  14  13  41   9     1   8	161
 actual count:
 card:	   2   3   4   5   6   7   8   9   T   A	total	%
@@ -990,7 +990,7 @@ initial deal histogram: {
 table> bookmarks-list
 -------- bookmarks --------
 perceived count:
-card:	   2   3   4   5   6   7   8   9   T   A   !10  !A	total
+card:	   2   3   4   5   6   7   8   9   T   A   !T  !A	total
 rem:	  13  19  14  15  15  17  14  13  41   9     1   8	161
 hi-lo: -26, true-count: -8.40
 dealer: 3, player: 13

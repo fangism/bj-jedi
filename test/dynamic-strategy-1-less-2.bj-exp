@@ -10,7 +10,7 @@ Type 'help' or '?' for a list of table commands.
 table> edit-deck 2 - 1
 table> count
 perceived count:
-card:	   2   3   4   5   6   7   8   9   T   A   !10  !A	total
+card:	   2   3   4   5   6   7   8   9   T   A   !T  !A	total
 rem:	   3   4   4   4   4   4   4   4  16   4     0   0	51
 actual count:
 card:	   2   3   4   5   6   7   8   9   T   A	total	%
