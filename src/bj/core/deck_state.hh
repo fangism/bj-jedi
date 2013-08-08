@@ -127,6 +127,9 @@ public:
 	reveal_peek_Ace(const card_type);
 
 	void
+	reveal_replace(const peek_state_enum);
+
+	void
 	reveal(const peek_state_enum, const card_type);
 
 	/**

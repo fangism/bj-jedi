@@ -7,6 +7,7 @@ SUFFIXES += .sh .out .diff .expect .test
 
 APPS_DIR = ../src/apps
 BJG_EXE = $(APPS_DIR)/bjgrader
+BJDO_EXE = $(APPS_DIR)/bj-dealer-odds
 
 SHELL_INTERPRETER = "\#!$(SHELL)"
 
@@ -108,7 +109,7 @@ test-summaries: force
 	-cat *.bj-diff *.diff > $@
 
 $(BJ_TEST_OUTPUTS): $(BJG_EXE)
-# $TEST_OUTPUTS): $(BJG_EXE)
+$TEST_OUTPUTS): $(BJDO_EXE)
 
 CLEANFILES = $(BJ_TEST_OUTPUTS) $(BJ_TEST_DIFFS)
 CLEANFILES += $(TEST_OUTPUTS) $(TEST_DIFFS)

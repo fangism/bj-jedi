@@ -228,9 +228,11 @@ perceived_deck_state::reveal_peek_Ace(const card_type c) {
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
 	\param p the previous peek state (which should be updated after reveal)
+	This does not remove the revealed card from the distribution, 
+	useful for faster approximaions.
  */
 void
-perceived_deck_state::reveal(const peek_state_enum p, const card_type c) {
+perceived_deck_state::reveal_replace(const peek_state_enum p) {
 switch (p) {
 case PEEKED_NO_ACE:
 	--peeked_not_Aces;
@@ -240,6 +242,15 @@ case PEEKED_NO_10:
 	break;
 default: break;
 }
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
+	This removes the revealed card from the deck.
+ */
+void
+perceived_deck_state::reveal(const peek_state_enum p, const card_type c) {
+	reveal_replace(p);
 	remove(c);
 }
 
@@ -353,6 +364,7 @@ perceived_deck_state::show_count_brief(ostream& o) const {
 	o << " !10:" << peeked_not_10s;
 	o << " !A:" << peeked_not_Aces;
 	o << " tot:" << actual_remaining() << endl;
+	// or prefer get_remaining_total()?
 	return o;
 }
 
@@ -375,6 +387,7 @@ perceived_deck_state::show_count(ostream& o) const {
 	o << "  " << setw(4) << peeked_not_10s;
 	o << setw(4) << peeked_not_Aces;
 	o << '\t' << actual_remaining() << endl;
+	// or prefer get_remaining_total()?
 	return o;
 }
 

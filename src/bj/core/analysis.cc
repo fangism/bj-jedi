@@ -231,18 +231,6 @@ if (bi.second) {
 		// dealer must hit
 		// what distribution to use? (any peek?)
 		const perceived_deck_state& d(k.card_dist);
-		perceived_deck_state subd(d);
-#if 0
-		switch (k.dealer.peek_state) {
-		case PEEKED_NO_10: d.remove_all(TEN); d.unpeek_not_10();
-			subd.unpeek_not_10(); break;
-		case PEEKED_NO_ACE: d.remove_all(ACE); d.unpeek_not_Ace();
-			subd.unpeek_not_Ace(); break;
-		default: break;
-		}
-#else
-		// folded into distribution_weight_adjustment()
-#endif
 		// effective weights, given peeked not-10, not-Ace
 		deck_count_type wd;
 		d.distribution_weight_adjustment(k.dealer.peek_state, wd);
@@ -252,6 +240,8 @@ if (bi.second) {
 #endif
 		const count_type total_weight =
 			accumulate(wd.begin(), wd.end(), 0);
+		perceived_deck_state subd(d);
+		subd.reveal_replace(k.dealer.peek_state);
 		card_type i = 0;
 		for ( ; i<card_values; ++i) {
 			const count_type& w(wd[i]);
@@ -322,23 +312,13 @@ if (bi.second) {
 		// dealer must hit
 		// what distribution to use? (any peek?)
 		const perceived_deck_state& d(k.card_dist);
-		perceived_deck_state subd(d);
-#if 0
-		switch (k.dealer.peek_state) {
-		case PEEKED_NO_10: d.remove_all(TEN); d.unpeek_not_10();
-			subd.unpeek_not_10(); break;
-		case PEEKED_NO_ACE: d.remove_all(ACE); d.unpeek_not_Ace();
-			subd.unpeek_not_Ace(); break;
-		default: break;
-		}
-#else
-		// folded into distribution_weight_adjustment()
-#endif
 		// effective weights, given peeked not-10, not-Ace
 		deck_count_type wd;
 		d.distribution_weight_adjustment(k.dealer.peek_state, wd);
 		const count_type total_weight =
 			accumulate(wd.begin(), wd.end(), 0);
+		perceived_deck_state subd(d);
+		subd.reveal_replace(k.dealer.peek_state);
 		card_type i = 0;
 		for ( ; i<card_values; ++i) {
 			const count_type& w(wd[i]);
