@@ -105,7 +105,7 @@ TEST_DIFFS = \
 	$(TEST_CASES:=.test)
 
 test-summaries: force
-	-cat *.bj-diff > $@
+	-cat *.bj-diff *.diff > $@
 
 $(BJ_TEST_OUTPUTS): $(BJG_EXE)
 # $TEST_OUTPUTS): $(BJG_EXE)
