@@ -23,7 +23,7 @@ surrender penalty: 0.5
 double-down multiplier: 2
 
 perceived count:
-card:	   2   3   4   5   6   7   8   9   T   A   !10  !A	total
+card:	   2   3   4   5   6   7   8   9   T   A   !T  !A	total
 rem:	   4   4   4   4   4   4   4   4  16   4     0   0	52
 
 evaluation method: dynam
@@ -64,7 +64,7 @@ surrender penalty: 0.5
 double-down multiplier: 2
 
 perceived count:
-card:	   2   3   4   5   6   7   8   9   T   A   !10  !A	total
+card:	   2   3   4   5   6   7   8   9   T   A   !T  !A	total
 rem:	   4   4   4   4   4   4   4   4  16   4     0   0	52
 
 evaluation method: dynam
