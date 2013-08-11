@@ -56,7 +56,7 @@ bookmark::dump(ostream& o, const play_map& play, const char* cname,
 //	cards.show_count(o, false, false);
 	cards.show_count(o);
 	// TODO: fix hard-coding
-	c.dump_count(o, cname, cards.actual_remaining(), cards.get_counts())
+	c.dump_count(o, cname, cards.get_actual_remaining_cards(), cards.get_counts())
 		<< endl;
 	// don't distinguish face cards, only show remaining, not used cards
 	o << "dealer: " << card_name[dealer_reveal] << ", ";

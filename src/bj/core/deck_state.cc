@@ -89,12 +89,16 @@ zpow(const size_t b, size_t p) {
 // class perceived_deck_state method definitions
 
 perceived_deck_state::perceived_deck_state() : remaining(count_type(0)),
-		peeked_not_10s(0), peeked_not_Aces(0), remaining_total(0) {
+		peeked_not_10s(0), peeked_not_Aces(0), 
+//		nonpeeked_discards(0),
+		effective_remaining_total(0) {
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 perceived_deck_state::perceived_deck_state(const size_t n) : remaining(), 
-		peeked_not_10s(0), peeked_not_Aces(0), remaining_total(n *52) {
+		peeked_not_10s(0), peeked_not_Aces(0),
+//		nonpeeked_discards(0),
+		effective_remaining_total(n *52) {
 	transform(standard_deck_count.begin(), standard_deck_count.end(), 
 		remaining.begin(), bind2nd(multiplies<count_type>(), n));
 }
@@ -106,7 +110,7 @@ perceived_deck_state::perceived_deck_state(const perceived_deck_state& p,
 		remaining(p.remaining),
 		peeked_not_10s(p.peeked_not_10s),
 		peeked_not_Aces(p.peeked_not_Aces),
-		remaining_total(p.remaining_total) {
+		effective_remaining_total(p.effective_remaining_total) {
 	remove(r);
 }
 
@@ -118,7 +122,7 @@ void
 perceived_deck_state::initialize_num_decks(const size_t n) {
 	peeked_not_10s = 0;
 	peeked_not_Aces = 0;
-	remaining_total = n *52;
+	effective_remaining_total = n *52;
 	transform(standard_deck_count.begin(), standard_deck_count.end(), 
 		remaining.begin(), bind2nd(multiplies<count_type>(), n));
 }
@@ -129,7 +133,7 @@ perceived_deck_state::initialize(const extended_deck_count_type& d) {
 	cards::simplify_deck_count(d, remaining);
 	peeked_not_10s = 0;
 	peeked_not_Aces = 0;
-	remaining_total =
+	effective_remaining_total =
 		std::accumulate(remaining.begin(), remaining.end(), 0);
 }
 
@@ -150,7 +154,7 @@ if (q != 1) {
 	transform(remaining.begin(), remaining.end(), 
 		remaining.begin(), bind2nd(divides<count_type>(), q));
 }
-	remaining_total =
+	effective_remaining_total =
 		std::accumulate(remaining.begin(), remaining.end(), 0);
 }
 
@@ -162,7 +166,7 @@ void
 perceived_deck_state::add(const card_type c, const count_type n) {
 	card_type& r(remaining[card_value_map[c]]);
 	r += n;
-	remaining_total += n;
+	effective_remaining_total += n;
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -175,8 +179,8 @@ perceived_deck_state::remove(const card_type c) {
 	card_type& r(remaining[card_value_map[c]]);
 	assert(r);
 	--r;
-	assert(remaining_total);
-	--remaining_total;
+	assert(effective_remaining_total);
+	--effective_remaining_total;
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -190,8 +194,8 @@ perceived_deck_state::remove_if_any(const card_type c) {
 	card_type& r(remaining[card_value_map[c]]);
 if (r) {
 	--r;
-	assert(remaining_total);
-	--remaining_total;
+	assert(effective_remaining_total);
+	--effective_remaining_total;
 	return true;
 }	else return false;
 }
@@ -204,8 +208,8 @@ if (r) {
 void
 perceived_deck_state::remove_all(const card_type c) {
 	card_type& r(remaining[card_value_map[c]]);
-	assert(remaining_total);
-	remaining_total -= r;
+	assert(effective_remaining_total);
+	effective_remaining_total -= r;
 	r = 0;
 }
 
@@ -256,6 +260,16 @@ perceived_deck_state::reveal(const peek_state_enum p, const card_type c) {
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
+	Since nonpeeked discards deduct from the actual total count
+	but no the individual card count, this value can be computed.
+ */
+count_type
+perceived_deck_state::get_nonpeeked_discards(void) const {
+	return std::accumulate(remaining.begin(), remaining.end(), -effective_remaining_total);
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
 	Takes an extended deck count and re-weights the count
 	according to the perceived distribution.  
 	See math paper in text/.
@@ -271,7 +285,7 @@ perceived_deck_state::distribution_weight_adjustment(const peek_state_enum p,
 	perceived_deck_state& _this(const_cast<perceived_deck_state&>(*this));
 	const value_saver<count_type> _a(_this.remaining[ACE]);
 	const value_saver<count_type> _b(_this.remaining[TEN]);
-	const value_saver<count_type> _c(_this.remaining_total);
+	const value_saver<count_type> _c(_this.effective_remaining_total);
 	switch (p) {
 	case PEEKED_NO_ACE: _this.remove_all(ACE); break;
 	case PEEKED_NO_10: _this.remove_all(TEN); break;
@@ -280,8 +294,8 @@ perceived_deck_state::distribution_weight_adjustment(const peek_state_enum p,
 if (peeked_not_10s || peeked_not_Aces) {
 	// computing integer power, just multiply
 	// unlikely to have high powers
-	const count_type p_nA = remaining_total -remaining[ACE];
-	const count_type p_n10 = remaining_total -remaining[TEN];
+	const count_type p_nA = effective_remaining_total -remaining[ACE];
+	const count_type p_n10 = effective_remaining_total -remaining[TEN];
 	const count_type p_nA_1 = p_nA -1;
 	const count_type p_n10_1 = p_n10 -1;
 	const count_type w_10 = zpow(p_n10, peeked_not_10s);
@@ -326,9 +340,9 @@ perceived_deck_state::distribution_weight_adjustment(
  */
 int
 perceived_deck_state::compare(const perceived_deck_state& r) const {
-	if (remaining_total < r.remaining_total)
+	if (effective_remaining_total < r.effective_remaining_total)
 		return -1;
-	if (r.remaining_total < remaining_total)
+	if (r.effective_remaining_total < effective_remaining_total)
 		return 1;
 	const int c = remaining.compare(r.remaining);
 	if (c) return c;
@@ -363,8 +377,8 @@ perceived_deck_state::show_count_brief(ostream& o) const {
 	}
 	o << " !T:" << peeked_not_10s;
 	o << " !A:" << peeked_not_Aces;
-	o << " tot:" << actual_remaining() << endl;
-	// or prefer get_remaining_total()?
+	o << " tot:" << get_actual_remaining_cards() << endl;
+	// or prefer get_effective_remaining_total()?
 	return o;
 }
 
@@ -386,8 +400,8 @@ perceived_deck_state::show_count(ostream& o) const {
 	}
 	o << "  " << setw(4) << peeked_not_10s;
 	o << setw(4) << peeked_not_Aces;
-	o << '\t' << actual_remaining() << endl;
-	// or prefer get_remaining_total()?
+	o << '\t' << get_actual_remaining_cards() << endl;
+	// or prefer get_effective_remaining_total()?
 	return o;
 }
 

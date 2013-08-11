@@ -60,7 +60,6 @@ private:
 	/**
 		Maintain the state of the deck, and cards used.  
 		This is state information that can be saved/restored.
-		So is bankroll.
 	 */
 	deck_state				C;
 	/**
@@ -190,7 +189,7 @@ private:
 	reveal_hole_card(const card_type);
 
 	void
-	replace_hole_card(void);
+	discard_nonpeeked_hole_card(void);
 
 	bool
 	already_split(void) const {

@@ -34,7 +34,7 @@ using cards::card_type;
 	Technically, card-counting should be based on perceived count.
  */
 class perceived_deck_state {
-protected:
+private:
 	/**
 		All 10 cards are lumped together, no distinction required.
 		This contains certain the number of cards.
@@ -54,13 +54,25 @@ protected:
 	 */
 	count_type				peeked_not_Aces;
 #if 0
-	// non-peeked discards offer no information, and need not be counted
-	count_type				discards;
+	/**
+		non-peeked discards offer no information, and need not be counted
+		This is only used to keep track of deck penetration.
+		\invariant: nonpeeked_discards == remaining.sum()
+			-effective_remaining_total.
+	 */
+	count_type				nonpeeked_discards;
 #endif
 	/**
 		property: remaining.sum().
+		This is the effective number of cards left in deck.
+		Doss NOT count nonpeeked_discards.
+		Mathematically, this value should be used, even after 
+		dicards with no additional information.  
+		When a nonpeeked card is discarded, this value does not change,
+		as the removed card proides no information.  
+		\invariant effective_remaining_total >= actual_remaining
 	 */
-	count_type				remaining_total;
+	count_type				effective_remaining_total;
 public:
 	perceived_deck_state();
 
@@ -134,17 +146,26 @@ public:
 
 	/**
 		Peeked unknown discards are not counted as removed
-		from the remaining_total count.
+		from the effective_remaining_total count.
 	 */
 	count_type
-	actual_remaining(void) const {
-		return remaining_total -peeked_not_10s -peeked_not_Aces;
+	get_actual_remaining_cards(void) const {
+		return effective_remaining_total -peeked_not_10s -peeked_not_Aces;
 	}
 
 	count_type
-	get_remaining_total(void) const {
-		return remaining_total;
+	get_effective_remaining_cards(void) const {
+		return effective_remaining_total;
 	}
+
+	void
+	remove_nonpeeked_card(void) {
+		// does nothing to effective counts
+		// this value is computed from other members
+	}
+
+	count_type
+	get_nonpeeked_discards(void) const;
 
 	// re-weighted distribution using peek information, see math paper
 	void

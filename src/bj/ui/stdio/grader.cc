@@ -209,8 +209,9 @@ grader::reveal_hole_card(const card_type hole_card) {
 	do not decrement it.  
  */
 void
-grader::replace_hole_card(void) {
+grader::discard_nonpeeked_hole_card(void) {
 	C.replace_hole_card();
+	P.remove_nonpeeked_card();	// no-op
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -385,12 +386,7 @@ if (live || !opt.dealer_plays_only_against_live) {
 	// hole card is never revealed and thus not counted
 	// treat as if hole card is replaced into shoe
 	// this could happen if player surrendered, or busted.
-	replace_hole_card();
-	// FIXME: this is not truly mathematically accurate, 
-	// since peeking for blackjack gives some partial information
-	// about that hole card, and it is being replaced into the deck!
-	// Cannot just 'discard' it from the count either,
-	// for the same reason.
+	discard_nonpeeked_hole_card();
 }
 	// suspense double-down?  nah
 	const double bet2 = var.double_multiplier *bet;	// winning
