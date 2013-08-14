@@ -14,6 +14,8 @@ AM_CPPFLAGS = $(RL_INCLUDE)
 bj_core_libbjcore_la_SOURCES = \
 	config.h \
 	bj/devel_switches.hh \
+	bj/core/analysis/dealer_analysis.cc bj/core/analysis/dealer_analysis.hh \
+	bj/core/analysis/player_analysis.cc bj/core/analysis/player_analysis.hh \
 	bj/core/analysis.cc bj/core/analysis.hh \
 	bj/core/blackjack.cc bj/core/blackjack.hh \
 	bj/core/card_state.cc bj/core/card_state.hh \

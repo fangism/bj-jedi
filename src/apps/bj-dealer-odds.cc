@@ -3,7 +3,7 @@
 
 #include <iostream>
 #include "bj/core/blackjack.hh"
-#include "bj/core/analysis.hh"
+#include "bj/core/analysis/dealer_analysis.hh"
 #include "util/iosfmt_saver.hh"
 #include "util/value_saver.hh"
 #include "util/getopt_mapped.tcc"
