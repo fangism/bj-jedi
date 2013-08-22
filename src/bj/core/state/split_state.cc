@@ -1,11 +1,11 @@
-// "bj/core/hand/split_state.cc"
+// "bj/core/state/split_state.cc"
 
 #include <iostream>
 #include <vector>
 #include <map>				// for map<split_state>
 #include <set>				// for set<split_state>
 #include <sstream>
-#include "bj/core/hand/split_state.hh"
+#include "bj/core/state/split_state.hh"
 #include "bj/core/num.hh"
 
 namespace blackjack {

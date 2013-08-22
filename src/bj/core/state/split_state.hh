@@ -1,7 +1,7 @@
 // "bj/core/hand.hh"
 
-#ifndef	__BJ_CORE_HAND_SPLIT_STATE_HH__
-#define	__BJ_CORE_HAND_SPLIT_STATE_HH__
+#ifndef	__BJ_CORE_STATE_SPLIT_STATE_HH__
+#define	__BJ_CORE_STATE_SPLIT_STATE_HH__
 
 #include <iosfwd>
 
@@ -99,5 +99,5 @@ struct split_state {
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 }	// end namespace blackjack
 
-#endif	// __BJ_CORE_HAND_SPLIT_STATE_HH__
+#endif	// __BJ_CORE_STATE_SPLIT_STATE_HH__
 

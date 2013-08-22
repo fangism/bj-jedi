@@ -4,7 +4,7 @@
  */
 
 #include <iostream>
-#include "bj/core/hand/split_state.hh"
+#include "bj/core/state/split_state.hh"
 #include "util/string.tcc"
 
 using std::cout;
