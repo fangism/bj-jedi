@@ -9,10 +9,8 @@
 
 #include <iosfwd>
 #include <map>
-#include "bj/core/outcome.hh"
-#include "bj/core/hand.hh"
-#include "bj/core/deck_state.hh"
 #include "bj/core/expectations.hh"
+#include "bj/core/hand/split_state.hh"
 #include "bj/core/analysis/dealer_analysis.hh"
 
 namespace blackjack {

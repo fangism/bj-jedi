@@ -11,17 +11,11 @@
 #include "bj/core/outcome.hh"
 #include "bj/core/hand.hh"
 #include "bj/core/deck_state.hh"
-#include "bj/core/expectations.hh"
 #include "bj/core/analysis.hh"
 
 namespace blackjack {
 using std::ostream;
 class play_map;
-#if 0
-class player_outcome_cache_set;
-class basic_split_situation_key_type;
-class basic_strategy_analyzer;
-#endif
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**

@@ -25,6 +25,7 @@ bj_core_libbjcore_la_SOURCES = \
 	bj/core/enums.hh \
 	bj/core/expectations.cc bj/core/expectations.hh \
 	bj/core/hand.cc bj/core/hand.hh \
+	bj/core/hand/split_state.cc bj/core/hand/split_state.hh \
 	bj/core/num.hh \
 	bj/core/outcome.cc bj/core/outcome.hh \
 	bj/core/player_action.cc bj/core/player_action.hh \
