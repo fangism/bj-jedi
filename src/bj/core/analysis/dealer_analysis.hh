@@ -9,7 +9,7 @@
 
 #include <map>
 #include "bj/core/outcome.hh"
-#include "bj/core/hand.hh"
+#include "bj/core/state/dealer_hand.hh"
 #include "bj/core/deck_state.hh"
 #include "bj/core/analysis.hh"
 
