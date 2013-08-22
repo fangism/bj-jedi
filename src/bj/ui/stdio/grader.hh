@@ -12,7 +12,7 @@
 #include "bj/core/deck_state.hh"
 #include "bj/core/statistics.hh"
 #include "bj/core/state/dealer_hand.hh"
-#include "bj/core/hand.hh"
+#include "bj/core/state/player_hand.hh"
 #include "bj/core/counter.hh"
 #include "bj/ui/stdio/bookmark.hh"
 

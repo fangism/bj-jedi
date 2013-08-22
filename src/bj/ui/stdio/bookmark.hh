@@ -6,7 +6,7 @@
 #ifndef	__BJ_UI_STDIO_BOOKMARK_HH__
 #define	__BJ_UI_STDIO_BOOKMARK_HH__
 
-#include "bj/core/hand.hh"
+#include "bj/core/state/player_hand.hh"
 #include "bj/core/deck_state.hh"
 #include "bj/core/player_action.hh"
 

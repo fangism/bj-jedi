@@ -24,10 +24,10 @@ bj_core_libbjcore_la_SOURCES = \
 	bj/core/deck_state.cc bj/core/deck_state.hh \
 	bj/core/enums.hh \
 	bj/core/expectations.cc bj/core/expectations.hh \
-	bj/core/hand.cc bj/core/hand.hh \
 	bj/core/state/hand_common.hh \
 	bj/core/state/split_state.cc bj/core/state/split_state.hh \
 	bj/core/state/dealer_hand.cc bj/core/state/dealer_hand.hh \
+	bj/core/state/player_hand.cc bj/core/state/player_hand.hh \
 	bj/core/num.hh \
 	bj/core/outcome.cc bj/core/outcome.hh \
 	bj/core/player_action.cc bj/core/player_action.hh \

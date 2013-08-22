@@ -1,22 +1,18 @@
-// "bj/core/hand.cc"
+// "bj/core/state/player_hand.cc"
 
 #include <iostream>
 #include <sstream>
-#include "bj/core/hand.hh"
+#include "bj/core/state/player_hand.hh"
 #include "bj/core/blackjack.hh"
 
 #define	DEBUG_HAND				0
 
 namespace blackjack {
-using std::cin;
+#if DEBUG_HAND
 using std::cout;
-using std::cerr;
 using std::endl;
-using cards::ACE;
-using cards::TEN;
+#endif
 using cards::card_name;
-using cards::standard_deck_distribution;
-using cards::card_index;
 using cards::card_symbols;
 using cards::card_value_map;
 using cards::state_machine;

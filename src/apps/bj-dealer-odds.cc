@@ -4,7 +4,7 @@
 #include <iostream>
 #include "bj/core/blackjack.hh"
 #include "bj/core/state/dealer_hand.hh"
-#include "bj/core/hand.hh"
+#include "bj/core/state/player_hand.hh"
 #include "bj/core/analysis/dealer_analysis.hh"
 #include "util/iosfmt_saver.hh"
 #include "util/value_saver.hh"
