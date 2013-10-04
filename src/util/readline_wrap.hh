@@ -154,6 +154,10 @@ private:
 	 */
 	bool				_skip_blank_lines;
 public:
+	// publicly accessible flags
+	bool				show_prompt;
+	bool				echo_command;
+public:
 	explicit
 	readline_wrapper(const string&);
 

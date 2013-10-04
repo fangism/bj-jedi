@@ -95,6 +95,9 @@ template <class Cmd>
 int
 command_registry<Cmd>::interpret(state_type& s) {
 	readline_wrapper rl(prompt);
+// TODO: make these optional
+	rl.show_prompt = true;		// overide default
+//	rl.echo_command = auto;		// depends on isatty
 #ifdef	HAVE_GNUREADLINE
 	const readline_init __rli__;
 #endif

@@ -9,7 +9,7 @@
 #define	DEBUG_GETS			(0 && ENABLE_STACKTRACE)
 
 #include <iostream>
-#include <cstdio>			// for stdin, feof
+#include <cstdio>			// for stdin, feof, fileno
 #include <cstdlib>			// for free()
 #include <unistd.h>			// for isatty()
 #include "util/readline_wrap.hh"
@@ -58,7 +58,9 @@ readline_wrapper::readline_wrapper(const string& s) :
 #else
 		prompt(s),
 #endif
-		_skip_blank_lines(true) {
+		_skip_blank_lines(true),
+		show_prompt(isatty(fileno(stdin))),
+		echo_command(!show_prompt) {
 #ifdef	USE_HISTEDIT
 	former_prompt = current_prompt;
 	current_prompt = s;
@@ -195,28 +197,34 @@ do {
 	// NOTE: some ASS-version of readline accepts a char* 
 	// for the prompt argument and trips an error here, 
 	// hence the const_cast
-	if (isatty(0)) {
+	if (isatty(fileno(stdin))) {
 		hold_line = hold_line_type(readline(
 			RL_CONST_CAST(_prompt.c_str())));
 	} else {
 		// is redirected or piped
 		// avoid calling readline functions, rl_initialize()
-		cout << _prompt;
+		if (show_prompt) {
+			cout << _prompt;
+		}
 		get_line_type get_line(static_cast<char_type*>(
 			malloc(sizeof(char_type) *READLINE_BUFFER_SIZE)));
 		fgets(&*get_line, READLINE_BUFFER_SIZE, stdin);
 		hold_line = get_line;	// transfer ownership
-		cout << get_line;	// echo
+		if (echo_command) {
+			cout << get_line;	// echo
+		}
 	}
 #endif
 #else
-	cout << _prompt;
+	if (show_prompt) {
+		cout << _prompt;
+	}
 	get_line_type get_line(static_cast<char_type*>(
 		malloc(sizeof(char_type) *READLINE_BUFFER_SIZE)));
 	fgets(&*get_line, READLINE_BUFFER_SIZE, stdin);
 	hold_line = get_line;	// transfer ownership
-	if (!isatty(0)) {
-		cout << hold_line;
+	if (echo_command) {
+		cout << hold_line;	// echo
 	}
 #endif
 	// NOTE: BSD editline does not return NULL on EOF
